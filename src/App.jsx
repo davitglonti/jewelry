@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import {
   Sparkles, Shield, Moon, Sun, Heart, Search, Plus, Trash2, Edit3,
   ChevronLeft, ChevronRight, ZoomIn, X, Phone, MapPin, Clock,
@@ -280,29 +280,39 @@ export default function App() {
   };
 
   // კარუსელის ავტომატური გადართვა
-  useEffect(() => {
-    const slides = siteSettings.heroSlides || [];
-    if (slides.length <= 1) return;
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, [siteSettings.heroSlides]);
-
-  // გაზიარებული ლინკით შემოსვლისას ავტომატურად გახსნას ნივთი
+  // რეფსი იმისათვის, რომ ლინკიდან გახსნა მხოლოდ ერთხელ და ზუსტად შესრულდეს როცა ბაზა ჩამოიტვირთება
+  // ინახავს URL-ის პარამეტრს თავიდანვე, რომ არ დაიკარგოს
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const itemSku = params.get("item");
-    if (itemSku && products.length > 0) {
-      const found = products.find((p) => p.sku === itemSku || p.id === itemSku);
-      if (found) {
-        setSelectedProduct(found);
-        setActiveImageIndex(0);
-        setSelectedSize(found.sizes && found.sizes.length > 0 ? found.sizes[0] : "");
-      }
+    const itemCode = params.get("item");
+    if (itemCode) {
+      window.savedItemCode = itemCode; // ვინახავთ გლობალურად ამ სესიისთვის
+    }
+  }, []);
+
+  // როგორც კი პროდუქტები ჩამოიტვირთება, ამოწმებს შენახულ კოდს
+  useEffect(() => {
+    const itemCode = window.savedItemCode || new URLSearchParams(window.location.search).get("item");
+
+    if (!products || products.length === 0 || !itemCode) return;
+
+    const target = decodeURIComponent(itemCode).toString().trim().toLowerCase();
+
+    const found = products.find((p) => {
+      const pSku = p.sku?.toString().trim().toLowerCase();
+      const pId = p.id?.toString().trim().toLowerCase();
+      
+      return (pSku && pSku === target) || (pId && pId === target);
+    });
+
+    if (found) {
+      console.log("წარმატებით მოიძებნა!", found);
+      setSelectedProduct(found);
+      setActiveImageIndex(0);
+      setSelectedSize(found.sizes && found.sizes.length > 0 ? found.sizes[0] : "");
+      window.savedItemCode = null; // რომ განმეორებით აღარ გახსნას
     }
   }, [products]);
-
   // ნივთის გახსნისას ბრაუზერის ლინკში დაემატოს კოდი, დახურვისას — გასუფთავდეს
   useEffect(() => {
     if (selectedProduct) {
