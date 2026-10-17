@@ -3,7 +3,7 @@ import {
   Sparkles, Shield, Moon, Sun, Heart, Search, Plus, Trash2, Edit3,
   ChevronLeft, ChevronRight, ZoomIn, X, Phone, MapPin, Clock,
   Instagram, Facebook, MessageCircle, Send, Check, Upload, Link as LinkIcon,
-  Globe, Lock, Eye, SlidersHorizontal, Award, Gem
+  Globe, Lock, Eye, SlidersHorizontal, Award, Gem,Share2
 } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
@@ -195,6 +195,7 @@ export default function App() {
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const [lightboxImage, setLightboxImage] = useState(null);
   const [showSizeGuide, setShowSizeGuide] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   // საკონსულტაციო მოთხოვნის ფორმა
   const [clientName, setClientName] = useState("");
@@ -288,6 +289,30 @@ export default function App() {
     return () => clearInterval(timer);
   }, [siteSettings.heroSlides]);
 
+  // გაზიარებული ლინკით შემოსვლისას ავტომატურად გახსნას ნივთი
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const itemSku = params.get("item");
+    if (itemSku && products.length > 0) {
+      const found = products.find((p) => p.sku === itemSku || p.id === itemSku);
+      if (found) {
+        setSelectedProduct(found);
+        setActiveImageIndex(0);
+        setSelectedSize(found.sizes && found.sizes.length > 0 ? found.sizes[0] : "");
+      }
+    }
+  }, [products]);
+
+  // ნივთის გახსნისას ბრაუზერის ლინკში დაემატოს კოდი, დახურვისას — გასუფთავდეს
+  useEffect(() => {
+    if (selectedProduct) {
+      const code = selectedProduct.sku || selectedProduct.id;
+      window.history.replaceState(null, "", `?item=${encodeURIComponent(code)}`);
+    } else {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, [selectedProduct]);
+
   // ფოტოს კომპრესია და Base64-ში გადაყვანა ატვირთვისას
   const handleFileUpload = (file, callback) => {
     if (!file) return;
@@ -335,12 +360,35 @@ export default function App() {
     setZoomPos({ x, y });
   };
 
-  // სწრაფი WhatsApp და Messenger ბმულების გენერაცია
+  // ნივთის ბმულის გაზიარება / კოპირება
+  const handleShareProduct = async (product) => {
+    const code = product.sku || product.id;
+    const shareUrl = `${window.location.origin}/?item=${encodeURIComponent(code)}`;
+    const title = lang === "ka" ? product.name : (product.nameEn || product.name);
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title,
+          text: `${title} (${product.sku}) - ${product.price}`,
+          url: shareUrl
+        });
+        return;
+      } catch (err) {}
+    }
+
+    navigator.clipboard.writeText(shareUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2500);
+  };
+
+  // სწრაფი WhatsApp და Messenger ბმულების გენერაცია (პირდაპირი ლინკით)
   const getWhatsAppLink = (product) => {
     const cleanPhone = (siteSettings.whatsapp || "995555000000").replace(/[^0-9]/g, "");
+    const itemUrl = `${window.location.origin}/?item=${encodeURIComponent(product.sku || product.id)}`;
     const message = lang === "ka"
-      ? `გამარჯობა! მაინტერესებს სამკაული: ${product.name} (კოდი: ${product.sku})${selectedSize ? `, ზომა: ${selectedSize}` : ""}, ფასი: ${product.price}`
-      : `Hello! I am interested in: ${product.nameEn || product.name} (SKU: ${product.sku})${selectedSize ? `, Size: ${selectedSize}` : ""}, Price: ${product.price}`;
+      ? `გამარჯობა! მაინტერესებს სამკაული: ${product.name} (კოდი: ${product.sku})${selectedSize ? `, ზომა: ${selectedSize}` : ""}, ფასი: ${product.price}\nბმული: ${itemUrl}`
+      : `Hello! I am interested in: ${product.nameEn || product.name} (SKU: ${product.sku})${selectedSize ? `, Size: ${selectedSize}` : ""}, Price: ${product.price}\nLink: ${itemUrl}`;
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
   };
 
@@ -949,10 +997,29 @@ export default function App() {
               {/* მარჯვენა მხარე: მახასიათებლები, ზომები და სწრაფი მიწერა */}
               <div className="p-6 sm:p-8 space-y-5 max-h-[85vh] overflow-y-auto">
                 <div>
-                  <div className="flex items-center gap-2 text-xs text-amber-500 uppercase tracking-widest">
-                    <span>{selectedProduct.category}</span>
-                    <span>•</span>
-                    <span>{selectedProduct.sku}</span>
+                 <div className="flex items-center justify-between gap-2 pr-10">
+                    <div className="flex items-center gap-2 text-xs text-amber-500 uppercase tracking-widest">
+                      <span>{selectedProduct.category}</span>
+                      <span>•</span>
+                      <span>{selectedProduct.sku}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleShareProduct(selectedProduct)}
+                      className="px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-black text-xs font-medium flex items-center gap-1.5 transition-all"
+                    >
+                      {copiedLink ? (
+                        <>
+                          <Check className="w-3.5 h-3.5" />
+                          <span>{lang === "ka" ? "დაკოპირდა!" : "Copied!"}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Share2 className="w-3.5 h-3.5" />
+                          <span>{lang === "ka" ? "გაზიარება" : "Share"}</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                   <h2 className="font-serif text-2xl sm:text-3xl mt-1">
                     {lang === "ka" ? selectedProduct.name : (selectedProduct.nameEn || selectedProduct.name)}
