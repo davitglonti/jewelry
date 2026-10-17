@@ -3,7 +3,7 @@ import {
   Sparkles, Shield, Moon, Sun, Heart, Search, Plus, Trash2, Edit3,
   ChevronLeft, ChevronRight, ZoomIn, X, Phone, MapPin, Clock,
   Instagram, Facebook, MessageCircle, Send, Check, Upload, Link as LinkIcon,
-  Globe, Lock, Eye, SlidersHorizontal, Award, Gem,Share2
+  Globe, Lock, Eye, SlidersHorizontal, Award, Gem,Share2,Menu
 } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
@@ -177,6 +177,8 @@ export default function App() {
   const [favorites, setFavorites] = useState([]);
   const [inquiries, setInquiries] = useState([]);
 
+  //mobile header 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // კარუსელის State
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -217,6 +219,8 @@ export default function App() {
   const [newCategoryInput, setNewCategoryInput] = useState("");
   const [newMetalInput, setNewMetalInput] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
+
+
 
   // ==========================================
   // 3. მონაცემების ჩატვირთვა და სინქრონიზაცია
@@ -279,8 +283,7 @@ export default function App() {
     setTimeout(() => setSaveMessage(""), 2500);
   };
 
-  // კარუსელის ავტომატური გადართვა
-  // რეფსი იმისათვის, რომ ლინკიდან გახსნა მხოლოდ ერთხელ და ზუსტად შესრულდეს როცა ბაზა ჩამოიტვირთება
+  
   // ინახავს URL-ის პარამეტრს თავიდანვე, რომ არ დაიკარგოს
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -444,33 +447,33 @@ export default function App() {
   const activeSlide = slides[currentSlide % slides.length] || slides[0];
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? "bg-[#0c0b0a] text-[#f5f0e6]" : "bg-[#faf7f2] text-[#1c1917]"}`}>
+    <div className={`min-h-screen w-full overflow-x-hidden transition-colors duration-300 ${darkMode ? "bg-[#0c0b0a] text-[#f5f0e6]" : "bg-[#faf7f2] text-[#1c1917]"}`}>
       
       {/* ========================================== */}
       {/* HEADER / ნავიგაცია */}
       {/* ========================================== */}
-      <header className={`sticky top-0 z-40 backdrop-blur-md border-b transition-colors ${darkMode ? "bg-[#0c0b0a]/90 border-amber-500/15" : "bg-white/90 border-stone-200"}`}>
+     <header className={`sticky top-0 z-40 backdrop-blur-md border-b transition-colors ${darkMode ? "bg-[#0c0b0a]/90 border-amber-500/15" : "bg-white/90 border-stone-200"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           {/* ლოგო */}
           <a href="#" className="flex items-center gap-3 group">
             {siteSettings.logoUrl ? (
-              <img src={siteSettings.logoUrl} alt={siteSettings.brandName} className="w-11 h-11 rounded-full object-cover border border-amber-500/40" />
+              <img src={siteSettings.logoUrl} alt={siteSettings.brandName} className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border border-amber-500/40" />
             ) : (
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-black shadow-lg shadow-amber-500/20">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-black shadow-lg shadow-amber-500/20">
                 <Sparkles className="w-5 h-5" />
               </div>
             )}
             <div>
-              <span className="font-serif text-2xl sm:text-3xl tracking-[0.22em] font-semibold block leading-none">
+              <span className="font-serif text-xl sm:text-3xl tracking-[0.22em] font-semibold block leading-none">
                 {siteSettings.brandName}
               </span>
-              <span className="text-[10px] sm:text-xs tracking-[0.18em] text-amber-500/90 uppercase block mt-1">
+              <span className="text-[9px] sm:text-xs tracking-[0.18em] text-amber-500/90 uppercase block mt-1">
                 {lang === "ka" ? siteSettings.brandSubtitle : (siteSettings.brandSubtitleEn || siteSettings.brandSubtitle)}
               </span>
             </div>
           </a>
 
-          {/* ნავიგაციის ბმულები */}
+          {/* დესკტოპ ნავიგაცია */}
           <nav className="hidden md:flex items-center gap-8 text-sm tracking-wider uppercase">
             <a href="#catalog" className="hover:text-amber-500 transition-colors">
               {lang === "ka" ? "კოლექცია" : "Collection"}
@@ -483,9 +486,8 @@ export default function App() {
             </a>
           </nav>
 
-          {/* მარჯვენა ღილაკები */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* ენის გადამრთველი */}
+          {/* მარჯვენა ღილაკები (დესკტოპისთვის) */}
+          <div className="hidden md:flex items-center gap-3">
             <button
               onClick={() => setLang(lang === "ka" ? "en" : "ka")}
               className={`px-3 py-2 rounded-full text-xs font-medium border flex items-center gap-1.5 transition-all ${
@@ -496,24 +498,20 @@ export default function App() {
               {lang === "ka" ? "EN" : "GE"}
             </button>
 
-            {/* თემის გადამრთველი */}
             <button
               onClick={() => setDarkMode(!darkMode)}
               className={`p-2.5 rounded-full border transition-all ${
                 darkMode ? "border-stone-800 bg-stone-900/80 text-amber-400 hover:border-amber-500/50" : "border-stone-200 bg-stone-100 text-stone-700 hover:border-amber-600"
               }`}
-              title="თემის შეცვლა"
             >
               {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
 
-            {/* რჩეულები */}
             <button
               onClick={() => setShowFavoritesModal(true)}
               className={`relative p-2.5 rounded-full border transition-all ${
                 darkMode ? "border-stone-800 bg-stone-900/80 hover:border-amber-500/50" : "border-stone-200 bg-stone-100 hover:border-amber-600"
               }`}
-              title="რჩეულები"
             >
               <Heart className={`w-4 h-4 ${favorites.length > 0 ? "fill-amber-500 text-amber-500" : ""}`} />
               {favorites.length > 0 && (
@@ -523,16 +521,105 @@ export default function App() {
               )}
             </button>
 
-            {/* მართვის პანელი */}
             <button
               onClick={() => setIsAdminOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-black font-medium text-xs sm:text-sm shadow-lg shadow-amber-500/20 hover:brightness-110 transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-black font-medium text-sm shadow-lg shadow-amber-500/20 hover:brightness-110 transition-all"
             >
               <Shield className="w-4 h-4" />
               <span>{lang === "ka" ? "მართვის პანელი" : "Admin Panel"}</span>
             </button>
           </div>
+
+          {/* მობილური ვერსიის ღილაკები (ლოგო + გული + ჰამბურგერი) */}
+          <div className="flex md:hidden items-center gap-2">
+            {/* რჩეულები მობილურზე */}
+            <button
+              onClick={() => setShowFavoritesModal(true)}
+              className={`relative p-2 rounded-full border ${darkMode ? "border-stone-800 bg-stone-900" : "border-stone-200 bg-stone-100"}`}
+            >
+              <Heart className={`w-4 h-4 ${favorites.length > 0 ? "fill-amber-500 text-amber-500" : ""}`} />
+              {favorites.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 text-black text-[9px] font-bold flex items-center justify-center">
+                  {favorites.length}
+                </span>
+              )}
+            </button>
+
+            {/* ჰამბურგერი ღილაკი */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className={`p-2 rounded-full border ${darkMode ? "border-stone-800 bg-stone-900 text-amber-400" : "border-stone-200 bg-stone-100 text-stone-800"}`}
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
+
+        {/* მობილური ჩამოსაშლელი მენიუ (Dropdown) */}
+        {isMobileMenuOpen && (
+          <div className={`md:hidden border-b p-5 space-y-4 animate-fadeIn ${darkMode ? "bg-[#0c0b0a] border-stone-800" : "bg-white border-stone-200"}`}>
+            <nav className="flex flex-col space-y-3 text-sm tracking-wider uppercase">
+              <a 
+                href="#catalog" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="hover:text-amber-500 py-1"
+              >
+                {lang === "ka" ? "კოლექცია" : "Collection"}
+              </a>
+              <a 
+                href="#craftsmanship" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="hover:text-amber-500 py-1"
+              >
+                {lang === "ka" ? "ოსტატობა" : "Craftsmanship"}
+              </a>
+              <a 
+                href="#contact" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="hover:text-amber-500 py-1"
+              >
+                {lang === "ka" ? "შოურუმი" : "Showroom"}
+              </a>
+            </nav>
+
+            <div className="pt-3 border-t border-stone-500/20 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                {/* ენის გადამრთველი */}
+                <button
+                  onClick={() => setLang(lang === "ka" ? "en" : "ka")}
+                  className={`px-3 py-2 rounded-xl text-xs font-medium border flex items-center gap-1.5 ${
+                    darkMode ? "border-stone-800 bg-stone-900" : "border-stone-200 bg-stone-100"
+                  }`}
+                >
+                  <Globe className="w-3.5 h-3.5 text-amber-500" />
+                  {lang === "ka" ? "EN" : "GE"}
+                </button>
+
+                {/* თემის გადამრთველი */}
+                <button
+                  onClick={() => setDarkMode(!darkMode)}
+                  className={`p-2.5 rounded-xl border ${
+                    darkMode ? "border-stone-800 bg-stone-900 text-amber-400" : "border-stone-200 bg-stone-100 text-stone-700"
+                  }`}
+                >
+                  {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {/* მართვის პანელი მობილურისთვის */}
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsAdminOpen(true);
+                }}
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-medium text-xs shadow-md"
+              >
+                <Shield className="w-4 h-4" />
+                <span>{lang === "ka" ? "პანელი" : "Admin"}</span>
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* ========================================== */}
