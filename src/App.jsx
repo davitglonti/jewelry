@@ -1009,13 +1009,13 @@ export default function App() {
 
       {/* ========================================== */}
       {/* დეტალური მოდალი (მრავალი ფოტო, ზუმი, ზომები, WhatsApp) */}
-      {/* ========================================== */}
+      
       {selectedProduct && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className={`relative w-full max-w-5xl rounded-3xl border overflow-hidden my-8 ${darkMode ? "bg-[#141210] border-stone-800 text-white" : "bg-white border-stone-200 text-stone-900"}`}>
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-start lg:items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className={`relative w-full max-w-5xl rounded-3xl border overflow-hidden my-auto ${darkMode ? "bg-[#141210] border-stone-800 text-white" : "bg-white border-stone-200 text-stone-900"}`}>
             <button
               onClick={() => setSelectedProduct(null)}
-              className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-black/60 text-white hover:bg-black transition-all"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 z-30 p-2.5 rounded-full bg-black/80 text-white border border-white/20 hover:bg-black transition-all shadow-lg"
             >
               <X className="w-5 h-5" />
             </button>
@@ -1024,7 +1024,7 @@ export default function App() {
               {/* მარცხენა მხარე: ფოტო გალერეა და მაუსით ზუმი */}
               <div className="p-6 bg-black/20 flex flex-col justify-between">
                 <div
-                  className="relative aspect-square rounded-2xl overflow-hidden bg-stone-900 cursor-zoom-in group"
+                  className="relative w-full h-[320px] sm:h-[400px] rounded-2xl overflow-hidden bg-stone-900/90 flex items-center justify-center cursor-zoom-in group"
                   onMouseEnter={() => setIsZoomed(true)}
                   onMouseLeave={() => setIsZoomed(false)}
                   onMouseMove={handleMouseMoveZoom}
@@ -1033,7 +1033,7 @@ export default function App() {
                   <img
                     src={selectedProduct.images?.[activeImageIndex] || selectedProduct.images?.[0]}
                     alt={selectedProduct.name}
-                    className="w-full h-full object-cover transition-transform duration-200"
+                    className="w-full h-full object-contain transition-transform duration-200"
                     style={
                       isZoomed
                         ? {
