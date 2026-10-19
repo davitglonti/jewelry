@@ -1746,7 +1746,7 @@ export default function App() {
       className="accent-amber-500 w-4 h-4 rounded"
     />
     <span className="text-amber-500 font-medium">
-      {lang === "ka" ? "მხოლოდ ექსკლუზიური მოდელები" : "Exclusive pieces only"}
+      {lang === "ka" ? "ექსკლუზიური მოდელები" : "Exclusive pieces only"}
     </span>
   </label>
 
@@ -1758,7 +1758,7 @@ export default function App() {
       className="accent-amber-500 w-4 h-4 rounded"
     />
     <span className="text-amber-500 font-medium">
-      {lang === "ka" ? "მხოლოდ ფასდაკლებები" : "On Sale only"}
+      {lang === "ka" ? "ფასდაკლებები" : "On Sale only"}
     </span>
   </label>
 </div>
@@ -1995,21 +1995,43 @@ export default function App() {
         </div>
       </footer>
 
-      {/* დეტალური მოდალი */}
+    
+      {/* დეტალური მოდალი (სრულეკრანიანი და იდეალურად განაწილებული) */}
       {selectedProduct && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-start lg:items-center justify-center p-3 sm:p-6 overflow-y-auto">
-          <div className={`relative w-full max-w-5xl rounded-3xl border overflow-hidden my-auto ${darkMode ? "bg-[#141210] border-stone-800 text-white" : "bg-white border-stone-200 text-stone-900"}`}>
+        <div className="fixed inset-0 z-50 bg-[#0c0b0a] overflow-y-auto animate-fadeIn">
+          {/* ზედა ნავიგაცია და დახურვის ღილაკი */}
+          <div className={`sticky top-0 z-40 px-6 py-4 border-b backdrop-blur-md flex items-center justify-between ${darkMode ? "bg-[#121110]/95 border-stone-800" : "bg-white/95 border-stone-200"}`}>
             <button
               onClick={() => setSelectedProduct(null)}
-              className="absolute top-3 right-3 sm:top-4 sm:right-4 z-30 p-2.5 rounded-full bg-black/80 text-white border border-white/20 hover:bg-black transition-all shadow-lg"
+              className="px-4 py-2 rounded-full bg-stone-800 hover:bg-stone-700 text-white text-xs font-medium flex items-center gap-2 transition-all"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>{lang === "ka" ? "კატალოგში დაბრუნება" : "Back to Catalog"}</span>
+            </button>
+
+            <span className="text-xs uppercase tracking-widest text-amber-500 font-medium">
+              {selectedProduct.sku} • {selectedProduct.category}
+            </span>
+
+            <button
+              onClick={() => setSelectedProduct(null)}
+              className={`p-2.5 rounded-full border transition-all ${
+                darkMode ? "border-stone-800 bg-stone-900 text-white hover:bg-stone-800" : "border-stone-200 bg-stone-100 text-stone-800"
+              }`}
             >
               <X className="w-5 h-5" />
             </button>
+          </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2">
-              <div className="p-6 bg-black/20 flex flex-col justify-between">
+          {/* მთავარი შიგთავსი - სრულ ეკრანზე გაშლილი */}
+          <div className="w-full max-w-none px-3 sm:px-5 lg:px-6 py-6 sm:py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 xl:gap-12 items-start">
+              {/* მარცხენა მხარე: სურათები და გალერეა */}
+              <div className="space-y-4">
                 <div
-                  className="relative w-full h-[320px] sm:h-[400px] rounded-2xl overflow-hidden bg-stone-900/90 flex items-center justify-center cursor-zoom-in group"
+                 className={`relative w-full h-[calc(100vh-155px)] max-h-[700px] min-h-[350px] rounded-3xl overflow-hidden border flex items-center justify-center cursor-zoom-in group ${
+                    darkMode ? "bg-stone-900/90 border-stone-800" : "bg-stone-100 border-stone-200"
+                  }`}
                   onMouseEnter={() => setIsZoomed(true)}
                   onMouseLeave={() => setIsZoomed(false)}
                   onMouseMove={handleMouseMoveZoom}
@@ -2018,7 +2040,7 @@ export default function App() {
                   <img
                     src={selectedProduct.images?.[activeImageIndex] || selectedProduct.images?.[0]}
                     alt={selectedProduct.name}
-                    className="w-full h-full object-contain transition-transform duration-200"
+                    className="w-full h-full object-contain transition-transform duration-200 p-4"
                     style={
                       isZoomed
                         ? {
@@ -2028,8 +2050,8 @@ export default function App() {
                         : {}
                     }
                   />
-                  <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/70 text-white text-xs flex items-center gap-1.5 pointer-events-none">
-                    <ZoomIn className="w-3.5 h-3.5 text-amber-400" />
+                  <div className="absolute bottom-4 right-4 px-3.5 py-2 rounded-full bg-black/70 text-white text-xs flex items-center gap-2 pointer-events-none backdrop-blur-sm">
+                    <ZoomIn className="w-4 h-4 text-amber-400" />
                     {lang === "ka" ? "მაუსით მიახლოება / გადიდება" : "Hover to Zoom / Click Fullscreen"}
                   </div>
 
@@ -2040,31 +2062,32 @@ export default function App() {
                           e.stopPropagation();
                           setActiveImageIndex((prev) => (prev - 1 + selectedProduct.images.length) % selectedProduct.images.length);
                         }}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 text-white hover:bg-black"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 text-white hover:bg-black backdrop-blur-sm transition-all"
                       >
-                        <ChevronLeft className="w-4 h-4" />
+                        <ChevronLeft className="w-5 h-5" />
                       </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setActiveImageIndex((prev) => (prev + 1) % selectedProduct.images.length);
                         }}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 text-white hover:bg-black"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 text-white hover:bg-black backdrop-blur-sm transition-all"
                       >
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className="w-5 h-5" />
                       </button>
                     </>
                   )}
                 </div>
 
+                {/* მცირე ფოტოების სლაიდერი ქვევით */}
                 {selectedProduct.images?.length > 1 && (
-                  <div className="flex items-center gap-3 mt-4 overflow-x-auto pb-1">
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1">
                     {selectedProduct.images.map((imgUrl, idx) => (
                       <button
                         key={idx}
                         onClick={() => setActiveImageIndex(idx)}
                         className={`w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${
-                          activeImageIndex === idx ? "border-amber-500 scale-105" : "border-transparent opacity-60 hover:opacity-100"
+                          activeImageIndex === idx ? "border-amber-500 scale-105 shadow-lg shadow-amber-500/20" : "border-transparent opacity-60 hover:opacity-100"
                         }`}
                       >
                         <img src={imgUrl} alt="" className="w-full h-full object-cover" />
@@ -2074,9 +2097,10 @@ export default function App() {
                 )}
               </div>
 
-              <div className="p-6 sm:p-8 space-y-5 max-h-[85vh] overflow-y-auto">
+              {/* მარჯვენა მხარე: აღწერა, ფასი, ზომები და ფორმები */}
+              <div className="space-y-6">
                 <div>
-                  <div className="flex items-center justify-between gap-2 pr-10">
+                  <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 text-xs text-amber-500 uppercase tracking-widest">
                       <span>{selectedProduct.category}</span>
                       <span>•</span>
@@ -2085,89 +2109,93 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => handleShareProduct(selectedProduct)}
-                      className="px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-black text-xs font-medium flex items-center gap-1.5 transition-all"
+                      className="px-4 py-2 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-black text-xs font-medium flex items-center gap-2 transition-all"
                     >
                       {copiedLink ? (
                         <>
-                          <Check className="w-3.5 h-3.5" />
+                          <Check className="w-4 h-4" />
                           <span>{lang === "ka" ? "დაკოპირდა!" : "Copied!"}</span>
                         </>
                       ) : (
                         <>
-                          <Share2 className="w-3.5 h-3.5" />
+                          <Share2 className="w-4 h-4" />
                           <span>{lang === "ka" ? "გაზიარება" : "Share"}</span>
                         </>
                       )}
                     </button>
                   </div>
-                  <h2 className="font-serif text-2xl sm:text-3xl mt-1">
+
+                  <h1 className="font-serif text-3xl sm:text-4xl mt-2">
                     {lang === "ka" ? selectedProduct.name : (selectedProduct.nameEn || selectedProduct.name)}
-                  </h2>
-                  <div className="flex items-baseline gap-3 mt-2">
+                  </h1>
+
+                  <div className="flex items-baseline gap-4 mt-3">
                     {selectedProduct.oldPrice && (
-                      <span className="font-serif text-lg line-through opacity-50">
+                      <span className="font-serif text-xl line-through opacity-50">
                         {selectedProduct.oldPrice}
                       </span>
                     )}
-                    <span className="font-serif text-2xl text-amber-500 font-semibold">
+                    <span className="font-serif text-3xl text-amber-500 font-semibold">
                       {selectedProduct.price}
                     </span>
                     {selectedProduct.oldPrice && (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase bg-red-600/20 text-red-400 border border-red-500/30">
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold uppercase bg-red-600/20 text-red-400 border border-red-500/30">
                         {lang === "ka" ? "ფასდაკლება" : "Sale"}
                       </span>
                     )}
                   </div>
                 </div>
 
-                <p className="text-sm opacity-80 leading-relaxed">
+                <p className="text-sm sm:text-base opacity-85 leading-relaxed">
                   {lang === "ka" ? selectedProduct.description : (selectedProduct.descriptionEn || selectedProduct.description)}
                 </p>
 
-                <div className={`grid grid-cols-2 gap-3 p-4 rounded-2xl border text-xs ${darkMode ? "bg-stone-900/60 border-stone-800" : "bg-stone-50 border-stone-200"}`}>
+                {/* მახასიათებლების ბადე */}
+                <div className={`grid grid-cols-2 gap-4 p-5 rounded-3xl border text-xs sm:text-sm ${darkMode ? "bg-stone-900/60 border-stone-800" : "bg-white border-stone-200"}`}>
                   <div>
-                    <span className="opacity-60 block">{lang === "ka" ? "მეტალი:" : "Metal:"}</span>
+                    <span className="opacity-60 block text-xs">{lang === "ka" ? "მეტალი:" : "Metal:"}</span>
                     <span className="font-medium">{selectedProduct.metal}</span>
                   </div>
                   <div>
-                    <span className="opacity-60 block">{lang === "ka" ? "სინჯი:" : "Karat:"}</span>
+                    <span className="opacity-60 block text-xs">{lang === "ka" ? "სინჯი:" : "Karat:"}</span>
                     <span className="font-medium">{selectedProduct.karat}</span>
                   </div>
                   <div>
-                    <span className="opacity-60 block">{lang === "ka" ? "წონა:" : "Weight:"}</span>
+                    <span className="opacity-60 block text-xs">{lang === "ka" ? "წონა:" : "Weight:"}</span>
                     <span className="font-medium">{selectedProduct.weight}</span>
                   </div>
                   <div>
-                    <span className="opacity-60 block">{lang === "ka" ? "ქვები:" : "Gemstones:"}</span>
+                    <span className="opacity-60 block text-xs">{lang === "ka" ? "ქვები:" : "Gemstones:"}</span>
                     <span className="font-medium">{selectedProduct.stones}</span>
                   </div>
                 </div>
 
+                {/* ზომების არჩევა */}
                 {selectedProduct.sizes && selectedProduct.sizes.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-xs sm:text-sm">
                       <span className="uppercase tracking-wider opacity-75">
                         {lang === "ka" ? "აირჩიეთ ზომა:" : "Select Size:"}
                       </span>
                       <button
                         type="button"
                         onClick={() => setShowSizeGuide(!showSizeGuide)}
-                        className="text-amber-500 underline hover:text-amber-400"
+                        className="text-amber-500 underline hover:text-amber-400 font-medium"
                       >
                         {lang === "ka" ? "ზომის გზამკვლევი" : "Size Guide"}
                       </button>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2.5">
                       {selectedProduct.sizes.map((sz) => (
                         <button
                           key={sz}
                           onClick={() => setSelectedSize(sz)}
-                          className={`px-3.5 py-2 rounded-xl text-xs font-medium border transition-all ${
+                          className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-medium border transition-all ${
                             selectedSize === sz
-                              ? "bg-amber-500 text-black border-amber-500"
+                              ? "bg-amber-500 text-black border-amber-500 shadow-lg shadow-amber-500/20"
                               : darkMode
-                              ? "border-stone-700 hover:border-amber-500/50"
-                              : "border-stone-300 hover:border-amber-600"
+                              ? "border-stone-800 hover:border-amber-500/50 bg-stone-900"
+                              : "border-stone-300 hover:border-amber-600 bg-stone-50"
                           }`}
                         >
                           {sz}
@@ -2175,20 +2203,33 @@ export default function App() {
                       ))}
                     </div>
                     {showSizeGuide && (
-                      <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs space-y-1">
-                        <p className="font-semibold text-amber-400">
-                          {lang === "ka" ? "სტანდარტული ზომების ცხრილი:" : "Standard Size Reference:"}
-                        </p>
-                        <p>16.0 მმ ≈ თითის გარშემოწერილობა 50 მმ (US 5.5)</p>
-                        <p>16.5 მმ ≈ თითის გარშემოწერილობა 52 მმ (US 6)</p>
-                        <p>17.0 მმ ≈ თითის გარშემოწერილობა 53.5 მმ (US 6.5)</p>
-                        <p>17.5 მმ ≈ თითის გარშემოწერილობა 55 მმ (US 7)</p>
+                      <div className="relative">
+                        <div className={`absolute left-0 right-0 z-20 p-4 rounded-2xl border shadow-2xl backdrop-blur-md space-y-1.5 animate-fadeIn ${
+                          darkMode ? "bg-[#1a1816]/95 border-amber-500/40 text-stone-200" : "bg-white/95 border-amber-500/50 text-stone-800"
+                        }`}>
+                          <div className="flex items-center justify-between pb-1 border-b border-stone-500/20">
+                            <p className="font-semibold text-amber-400 text-xs">
+                              {lang === "ka" ? "სტანდარტული ზომების ცხრილი:" : "Standard Size Reference:"}
+                            </p>
+                            <button
+                              onClick={() => setShowSizeGuide(false)}
+                              className="text-xs opacity-60 hover:opacity-100"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                          <p className="text-xs">16.0 მმ ≈ თითის გარშემოწერილობა 50 მმ (US 5.5)</p>
+                          <p className="text-xs">16.5 მმ ≈ თითის გარშემოწერილობა 52 მმ (US 6)</p>
+                          <p className="text-xs">17.0 მმ ≈ თითის გარშემოწერილობა 53.5 მმ (US 6.5)</p>
+                          <p className="text-xs">17.5 მმ ≈ თითის გარშემოწერილობა 55 მმ (US 7)</p>
+                        </div>
                       </div>
                     )}
                   </div>
                 )}
 
-                <div className="space-y-2 pt-2">
+                {/* სწრაფი მესენჯერები */}
+                <div className="space-y-3 pt-2">
                   <span className="text-xs uppercase tracking-wider opacity-70 block">
                     {lang === "ka" ? "სწრაფი დაკავშირება ამ მოდელზე:" : "Instant Inquiry for this Piece:"}
                   </span>
@@ -2197,35 +2238,36 @@ export default function App() {
                       href={getWhatsAppLink(selectedProduct)}
                       target="_blank"
                       rel="noreferrer"
-                      className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all"
+                      className="py-3.5 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-600/20 transition-all"
                     >
-                      <MessageCircle className="w-4 h-4" />
+                      <MessageCircle className="w-5 h-5" />
                       {lang === "ka" ? "WhatsApp-ში მიწერა" : "Ask on WhatsApp"}
                     </a>
                     <a
                       href={siteSettings.messenger || "https://m.me/"}
                       target="_blank"
                       rel="noreferrer"
-                      className="py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 transition-all"
+                      className="py-3.5 px-5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2.5 shadow-lg shadow-blue-600/20 transition-all"
                     >
-                      <Send className="w-4 h-4" />
+                      <Send className="w-5 h-5" />
                       {lang === "ka" ? "Messenger-ში მიწერა" : "Ask on Messenger"}
                     </a>
                   </div>
                 </div>
 
-                <form onSubmit={handleSendInquiry} noValidate className="space-y-3 pt-4 border-t border-stone-500/20">
+                {/* ზარის მოთხოვნის ფორმა */}
+                <form onSubmit={handleSendInquiry} noValidate className="space-y-3.5 pt-6 border-t border-stone-500/20">
                   <div className="text-xs font-medium text-amber-500 uppercase tracking-wider">
                     {lang === "ka" ? "ან დაგვიტოვეთ ნომერი კონსულტაციისთვის:" : "Or Request a Private Callback:"}
                   </div>
                   {inquirySent ? (
-                    <div className="p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs flex items-center gap-2">
-                      <Check className="w-4 h-4" />
+                    <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs sm:text-sm flex items-center gap-2.5">
+                      <Check className="w-5 h-5 shrink-0" />
                       {lang === "ka" ? "მოთხოვნა მიღებულია! ჩვენი კონსულტანტი მალე დაგიკავშირდებათ." : "Request sent! Our consultant will contact you shortly."}
                     </div>
                   ) : (
                     <>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <input
                           type="text"
                           value={clientName}
@@ -2234,7 +2276,7 @@ export default function App() {
                             if (phoneError) setPhoneError("");
                           }}
                           placeholder={lang === "ka" ? "თქვენი სახელი" : "Your Name"}
-                          className={`px-3.5 py-2.5 rounded-xl text-xs border outline-none ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                          className={`px-4 py-3 rounded-2xl text-xs sm:text-sm border outline-none ${darkMode ? "bg-stone-900 border-stone-800" : "bg-stone-50 border-stone-300"}`}
                         />
                         <input
                           type="tel"
@@ -2244,31 +2286,32 @@ export default function App() {
                             if (phoneError) setPhoneError("");
                           }}
                           placeholder={lang === "ka" ? "5XX XX XX XX" : "+995 5XX XX XX XX"}
-                          className={`px-3.5 py-2.5 rounded-xl text-xs border outline-none transition-colors ${
+                          className={`px-4 py-3 rounded-2xl text-xs sm:text-sm border outline-none transition-colors ${
                             phoneError
                               ? "border-red-500 bg-red-500/10 text-red-200"
                               : darkMode
-                              ? "bg-stone-900 border-stone-700 focus:border-amber-500"
+                              ? "bg-stone-900 border-stone-800 focus:border-amber-500"
                               : "bg-stone-50 border-stone-300 focus:border-amber-600"
                           }`}
                         />
                       </div>
 
                       {phoneError && (
-                        <div className="p-2.5 rounded-xl bg-red-500/15 border border-red-500/40 text-red-400 text-xs font-medium">
+                        <div className="p-3 rounded-2xl bg-red-500/15 border border-red-500/40 text-red-400 text-xs font-medium">
                           ⚠️ {phoneError}
                         </div>
                       )}
 
                       <button
                         type="submit"
-                        className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-semibold text-xs uppercase tracking-wider hover:brightness-110 transition-all"
+                        className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-semibold text-xs sm:text-sm uppercase tracking-wider hover:brightness-110 transition-all shadow-xl shadow-amber-500/20"
                       >
                         {lang === "ka" ? "ზარის მოთხოვნა" : "Request Consultation"}
                       </button>
                     </>
                   )}
                 </form>
+
               </div>
             </div>
           </div>
