@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 
 // ==========================================
 // 1. FIREBASE კონფიგურაცია
@@ -304,6 +304,21 @@ export default function App() {
     setTimeout(() => setSaveMessage(""), 2500);
   };
 
+const [authChecked, setAuthChecked] = useState(false);
+
+useEffect(() => {
+  if (!auth) {
+    setAuthChecked(true);
+    return;
+  }
+  const unsub = onAuthStateChanged(auth, (user) => {
+    setIsAdminAuthenticated(!!user);
+    setAuthChecked(true);
+  });
+  return () => unsub();
+}, []);
+
+
   useEffect(() => {
     if (isAdminRoute) return;
     const params = new URLSearchParams(window.location.search);
@@ -528,12 +543,24 @@ export default function App() {
             >
               <ArrowLeft className="w-4 h-4" />
               <span>{lang === "ka" ? "საიტზე გადასვლა" : "Back to Store"}</span>
+
             </a>
+            {isAdminAuthenticated && (
+              <button
+                onClick={() => signOut(auth)}
+                className="px-4 py-2.5 rounded-full border border-stone-600 text-xs font-medium hover:bg-stone-800 hover:text-white transition-all"
+              >
+                {lang === "ka" ? "გასვლა" : "Logout"}
+              </button>
+            )}
+            
           </div>
         </header>
 
         <main className="max-w-6xl mx-auto p-4 sm:p-8">
-          {!isAdminAuthenticated ? (
+          {!authChecked ? (
+  <div className="text-center py-20 opacity-60 text-sm">იტვირთება...</div>
+) : !isAdminAuthenticated ? (
             <div className={`p-10 max-w-md mx-auto mt-16 rounded-3xl border text-center space-y-5 ${darkMode ? "bg-[#121110] border-stone-800" : "bg-white border-stone-200 shadow-lg"}`}>
               <div className="w-14 h-14 rounded-full bg-amber-500/15 text-amber-500 flex items-center justify-center mx-auto">
                 <Lock className="w-6 h-6" />
