@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
 // ==========================================
 // 1. FIREBASE კონფიგურაცია
@@ -21,10 +22,12 @@ const firebaseConfig = {
 };
 
 let db = null;
+let auth = null;
 try {
   if (firebaseConfig.apiKey && firebaseConfig.projectId) {
     const app = initializeApp(firebaseConfig);
     db = getFirestore(app);
+    auth = getAuth(app);
   }
 } catch (err) {
   console.warn("Firebase არ არის კონფიგურირებული, მუშაობს LocalStorage რეჟიმში.");
@@ -174,7 +177,6 @@ const DEFAULT_PRODUCTS = [
 ];
 
 export default function App() {
-  // ამოწმებს, იმყოფება თუ არა მომხმარებელი /admin გვერდზე
   const [isAdminRoute, setIsAdminRoute] = useState(() => {
     const path = window.location.pathname.replace(/\/+$/, "");
     return path === "/admin";
@@ -189,7 +191,6 @@ export default function App() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  // ძირითადი State-ები
   const [darkMode, setDarkMode] = useState(true);
   const [lang, setLang] = useState("ka");
   const [siteSettings, setSiteSettings] = useState(DEFAULT_SETTINGS);
@@ -197,20 +198,16 @@ export default function App() {
   const [favorites, setFavorites] = useState([]);
   const [inquiries, setInquiries] = useState([]);
 
-  // Mobile Header
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  // კარუსელის State
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // ფილტრაცია
   const [selectedCategory, setSelectedCategory] = useState("ყველა");
   const [selectedMetal, setSelectedMetal] = useState("ყველა");
   const [onlyExclusive, setOnlyExclusive] = useState(false);
+  const [onlyOnSale, setOnlyOnSale] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFavoritesModal, setShowFavoritesModal] = useState(false);
 
-  // დეტალური მოდალი, გალერეა და ზუმი
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
@@ -220,31 +217,27 @@ export default function App() {
   const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // საკონსულტაციო მოთხოვნის ფორმა
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
   const [clientNote, setClientNote] = useState("");
   const [inquirySent, setInquirySent] = useState(false);
   const [phoneError, setPhoneError] = useState("");
 
-  // ადმინ პანელის State-ები
+  // ადმინ ავტორიზაცია Email/Password-ით
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
-  const [adminPin, setAdminPin] = useState("2026");
-  const [passwordInput, setPasswordInput] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [adminTab, setAdminTab] = useState("catalog");
 
-  // სამკაულის დამატება/რედაქტირება ადმინში
   const [editingProduct, setEditingProduct] = useState(null);
   const [imageUrlInput, setImageUrlInput] = useState("");
   const [newCategoryInput, setNewCategoryInput] = useState("");
   const [newMetalInput, setNewMetalInput] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
 
-  // კლავიატურის ისრებით ფოტოების გადართვა ლაითბოქსში
   useEffect(() => {
     if (!lightboxImage || !selectedProduct?.images) return;
-
     const handleKeyDown = (e) => {
       if (e.key === "ArrowRight") {
         setActiveImageIndex((prev) => (prev + 1) % selectedProduct.images.length);
@@ -258,16 +251,11 @@ export default function App() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lightboxImage, selectedProduct]);
 
-
-
-  // 3. მონაცემების ჩატვირთვა და სინქრონიზაცია
-  // ==========================================
   useEffect(() => {
     const savedSettings = localStorage.getItem("aurelia_settings_v2");
     const savedProducts = localStorage.getItem("aurelia_products_v2");
     const savedFavs = localStorage.getItem("aurelia_favs_v2");
     const savedInquiries = localStorage.getItem("aurelia_inquiries_v2");
-    const savedPin = localStorage.getItem("aurelia_pin_v2");
 
     if (savedSettings) {
       try { setSiteSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) }); } catch (e) {}
@@ -281,7 +269,6 @@ export default function App() {
     if (savedInquiries) {
       try { setInquiries(JSON.parse(savedInquiries)); } catch (e) {}
     }
-    if (savedPin) setAdminPin(savedPin);
 
     if (db) {
       const unsub = onSnapshot(doc(db, "aurelia", "storeData"), (docSnap) => {
@@ -296,7 +283,6 @@ export default function App() {
     }
   }, []);
 
-  // მონაცემების შენახვის ფუნქცია (Local + Firebase)
   const syncData = async (newSettings, newProducts, newInquiries = inquiries) => {
     localStorage.setItem("aurelia_settings_v2", JSON.stringify(newSettings));
     localStorage.setItem("aurelia_products_v2", JSON.stringify(newProducts));
@@ -318,7 +304,6 @@ export default function App() {
     setTimeout(() => setSaveMessage(""), 2500);
   };
 
-  // ინახავს URL-ის პარამეტრს თავიდანვე, რომ არ დაიკარგოს (მხოლოდ მთავარ გვერდზე)
   useEffect(() => {
     if (isAdminRoute) return;
     const params = new URLSearchParams(window.location.search);
@@ -328,15 +313,12 @@ export default function App() {
     }
   }, [isAdminRoute]);
 
-  // როგორც კი პროდუქტები ჩამოიტვირთება, ამოწმებს შენახულ კოდს
   useEffect(() => {
     if (isAdminRoute) return;
     const itemCode = window.savedItemCode || new URLSearchParams(window.location.search).get("item");
-
     if (!products || products.length === 0 || !itemCode) return;
 
     const target = decodeURIComponent(itemCode).toString().trim().toLowerCase();
-
     const found = products.find((p) => {
       const pSku = p.sku?.toString().trim().toLowerCase();
       const pId = p.id?.toString().trim().toLowerCase();
@@ -351,7 +333,6 @@ export default function App() {
     }
   }, [products, isAdminRoute]);
 
-  // ნივთის გახსნისას ბრაუზერის ლინკში დაემატოს კოდი, დახურვისას — გასუფთავდეს
   useEffect(() => {
     if (isAdminRoute) return;
     if (selectedProduct) {
@@ -362,7 +343,6 @@ export default function App() {
     }
   }, [selectedProduct, isAdminRoute]);
 
-  // ფოტოს კომპრესია და Base64-ში გადაყვანა ატვირთვისას
   const handleFileUpload = (file, callback) => {
     if (!file) return;
     const reader = new FileReader();
@@ -384,7 +364,6 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  // ფავორიტებში დამატება/წაშლა
   const toggleFavorite = (id) => {
     const updated = favorites.includes(id)
       ? favorites.filter((item) => item !== id)
@@ -393,16 +372,14 @@ export default function App() {
     localStorage.setItem("aurelia_favs_v2", JSON.stringify(updated));
   };
 
-  // პროდუქტის დეტალური ფანჯრის გახსნა
   const openProductModal = (product) => {
     setSelectedProduct(product);
     setActiveImageIndex(0);
     setSelectedSize(product.sizes && product.sizes.length > 0 ? product.sizes[0] : "");
     setInquirySent(false);
-    setPhoneError("")
+    setPhoneError("");
   };
 
-  // მაუსით მიახლოების (Zoom) გამოთვლა
   const handleMouseMoveZoom = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -410,7 +387,6 @@ export default function App() {
     setZoomPos({ x, y });
   };
 
-  // ნივთის ბმულის გაზიარება / კოპირება
   const handleShareProduct = async (product) => {
     const code = product.sku || product.id;
     const shareUrl = `${window.location.origin}/?item=${encodeURIComponent(code)}`;
@@ -432,7 +408,6 @@ export default function App() {
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
-  // სწრაფი WhatsApp ბმულის გენერაცია
   const getWhatsAppLink = (product) => {
     const cleanPhone = (siteSettings.whatsapp || "995555000000").replace(/[^0-9]/g, "");
     const itemUrl = `${window.location.origin}/?item=${encodeURIComponent(product.sku || product.id)}`;
@@ -445,20 +420,15 @@ export default function App() {
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
   };
 
-  // კონსულტაციის მოთხოვნის გაგზავნა
   const handleSendInquiry = (e) => {
     e.preventDefault();
     if (!selectedProduct) return;
 
-    // 1. სახელის შემოწმება
     if (!clientName.trim()) {
-      setPhoneError(
-        lang === "ka" ? "გთხოვთ შეიყვანოთ თქვენი სახელი" : "Please enter your name"
-      );
+      setPhoneError(lang === "ka" ? "გთხოვთ შეიყვანოთ თქვენი სახელი" : "Please enter your name");
       return;
     }
 
-    // 2. ნომრის გასუფთავება და შემოწმება (თუ ცარიელია ან ასოები წერია)
     const cleanedPhone = clientPhone.replace(/[\s\-()]/g, "");
     const georgianPhoneRegex = /^(\+?995)?5\d{8}$/;
 
@@ -492,32 +462,29 @@ export default function App() {
     setInquirySent(true);
   };
 
-  // გაფილტრული პროდუქცია
   const filteredProducts = products.filter((item) => {
-    const matchesCat = selectedCategory === "ყველა" || item.category === selectedCategory;
-    const matchesMetal = selectedMetal === "ყველა" || item.metal === selectedMetal;
-    const matchesExcl = !onlyExclusive || item.exclusive;
-    const q = searchQuery.toLowerCase();
-    const matchesSearch =
-      !q ||
-      item.name?.toLowerCase().includes(q) ||
-      item.nameEn?.toLowerCase().includes(q) ||
-      item.sku?.toLowerCase().includes(q) ||
-      item.stones?.toLowerCase().includes(q);
-    return matchesCat && matchesMetal && matchesExcl && matchesSearch;
-  });
+  const matchesCat = selectedCategory === "ყველა" || item.category === selectedCategory;
+  const matchesMetal = selectedMetal === "ყველა" || item.metal === selectedMetal;
+  const matchesExcl = !onlyExclusive || item.exclusive;
+  const matchesSale = !onlyOnSale || (item.oldPrice && item.oldPrice.trim() !== ""); // <--- ესეც
+  const q = searchQuery.toLowerCase();
+  const matchesSearch =
+    !q ||
+    item.name?.toLowerCase().includes(q) ||
+    item.nameEn?.toLowerCase().includes(q) ||
+    item.sku?.toLowerCase().includes(q) ||
+    item.stones?.toLowerCase().includes(q);
+  return matchesCat && matchesMetal && matchesExcl && matchesSale && matchesSearch;
+});
 
   const slides = siteSettings.heroSlides?.length > 0 ? siteSettings.heroSlides : DEFAULT_SETTINGS.heroSlides;
   const activeSlide = slides[currentSlide % slides.length] || slides[0];
- 
-  // ავტომატური სლაიდერი (6 წამიანი ტაიმერით)
+
   useEffect(() => {
     if (!slides || slides.length <= 1) return;
-    
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 6000); 
-
+    }, 6000);
     return () => clearInterval(timer);
   }, [slides.length]);
 
@@ -527,7 +494,6 @@ export default function App() {
   if (isAdminRoute) {
     return (
       <div className={`min-h-screen w-full transition-colors duration-300 ${darkMode ? "bg-[#0c0b0a] text-[#f5f0e6]" : "bg-[#faf7f2] text-[#1c1917]"}`}>
-        {/* ადმინის ზედა ზოლი */}
         <header className={`sticky top-0 z-40 px-4 sm:px-8 py-4 border-b backdrop-blur-md flex items-center justify-between ${darkMode ? "bg-[#121110]/95 border-stone-800" : "bg-white/95 border-stone-200"}`}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-amber-500/15 text-amber-500 flex items-center justify-center">
@@ -567,32 +533,44 @@ export default function App() {
         </header>
 
         <main className="max-w-6xl mx-auto p-4 sm:p-8">
-          {/* თუ არ არის ავტორიზებული -> პაროლის ფანჯარა */}
           {!isAdminAuthenticated ? (
             <div className={`p-10 max-w-md mx-auto mt-16 rounded-3xl border text-center space-y-5 ${darkMode ? "bg-[#121110] border-stone-800" : "bg-white border-stone-200 shadow-lg"}`}>
               <div className="w-14 h-14 rounded-full bg-amber-500/15 text-amber-500 flex items-center justify-center mx-auto">
                 <Lock className="w-6 h-6" />
               </div>
-              <h3 className="font-serif text-2xl">შეიყვანეთ ადმინისტრატორის PIN</h3>
-              <p className="text-xs opacity-65">წვდომა მხოლოდ ავტორიზებული პირებისთვის</p>
+              <h3 className="font-serif text-2xl">ადმინისტრატორის ავტორიზაცია</h3>
+              <p className="text-xs opacity-65">შეიყვანეთ თქვენი ელ-ფოსტა და პაროლი</p>
+              
               <form
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
-                  if (passwordInput === adminPin) {
+                  if (!auth) {
+                    setLoginError("Firebase Auth არ არის აქტიური!");
+                    return;
+                  }
+                  try {
+                    await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
                     setIsAdminAuthenticated(true);
                     setLoginError("");
-                  } else {
-                    setLoginError("არასწორი კოდი!");
+                  } catch (err) {
+                    setLoginError("არასწორი ელ-ფოსტა ან პაროლი!");
                   }
                 }}
                 className="space-y-3"
               >
                 <input
+                  type="email"
+                  value={adminEmail}
+                  onChange={(e) => setAdminEmail(e.target.value)}
+                  placeholder="ელფოსტა"
+                  className={`w-full px-4 py-3 rounded-xl text-xs border outline-none ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-100 border-stone-300"}`}
+                />
+                <input
                   type="password"
-                  value={passwordInput}
-                  onChange={(e) => setPasswordInput(e.target.value)}
-                  placeholder="PIN კოდი..."
-                  className={`w-full px-4 py-3 rounded-xl text-center text-lg tracking-widest border outline-none ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-100 border-stone-300"}`}
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  placeholder="პაროლი..."
+                  className={`w-full px-4 py-3 rounded-xl text-xs border outline-none ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-100 border-stone-300"}`}
                 />
                 {loginError && <p className="text-xs text-red-400">{loginError}</p>}
                 <button type="submit" className="w-full py-3 rounded-xl bg-amber-500 text-black font-semibold text-sm hover:brightness-110 transition-all">
@@ -602,7 +580,6 @@ export default function App() {
             </div>
           ) : (
             <div className={`p-6 rounded-3xl border space-y-6 ${darkMode ? "bg-[#121110] border-stone-800" : "bg-white border-stone-200 shadow-sm"}`}>
-              {/* ადმინის ჩანართები (Tabs) */}
               <div className="flex flex-wrap gap-2 pb-4 border-b border-stone-500/20">
                 {[
                   { id: "catalog", label: "1. კატალოგის მართვა" },
@@ -629,7 +606,6 @@ export default function App() {
                 ))}
               </div>
 
-              {/* ჩანართი 1: კატალოგის მართვა */}
               {adminTab === "catalog" && (
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
@@ -662,7 +638,6 @@ export default function App() {
                     </button>
                   </div>
 
-                  {/* სამკაულის რედაქტირების/დამატების ფორმა */}
                   {editingProduct && (
                     <div className={`p-5 rounded-2xl border space-y-4 ${darkMode ? "bg-stone-900/90 border-amber-500/40" : "bg-stone-50 border-amber-500"}`}>
                       <h4 className="font-serif text-lg text-amber-500">სამკაულის რედაქტირება / დამატება</h4>
@@ -743,7 +718,6 @@ export default function App() {
                         />
                       </div>
 
-                      {/* ზომები */}
                       <div className="text-xs">
                         <label className="block opacity-70 mb-1">ხელმისაწვდომი ზომები (გამოყავით მძიმით):</label>
                         <input
@@ -760,7 +734,6 @@ export default function App() {
                         />
                       </div>
 
-                      {/* აღწერა */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                         <textarea
                           rows={2}
@@ -778,7 +751,6 @@ export default function App() {
                         />
                       </div>
 
-                      {/* ფოტოების დამატება */}
                       <div className="space-y-2 text-xs">
                         <label className="font-medium text-amber-500 block">
                           სამკაულის ფოტოები (შეგიძლიათ ატვირთოთ რამდენიმე ფოტო ან ჩასვათ ლინკი):
@@ -829,7 +801,6 @@ export default function App() {
                           </div>
                         </div>
 
-                        {/* ატვირთული ფოტოების სია */}
                         <div className="flex flex-wrap gap-3 pt-2">
                           {(editingProduct.images || []).map((img, i) => (
                             <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-amber-500/40">
@@ -890,7 +861,6 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* არსებული პროდუქტების ცხრილი */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {products.map((p) => (
                       <div key={p.id} className="p-3.5 rounded-2xl border border-stone-500/20 flex items-center justify-between gap-3">
@@ -931,10 +901,8 @@ export default function App() {
                 </div>
               )}
 
-              {/* ჩანართი 2: მეტალები & კატეგორიები */}
               {adminTab === "categories" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* კატეგორიები */}
                   <div className="p-5 rounded-2xl border border-stone-500/20 space-y-4">
                     <h4 className="font-serif text-lg text-amber-500">კატეგორიების მართვა</h4>
                     <div className="flex gap-2">
@@ -983,7 +951,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* მეტალები */}
                   <div className="p-5 rounded-2xl border border-stone-500/20 space-y-4">
                     <h4 className="font-serif text-lg text-amber-500">მეტალების / მასალების მართვა</h4>
                     <div className="flex gap-2">
@@ -1034,7 +1001,6 @@ export default function App() {
                 </div>
               )}
 
-              {/* ჩანართი 3: ზედა კარუსელი (Hero Slider) */}
               {adminTab === "carousel" && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -1043,10 +1009,14 @@ export default function App() {
                       onClick={() => {
                         const newSlide = {
                           id: Date.now(),
-                          badge: "ახალი სლაიდი",
-                          title: "სათაური",
-                          subtitle: "აღწერა",
+                          badge: "ახალი კოლექცია",
+                          badgeEn: "New Collection",
+                          title: "სათაური ქართულად",
+                          titleEn: "Title in English",
+                          subtitle: "აღწერა ქართულად...",
+                          subtitleEn: "Description in English...",
                           buttonText: "კოლექციის ნახვა",
+                          buttonTextEn: "Explore Collection",
                           image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1600&q=80"
                         };
                         const updated = {
@@ -1083,52 +1053,131 @@ export default function App() {
                           </button>
                         )}
                       </div>
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <input
-                          type="text"
-                          value={slide.badge}
-                          onChange={(e) => {
-                            const copy = [...siteSettings.heroSlides];
-                            copy[idx] = { ...copy[idx], badge: e.target.value };
-                            setSiteSettings({ ...siteSettings, heroSlides: copy });
-                          }}
-                          placeholder="ბეიჯი (მაგ: ახალი კოლექცია)"
-                          className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                        />
-                        <input
-                          type="text"
-                          value={slide.title}
-                          onChange={(e) => {
-                            const copy = [...siteSettings.heroSlides];
-                            copy[idx] = { ...copy[idx], title: e.target.value };
-                            setSiteSettings({ ...siteSettings, heroSlides: copy });
-                          }}
-                          placeholder="მთავარი სათაური"
-                          className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                        />
-                        <input
-                          type="text"
-                          value={slide.subtitle}
-                          onChange={(e) => {
-                            const copy = [...siteSettings.heroSlides];
-                            copy[idx] = { ...copy[idx], subtitle: e.target.value };
-                            setSiteSettings({ ...siteSettings, heroSlides: copy });
-                          }}
-                          placeholder="ქვესათაური / აღწერა"
-                          className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                        />
-                        <input
-                          type="text"
-                          value={slide.image}
-                          onChange={(e) => {
-                            const copy = [...siteSettings.heroSlides];
-                            copy[idx] = { ...copy[idx], image: e.target.value };
-                            setSiteSettings({ ...siteSettings, heroSlides: copy });
-                          }}
-                          placeholder="ფონის ფოტოს ბმული (URL)"
-                          className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                        />
+                        <div>
+                          <label className="opacity-60 block mb-1">ბეიჯი (GE):</label>
+                          <input
+                            type="text"
+                            value={slide.badge || ""}
+                            onChange={(e) => {
+                              const copy = [...siteSettings.heroSlides];
+                              copy[idx] = { ...copy[idx], badge: e.target.value };
+                              setSiteSettings({ ...siteSettings, heroSlides: copy });
+                            }}
+                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                          />
+                        </div>
+                        <div>
+                          <label className="opacity-60 block mb-1">Badge (EN):</label>
+                          <input
+                            type="text"
+                            value={slide.badgeEn || ""}
+                            onChange={(e) => {
+                              const copy = [...siteSettings.heroSlides];
+                              copy[idx] = { ...copy[idx], badgeEn: e.target.value };
+                              setSiteSettings({ ...siteSettings, heroSlides: copy });
+                            }}
+                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="opacity-60 block mb-1">მთავარი სათაური (GE):</label>
+                          <input
+                            type="text"
+                            value={slide.title || ""}
+                            onChange={(e) => {
+                              const copy = [...siteSettings.heroSlides];
+                              copy[idx] = { ...copy[idx], title: e.target.value };
+                              setSiteSettings({ ...siteSettings, heroSlides: copy });
+                            }}
+                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                          />
+                        </div>
+                        <div>
+                          <label className="opacity-60 block mb-1">Main Title (EN):</label>
+                          <input
+                            type="text"
+                            value={slide.titleEn || ""}
+                            onChange={(e) => {
+                              const copy = [...siteSettings.heroSlides];
+                              copy[idx] = { ...copy[idx], titleEn: e.target.value };
+                              setSiteSettings({ ...siteSettings, heroSlides: copy });
+                            }}
+                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                          />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <label className="opacity-60 block mb-1">აღწერა / ქვესათაური (GE):</label>
+                          <textarea
+                            rows={2}
+                            value={slide.subtitle || ""}
+                            onChange={(e) => {
+                              const copy = [...siteSettings.heroSlides];
+                              copy[idx] = { ...copy[idx], subtitle: e.target.value };
+                              setSiteSettings({ ...siteSettings, heroSlides: copy });
+                            }}
+                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                          />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="opacity-60 block mb-1">Subtitle (EN):</label>
+                          <textarea
+                            rows={2}
+                            value={slide.subtitleEn || ""}
+                            onChange={(e) => {
+                              const copy = [...siteSettings.heroSlides];
+                              copy[idx] = { ...copy[idx], subtitleEn: e.target.value };
+                              setSiteSettings({ ...siteSettings, heroSlides: copy });
+                            }}
+                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="opacity-60 block mb-1">ღილაკის ტექსტი (GE):</label>
+                          <input
+                            type="text"
+                            value={slide.buttonText || ""}
+                            onChange={(e) => {
+                              const copy = [...siteSettings.heroSlides];
+                              copy[idx] = { ...copy[idx], buttonText: e.target.value };
+                              setSiteSettings({ ...siteSettings, heroSlides: copy });
+                            }}
+                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                          />
+                        </div>
+                        <div>
+                          <label className="opacity-60 block mb-1">Button Text (EN):</label>
+                          <input
+                            type="text"
+                            value={slide.buttonTextEn || ""}
+                            onChange={(e) => {
+                              const copy = [...siteSettings.heroSlides];
+                              copy[idx] = { ...copy[idx], buttonTextEn: e.target.value };
+                              setSiteSettings({ ...siteSettings, heroSlides: copy });
+                            }}
+                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                          />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <label className="opacity-60 block mb-1">ფონის ფოტოს ბმული (URL ან ატვირთვა):</label>
+                          <input
+                            type="text"
+                            value={slide.image || ""}
+                            onChange={(e) => {
+                              const copy = [...siteSettings.heroSlides];
+                              copy[idx] = { ...copy[idx], image: e.target.value };
+                              setSiteSettings({ ...siteSettings, heroSlides: copy });
+                            }}
+                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                          />
+                        </div>
                       </div>
+
                       <div className="flex items-center justify-between pt-1">
                         <label className="px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-400 cursor-pointer flex items-center gap-1.5">
                           <Upload className="w-3.5 h-3.5" />
@@ -1148,7 +1197,8 @@ export default function App() {
                         </label>
                         <button
                           onClick={() => syncData(siteSettings, products)}
-                          className="px-4 py-1.5 rounded-lg bg-amber-500 text-black font-semibold"
+                          key={slide.id}
+                          className="px-5 py-2 rounded-xl bg-amber-500 text-black font-semibold"
                         >
                           სლაიდის შენახვა
                         </button>
@@ -1158,7 +1208,6 @@ export default function App() {
                 </div>
               )}
 
-              {/* ჩანართი 4: ლოგო & სათაურები */}
               {adminTab === "brand" && (
                 <div className="space-y-4 max-w-xl text-xs">
                   <h4 className="font-serif text-lg text-amber-500">ბრენდის სახელი და ლოგო</h4>
@@ -1208,7 +1257,6 @@ export default function App() {
                 </div>
               )}
 
-              {/* ჩანართი 5: ოსტატობის სექცია & 2 ფოტო */}
               {adminTab === "craft" && (
                 <div className="space-y-4 max-w-2xl text-xs">
                   <h4 className="font-serif text-lg text-amber-500">„ხელოვნება, რომელიც თაობებს გადაეცემა“ — ტექსტები და ფოტოები</h4>
@@ -1293,7 +1341,6 @@ export default function App() {
                 </div>
               )}
 
-              {/* ჩანართი 6: კონტაქტი & ქვედა პანელი (Footer) */}
               {adminTab === "footer" && (
                 <div className="space-y-4 max-w-2xl text-xs">
                   <h4 className="font-serif text-lg text-amber-500">კონტაქტები, WhatsApp/Messenger და ქვედა პანელი</h4>
@@ -1362,7 +1409,6 @@ export default function App() {
                 </div>
               )}
 
-              {/* ჩანართი 7: შემოსული მოთხოვნები */}
               {adminTab === "inquiries" && (
                 <div className="space-y-3">
                   <h4 className="font-serif text-lg text-amber-500">მომხმარებლების მოთხოვნები</h4>
@@ -1404,10 +1450,9 @@ export default function App() {
   return (
     <div className={`min-h-screen w-full overflow-x-hidden transition-colors duration-300 ${darkMode ? "bg-[#0c0b0a] text-[#f5f0e6]" : "bg-[#faf7f2] text-[#1c1917]"}`}>
       
-      {/* HEADER / ნავიგაცია */}
+      {/* HEADER */}
       <header className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-md border-b transition-colors shadow-lg ${darkMode ? "bg-[#0c0b0a]/95 border-amber-500/15" : "bg-white/95 border-stone-200"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          {/* ლოგო */}
           <a href="#" className="flex items-center gap-3 group">
             {siteSettings.logoUrl ? (
               <img src={siteSettings.logoUrl} alt={siteSettings.brandName} className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border border-amber-500/40" />
@@ -1426,7 +1471,6 @@ export default function App() {
             </div>
           </a>
 
-          {/* დესკტოპ ნავიგაცია */}
           <nav className="hidden md:flex items-center gap-8 text-sm tracking-wider uppercase">
             <a href="#catalog" className="hover:text-amber-500 transition-colors">
               {lang === "ka" ? "კოლექცია" : "Collection"}
@@ -1439,7 +1483,6 @@ export default function App() {
             </a>
           </nav>
 
-          {/* მარჯვენა ღილაკები */}
           <div className="hidden md:flex items-center gap-3">
             <button
               onClick={() => setLang(lang === "ka" ? "en" : "ka")}
@@ -1475,7 +1518,6 @@ export default function App() {
             </button>
           </div>
 
-          {/* მობილური ვერსიის ღილაკები */}
           <div className="flex md:hidden items-center gap-2">
             <button
               onClick={() => setShowFavoritesModal(true)}
@@ -1498,7 +1540,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* მობილური ჩამოსაშლელი მენიუ */}
         {isMobileMenuOpen && (
           <div className={`md:hidden border-b p-5 space-y-4 animate-fadeIn ${darkMode ? "bg-[#0c0b0a] border-stone-800" : "bg-white border-stone-200"}`}>
             <nav className="flex flex-col space-y-3 text-sm tracking-wider uppercase">
@@ -1537,7 +1578,6 @@ export default function App() {
         )}
       </header>
 
-      {/* HERO კარუსელი */}
       {/* HERO კარუსელი */}
       <section className="relative h-[500px] sm:h-[640px] overflow-hidden flex items-center">
         <div className="absolute inset-0">
@@ -1596,7 +1636,6 @@ export default function App() {
               <ChevronRight className="w-5 h-5" />
             </button>
 
-            {/* პროგრესის ხაზები / ინდიკატორები */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
               {slides.map((s, idx) => {
                 const isActive = currentSlide % slides.length === idx;
@@ -1624,7 +1663,7 @@ export default function App() {
         )}
       </section>
 
-      {/* კატალოგის სექცია და ფილტრები */}
+      {/* კატალოგის სექცია */}
       <section id="catalog" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
           <div>
@@ -1698,21 +1737,34 @@ export default function App() {
               ))}
             </div>
 
-            <label className="flex items-center gap-2 cursor-pointer text-xs">
-              <input
-                type="checkbox"
-                checked={onlyExclusive}
-                onChange={(e) => setOnlyExclusive(e.target.checked)}
-                className="accent-amber-500 w-4 h-4 rounded"
-              />
-              <span className="text-amber-500 font-medium">
-                {lang === "ka" ? "მხოლოდ ექსკლუზიური მოდელები" : "Exclusive pieces only"}
-              </span>
-            </label>
+<div className="flex flex-wrap items-center gap-6">
+  <label className="flex items-center gap-2 cursor-pointer text-xs">
+    <input
+      type="checkbox"
+      checked={onlyExclusive}
+      onChange={(e) => setOnlyExclusive(e.target.checked)}
+      className="accent-amber-500 w-4 h-4 rounded"
+    />
+    <span className="text-amber-500 font-medium">
+      {lang === "ka" ? "მხოლოდ ექსკლუზიური მოდელები" : "Exclusive pieces only"}
+    </span>
+  </label>
+
+  <label className="flex items-center gap-2 cursor-pointer text-xs">
+    <input
+      type="checkbox"
+      checked={onlyOnSale}
+      onChange={(e) => setOnlyOnSale(e.target.checked)}
+      className="accent-amber-500 w-4 h-4 rounded"
+    />
+    <span className="text-amber-500 font-medium">
+      {lang === "ka" ? "მხოლოდ ფასდაკლებები" : "On Sale only"}
+    </span>
+  </label>
+</div>
           </div>
         </div>
 
-        {/* სამკაულების ბადე */}
         {filteredProducts.length === 0 ? (
           <div className="text-center py-20 opacity-60">
             <p className="text-lg">{lang === "ka" ? "არჩეული ფილტრით სამკაული ვერ მოიძებნა." : "No jewelry found matching your criteria."}</p>
@@ -1864,7 +1916,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* კონტაქტი & ქვედა პანელი */}
+      {/* FOOTER */}
       <footer id="contact" className={`pt-16 pb-12 border-t ${darkMode ? "bg-[#090807] border-stone-800" : "bg-stone-100 border-stone-200"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 pb-12 border-b border-stone-500/15">
@@ -2202,7 +2254,6 @@ export default function App() {
                         />
                       </div>
 
-                      {/* წითელი შეცდომის ტექსტი */}
                       {phoneError && (
                         <div className="p-2.5 rounded-xl bg-red-500/15 border border-red-500/40 text-red-400 text-xs font-medium">
                           ⚠️ {phoneError}
@@ -2224,7 +2275,7 @@ export default function App() {
         </div>
       )}
 
-      {/* სრულ ეკრანზე გადიდებული სურათი (Lightbox) */}
+      {/* LIGHTBOX */}
       {lightboxImage && (
         <div
           onClick={() => setLightboxImage(null)}
@@ -2330,7 +2381,6 @@ export default function App() {
               )}
             </div>
           </div>
-         
         </div>
       )}
     </div>
