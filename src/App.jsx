@@ -221,6 +221,23 @@ export default function App() {
   const [saveMessage, setSaveMessage] = useState("");
 
 
+  // კლავიატურის ისრებით ფოტოების გადართვა ლაითბოქსში
+  useEffect(() => {
+    if (!lightboxImage || !selectedProduct?.images) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "ArrowRight") {
+        setActiveImageIndex((prev) => (prev + 1) % selectedProduct.images.length);
+      } else if (e.key === "ArrowLeft") {
+        setActiveImageIndex((prev) => (prev - 1 + selectedProduct.images.length) % selectedProduct.images.length);
+      } else if (e.key === "Escape") {
+        setLightboxImage(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxImage, selectedProduct]);
 
   // ==========================================
   // 3. მონაცემების ჩატვირთვა და სინქრონიზაცია
@@ -452,7 +469,7 @@ export default function App() {
       {/* ========================================== */}
       {/* HEADER / ნავიგაცია */}
       {/* ========================================== */}
-     <header className={`sticky top-0 z-40 backdrop-blur-md border-b transition-colors ${darkMode ? "bg-[#0c0b0a]/90 border-amber-500/15" : "bg-white/90 border-stone-200"}`}>
+     <header className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-md border-b transition-colors shadow-lg ${darkMode ? "bg-[#0c0b0a]/95 border-amber-500/15" : "bg-white/95 border-stone-200"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           {/* ლოგო */}
           <a href="#" className="flex items-center gap-3 group">
@@ -1277,7 +1294,53 @@ export default function App() {
           <button className="absolute top-6 right-6 p-3 rounded-full bg-white/10 text-white">
             <X className="w-6 h-6" />
           </button>
-          <img src={lightboxImage} alt="Fullscreen" className="max-w-full max-h-[90vh] object-contain rounded-xl" />
+         <img src={selectedProduct?.images?.[activeImageIndex] || lightboxImage} alt="Fullscreen" className="max-w-full max-h-[80vh] object-contain rounded-xl mb-4" />
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-60 flex flex-col items-center gap-4 w-full max-w-xs">
+              {/* ისრები */}
+              <div className="flex items-center gap-6">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveImageIndex((prev) => (prev - 1 + (selectedProduct.images?.length || 0)) % (selectedProduct.images?.length || 0));
+                  }}
+                  className="p-3 rounded-full bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <span className="text-xs text-white/70 font-medium tracking-widest">
+                  {activeImageIndex + 1} / {selectedProduct.images?.length || 0}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveImageIndex((prev) => (prev + 1) % (selectedProduct.images?.length || 0));
+                  }}
+                  className="p-3 rounded-full bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* მინიატურები */}
+              {selectedProduct.images?.length > 1 && (
+                <div className="flex items-center justify-center gap-2 p-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10">
+                  {selectedProduct.images.map((imgUrl, idx) => (
+                    <button
+                      key={idx}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveImageIndex(idx);
+                      }}
+                      className={`w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${
+                        activeImageIndex === idx ? "border-amber-500 scale-110" : "border-transparent opacity-60 hover:opacity-100"
+                      }`}
+                    >
+                      <img src={imgUrl} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
         </div>
       )}
 
