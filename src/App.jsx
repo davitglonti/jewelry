@@ -669,7 +669,7 @@ if (isAdminRoute) {
 
               {adminTab === "catalog" && (
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <h3 className="font-serif text-xl">სამკაულების სია ({products.length})</h3>
                     <button
                       onClick={() =>
@@ -692,7 +692,7 @@ if (isAdminRoute) {
                           images: []
                         })
                       }
-                      className="px-4 py-2.5 rounded-xl bg-amber-500 text-black text-xs font-semibold flex items-center gap-1.5"
+                      className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-500 text-black text-xs font-semibold flex items-center justify-center gap-1.5"
                     >
                       <Plus className="w-4 h-4" />
                       ახალი სამკაულის დამატება
@@ -816,8 +816,8 @@ if (isAdminRoute) {
                         <label className="font-medium text-amber-500 block">
                           სამკაულის ფოტოები (შეგიძლიათ ატვირთოთ რამდენიმე ფოტო ან ჩასვათ ლინკი):
                         </label>
-                        <div className="flex flex-wrap items-center gap-3">
-                          <label className="px-4 py-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 cursor-pointer flex items-center gap-2">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                          <label className="px-4 py-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 cursor-pointer flex items-center justify-center gap-2 shrink-0">
                             <Upload className="w-4 h-4" />
                             ფოტოს ატვირთვა მოწყობილობიდან
                             <input
@@ -836,13 +836,13 @@ if (isAdminRoute) {
                             />
                           </label>
 
-                          <div className="flex items-center gap-2 flex-1 min-w-[240px]">
+                          <div className="flex flex-col sm:flex-row items-center gap-2 flex-1 w-full">
                             <input
                               type="url"
                               value={imageUrlInput}
                               onChange={(e) => setImageUrlInput(e.target.value)}
                               placeholder="ან ჩასვით ფოტოს ლინკი (https://...)"
-                              className={`flex-1 p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
+                              className={`w-full sm:flex-1 p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
                             />
                             <button
                               type="button"
@@ -854,7 +854,7 @@ if (isAdminRoute) {
                                 });
                                 setImageUrlInput("");
                               }}
-                              className="px-4 py-2.5 rounded-xl bg-stone-700 text-white flex items-center gap-1"
+                              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-stone-700 text-white flex items-center justify-center gap-1 shrink-0"
                             >
                               <LinkIcon className="w-3.5 h-3.5" />
                               დამატება
@@ -884,43 +884,41 @@ if (isAdminRoute) {
                       </div>
 
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-3">
-                      {/* ექსკლუზიური მოდელის ჩექბოქსი */}
-                      <label className="flex items-center gap-2 text-xs cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={editingProduct.exclusive}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, exclusive: e.target.checked })}
-                          className="accent-amber-500 w-4 h-4"
-                        />
-                        <span>ექსკლუზიური მოდელი</span>
-                      </label>
+                        <label className="flex items-center gap-2 text-xs cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={editingProduct.exclusive}
+                            onChange={(e) => setEditingProduct({ ...editingProduct, exclusive: e.target.checked })}
+                            className="accent-amber-500 w-4 h-4"
+                          />
+                          <span>ექსკლუზიური მოდელი</span>
+                        </label>
 
-                      {/* ღილაკებისკონტეინერი */}
-                      <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                        <button
-                          type="button"
-                          onClick={() => setEditingProduct(null)}
-                          className="flex-1 sm:flex-none px-4 py-2 rounded-xl border border-stone-600 text-xs text-center"
-                        >
-                          გაუქმება
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const exists = products.some((p) => p.id === editingProduct.id);
-                            const updated = exists
-                              ? products.map((p) => (p.id === editingProduct.id ? editingProduct : p))
-                              : [editingProduct, ...products];
-                            setProducts(updated);
-                            syncData(siteSettings, updated);
-                            setEditingProduct(null);
-                          }}
-                          className="flex-1 sm:flex-none px-5 py-2 rounded-xl bg-amber-500 text-black font-semibold text-xs text-center"
-                        >
-                          შენახვა
-                        </button>
+                        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                          <button
+                            type="button"
+                            onClick={() => setEditingProduct(null)}
+                            className="flex-1 sm:flex-none px-4 py-2 rounded-xl border border-stone-600 text-xs text-center"
+                          >
+                            გაუქმება
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const exists = products.some((p) => p.id === editingProduct.id);
+                              const updated = exists
+                                ? products.map((p) => (p.id === editingProduct.id ? editingProduct : p))
+                                : [editingProduct, ...products];
+                              setProducts(updated);
+                              syncData(siteSettings, updated);
+                              setEditingProduct(null);
+                            }}
+                            className="flex-1 sm:flex-none px-5 py-2 rounded-xl bg-amber-500 text-black font-semibold text-xs text-center"
+                          >
+                            შენახვა
+                          </button>
+                        </div>
                       </div>
-                    </div>
                     </div>
                   )}
 
