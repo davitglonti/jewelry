@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef  } from 'react';
 import {
   Sparkles, Shield, Moon, Sun, Heart, Search, Plus, Trash2, Edit3,
   ChevronLeft, ChevronRight, ZoomIn, X, Phone, MapPin, Clock,
@@ -10,7 +10,7 @@ import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebas
 import { db, auth } from './lib/firebase';
 import { DEFAULT_SETTINGS } from './data/defaultSettings';
 import { DEFAULT_PRODUCTS } from './data/defaultProducts';
-
+import { ALL, SLIDE_INTERVAL_MS, MAX_IMAGE_WIDTH, IMAGE_QUALITY } from './constants';
 export default function App() {
   const [isAdminRoute, setIsAdminRoute] = useState(() => {
     const path = window.location.pathname.replace(/\/+$/, "");
@@ -36,8 +36,8 @@ export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const [selectedCategory, setSelectedCategory] = useState("ყველა");
-  const [selectedMetal, setSelectedMetal] = useState("ყველა");
+  const [selectedCategory, setSelectedCategory] = useState(ALL);
+  const [selectedMetal, setSelectedMetal] = useState(ALL);
   const [onlyExclusive, setOnlyExclusive] = useState(false);
   const [onlyOnSale, setOnlyOnSale] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -153,22 +153,14 @@ useEffect(() => {
   return () => unsub();
 }, []);
 
+  const initialItemCode = useRef(new URLSearchParams(window.location.search).get("item"));
 
   useEffect(() => {
     if (isAdminRoute) return;
-    const params = new URLSearchParams(window.location.search);
-    const itemCode = params.get("item");
-    if (itemCode) {
-      window.savedItemCode = itemCode;
-    }
-  }, [isAdminRoute]);
-
-  useEffect(() => {
-    if (isAdminRoute) return;
-    const itemCode = window.savedItemCode || new URLSearchParams(window.location.search).get("item");
+    const itemCode = initialItemCode.current;
     if (!products || products.length === 0 || !itemCode) return;
 
-    const target = decodeURIComponent(itemCode).toString().trim().toLowerCase();
+    const target = decodeURIComponent(itemCode).trim().toLowerCase();
     const found = products.find((p) => {
       const pSku = p.sku?.toString().trim().toLowerCase();
       const pId = p.id?.toString().trim().toLowerCase();
@@ -178,8 +170,8 @@ useEffect(() => {
     if (found) {
       setSelectedProduct(found);
       setActiveImageIndex(0);
-      setSelectedSize(found.sizes && found.sizes.length > 0 ? found.sizes[0] : "");
-      window.savedItemCode = null;
+      setSelectedSize(found.sizes?.[0] || "");
+      initialItemCode.current = null;
     }
   }, [products, isAdminRoute]);
 
@@ -200,13 +192,13 @@ useEffect(() => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        const MAX_WIDTH = 1200;
-        const scale = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1;
+      const scale = img.width > MAX_IMAGE_WIDTH ? MAX_IMAGE_WIDTH / img.width : 1;
+     
         canvas.width = img.width * scale;
         canvas.height = img.height * scale;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const compressed = canvas.toDataURL("image/jpeg", 0.82);
+       const compressed = canvas.toDataURL("image/jpeg", IMAGE_QUALITY);
         callback(compressed);
       };
       img.src = e.target.result;
@@ -313,8 +305,8 @@ useEffect(() => {
   };
 
   const filteredProducts = products.filter((item) => {
-  const matchesCat = selectedCategory === "ყველა" || item.category === selectedCategory;
-  const matchesMetal = selectedMetal === "ყველა" || item.metal === selectedMetal;
+  const matchesCat = selectedCategory === ALL || item.category === selectedCategory;
+const matchesMetal = selectedMetal === ALL || item.metal === selectedMetal;
   const matchesExcl = !onlyExclusive || item.exclusive;
   const matchesSale = !onlyOnSale || (item.oldPrice && item.oldPrice.trim() !== ""); // <--- ესეც
   const q = searchQuery.toLowerCase();
@@ -334,7 +326,7 @@ useEffect(() => {
     if (!slides || slides.length <= 1) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 6000);
+    }, SLIDE_INTERVAL_MS);
     return () => clearInterval(timer);
   }, [slides.length]);
 
@@ -446,9 +438,8 @@ if (isAdminRoute) {
                   }
                   try {
                     await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
-                    setIsAdminAuthenticated(true);
                     setLoginError("");
-                  } catch (err) {
+                  }  catch (err) {
                     setLoginError("არასწორი ელ-ფოსტა ან პაროლი!");
                   }
                 }}
@@ -1096,9 +1087,7 @@ if (isAdminRoute) {
                         </label>
                         <button
                           onClick={() => syncData(siteSettings, products)}
-                          key={slide.id}
-                          className="px-5 py-2 rounded-xl bg-amber-500 text-black font-semibold"
-                        >
+                          className="px-5 py-2 rounded-xl bg-amber-500 text-black font-semibold">
                           სლაიდის შენახვა
                         </button>
                       </div>
@@ -1570,7 +1559,7 @@ if (isAdminRoute) {
                         className="absolute top-0 left-0 h-full bg-amber-400"
                         style={{
                           width: "100%",
-                          animation: "fillProgress 6s linear forwards"
+                          animation: `fillProgress ${SLIDE_INTERVAL_MS}ms linear forwards`
                         }}
                       />
                     )}
@@ -1616,7 +1605,7 @@ if (isAdminRoute) {
               <Gem className="w-3.5 h-3.5 text-amber-500" />
               {lang === "ka" ? "კატეგორია:" : "Category:"}
             </span>
-            {["ყველა", ...(siteSettings.categories || [])].map((cat) => (
+            {[ALL, ...(siteSettings.categories || [])].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
@@ -1628,7 +1617,7 @@ if (isAdminRoute) {
                     : "bg-stone-100 text-stone-700 hover:bg-stone-200"
                 }`}
               >
-                {cat === "ყველა" && lang === "en" ? "All" : cat}
+                {cat === ALL  && lang === "en" ? "All" : cat}
               </button>
             ))}
           </div>
@@ -1639,7 +1628,7 @@ if (isAdminRoute) {
                 <SlidersHorizontal className="w-3.5 h-3.5 text-amber-500" />
                 {lang === "ka" ? "მეტალი:" : "Metal:"}
               </span>
-              {["ყველა", ...(siteSettings.metals || [])].map((metal) => (
+              {[ALL, ...(siteSettings.metals || [])].map((metal) => (
                 <button
                   key={metal}
                   onClick={() => setSelectedMetal(metal)}
@@ -1651,7 +1640,7 @@ if (isAdminRoute) {
                       : "border-stone-200 text-stone-600 hover:border-stone-300"
                   }`}
                 >
-                  {metal === "ყველა" && lang === "en" ? "All" : metal}
+                  {metal === ALL && lang === "en" ? "All" : metal}
                 </button>
               ))}
             </div>
@@ -2252,7 +2241,7 @@ if (isAdminRoute) {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setActiveImageIndex((prev) => (prev - 1 + (selectedProduct.images?.length || 0)) % (selectedProduct.images?.length || 0));
+                 setActiveImageIndex((prev) => (prev - 1 + (selectedProduct.images?.length || 1)) % (selectedProduct.images?.length || 1));
                 }}
                 className="p-3 rounded-full bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
               >
@@ -2264,7 +2253,7 @@ if (isAdminRoute) {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setActiveImageIndex((prev) => (prev + 1) % (selectedProduct.images?.length || 0));
+                  setActiveImageIndex((prev) => (prev + 1) % (selectedProduct.images?.length || 1));
                 }}
                 className="p-3 rounded-full bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
               >
