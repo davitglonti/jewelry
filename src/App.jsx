@@ -506,58 +506,92 @@ useEffect(() => {
   // ==========================================
   // 4. თუ მომხმარებელი არის /admin გვერდზე
   // ==========================================
-  if (isAdminRoute) {
-    return (
-      <div className={`min-h-screen w-full transition-colors duration-300 ${darkMode ? "bg-[#0c0b0a] text-[#f5f0e6]" : "bg-[#faf7f2] text-[#1c1917]"}`}>
-        <header className={`sticky top-0 z-40 px-4 sm:px-8 py-4 border-b backdrop-blur-md flex items-center justify-between ${darkMode ? "bg-[#121110]/95 border-stone-800" : "bg-white/95 border-stone-200"}`}>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-amber-500/15 text-amber-500 flex items-center justify-center">
-              <Shield className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="font-serif text-lg sm:text-2xl font-semibold">
-                {siteSettings.brandName} — {lang === "ka" ? "ადმინ პანელი" : "Admin Panel"}
-              </h1>
-              <span className="text-xs opacity-60">matare.store/admin</span>
-            </div>
-            {saveMessage && (
-              <span className="ml-3 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-medium">
-                {saveMessage}
-              </span>
-            )}
+  
+if (isAdminRoute) {
+  return (
+    <div
+      className={`min-h-screen w-full min-w-0 overflow-x-hidden transition-colors duration-300 ${
+        darkMode
+          ? "bg-[#0c0b0a] text-[#f5f0e6]"
+          : "bg-[#faf7f2] text-[#1c1917]"
+      }`}
+    >
+      <header
+        className={`sticky top-0 z-40 w-full min-w-0 px-3 sm:px-8 py-3 sm:py-4 border-b backdrop-blur-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${
+          darkMode
+            ? "bg-[#121110]/95 border-stone-800"
+            : "bg-white/95 border-stone-200"
+        }`}
+      >
+        {/* ბრენდი და ადმინ პანელის სათაური */}
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-full bg-amber-500/15 text-amber-500 flex items-center justify-center">
+            <Shield className="w-5 h-5" />
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <h1 className="font-serif text-base sm:text-2xl font-semibold leading-tight break-words">
+              {siteSettings.brandName} —{" "}
+              {lang === "ka" ? "ადმინ პანელი" : "Admin Panel"}
+            </h1>
+
+            <span className="text-xs opacity-60">
+              matare.store/admin
+            </span>
+          </div>
+
+          {saveMessage && (
+            <span className="hidden sm:inline-block ml-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-medium">
+              {saveMessage}
+            </span>
+          )}
+        </div>
+
+        {/* ღილაკები — მობილურზე ეკრანის სიგანეში ეტევა */}
+        <div className="flex items-center gap-2 w-full sm:w-auto sm:shrink-0">
+          {/* მუქი და ნათელი რეჟიმი */}
+          <button
+            type="button"
+            onClick={() => setDarkMode(!darkMode)}
+            aria-label={darkMode ? "Light mode" : "Dark mode"}
+            className={`p-2.5 shrink-0 rounded-full border transition-all ${
+              darkMode
+                ? "border-stone-800 bg-stone-900 text-amber-400"
+                : "border-stone-200 bg-stone-100 text-stone-700"
+            }`}
+          >
+            {darkMode ? (
+              <Sun className="w-4 h-4" />
+            ) : (
+              <Moon className="w-4 h-4" />
+            )}
+          </button>
+
+          {/* საიტზე გადასვლა */}
+          <a
+            href="/"
+            className="flex-1 sm:flex-none min-w-0 px-2.5 sm:px-4 py-2.5 rounded-full bg-stone-800 hover:bg-stone-700 text-white text-xs font-medium flex items-center justify-center gap-1.5 text-center transition-all"
+          >
+            <ArrowLeft className="w-4 h-4 shrink-0" />
+
+            <span>
+              {lang === "ka" ? "საიტზე გადასვლა" : "Back to Store"}
+            </span>
+          </a>
+
+          {/* გამოსვლა */}
+          {isAdminAuthenticated && (
             <button
-              onClick={() => setDarkMode(!darkMode)}
-              className={`p-2.5 rounded-full border transition-all ${
-                darkMode ? "border-stone-800 bg-stone-900 text-amber-400" : "border-stone-200 bg-stone-100 text-stone-700"
-              }`}
+              type="button"
+              onClick={() => signOut(auth)}
+              className="shrink-0 px-3 sm:px-4 py-2.5 rounded-full border border-stone-600 text-xs font-medium hover:bg-stone-800 hover:text-white transition-all"
             >
-              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {lang === "ka" ? "გასვლა" : "Logout"}
             </button>
-
-            <a
-              href="/"
-              className="px-4 py-2.5 rounded-full bg-stone-800 hover:bg-stone-700 text-white text-xs font-medium flex items-center gap-2 transition-all"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>{lang === "ka" ? "საიტზე გადასვლა" : "Back to Store"}</span>
-
-            </a>
-            {isAdminAuthenticated && (
-              <button
-                onClick={() => signOut(auth)}
-                className="px-4 py-2.5 rounded-full border border-stone-600 text-xs font-medium hover:bg-stone-800 hover:text-white transition-all"
-              >
-                {lang === "ka" ? "გასვლა" : "Logout"}
-              </button>
-            )}
-            
-          </div>
-        </header>
-
-        <main className="max-w-6xl mx-auto p-4 sm:p-8">
+          )}
+        </div>
+      </header>
+      <main className="w-full min-w-0 max-w-6xl mx-auto p-3 sm:p-8">
           {!authChecked ? (
   <div className="text-center py-20 opacity-60 text-sm">იტვირთება...</div>
 ) : !isAdminAuthenticated ? (
@@ -849,42 +883,44 @@ useEffect(() => {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between pt-3">
-                        <label className="flex items-center gap-2 text-xs cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={editingProduct.exclusive}
-                            onChange={(e) => setEditingProduct({ ...editingProduct, exclusive: e.target.checked })}
-                            className="accent-amber-500 w-4 h-4"
-                          />
-                          <span>ექსკლუზიური მოდელი</span>
-                        </label>
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-3">
+                      {/* ექსკლუზიური მოდელის ჩექბოქსი */}
+                      <label className="flex items-center gap-2 text-xs cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={editingProduct.exclusive}
+                          onChange={(e) => setEditingProduct({ ...editingProduct, exclusive: e.target.checked })}
+                          className="accent-amber-500 w-4 h-4"
+                        />
+                        <span>ექსკლუზიური მოდელი</span>
+                      </label>
 
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setEditingProduct(null)}
-                            className="px-4 py-2 rounded-xl border border-stone-600 text-xs"
-                          >
-                            გაუქმება
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const exists = products.some((p) => p.id === editingProduct.id);
-                              const updated = exists
-                                ? products.map((p) => (p.id === editingProduct.id ? editingProduct : p))
-                                : [editingProduct, ...products];
-                              setProducts(updated);
-                              syncData(siteSettings, updated);
-                              setEditingProduct(null);
-                            }}
-                            className="px-5 py-2 rounded-xl bg-amber-500 text-black font-semibold text-xs"
-                          >
-                            შენახვა
-                          </button>
-                        </div>
+                      {/* ღილაკებისკონტეინერი */}
+                      <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setEditingProduct(null)}
+                          className="flex-1 sm:flex-none px-4 py-2 rounded-xl border border-stone-600 text-xs text-center"
+                        >
+                          გაუქმება
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const exists = products.some((p) => p.id === editingProduct.id);
+                            const updated = exists
+                              ? products.map((p) => (p.id === editingProduct.id ? editingProduct : p))
+                              : [editingProduct, ...products];
+                            setProducts(updated);
+                            syncData(siteSettings, updated);
+                            setEditingProduct(null);
+                          }}
+                          className="flex-1 sm:flex-none px-5 py-2 rounded-xl bg-amber-500 text-black font-semibold text-xs text-center"
+                        >
+                          შენახვა
+                        </button>
                       </div>
+                    </div>
                     </div>
                   )}
 
@@ -1202,6 +1238,9 @@ useEffect(() => {
                             }}
                             className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
                           />
+                          
+
+
                         </div>
                       </div>
 
@@ -1376,7 +1415,7 @@ useEffect(() => {
                       <label className="opacity-70 block mb-1">ტელეფონი:</label>
                       <input
                         type="text"
-                        value={siteSettings.phone}
+                        value={siteSettings.phone || ""}
                         onChange={(e) => setSiteSettings({ ...siteSettings, phone: e.target.value })}
                         className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
                       />
@@ -1385,7 +1424,7 @@ useEffect(() => {
                       <label className="opacity-70 block mb-1">WhatsApp ნომერი (მაგ: 995555000000):</label>
                       <input
                         type="text"
-                        value={siteSettings.whatsapp}
+                        value={siteSettings.whatsapp || ""}
                         onChange={(e) => setSiteSettings({ ...siteSettings, whatsapp: e.target.value })}
                         className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
                       />
@@ -1394,7 +1433,7 @@ useEffect(() => {
                       <label className="opacity-70 block mb-1">Messenger ლინკი (მაგ: https://m.me/yourpage):</label>
                       <input
                         type="text"
-                        value={siteSettings.messenger}
+                        value={siteSettings.messenger || ""}
                         onChange={(e) => setSiteSettings({ ...siteSettings, messenger: e.target.value })}
                         className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
                       />
@@ -1403,7 +1442,7 @@ useEffect(() => {
                       <label className="opacity-70 block mb-1">მისამართი:</label>
                       <input
                         type="text"
-                        value={siteSettings.address}
+                        value={siteSettings.address || ""}
                         onChange={(e) => setSiteSettings({ ...siteSettings, address: e.target.value })}
                         className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
                       />
@@ -1412,7 +1451,7 @@ useEffect(() => {
                       <label className="opacity-70 block mb-1">სამუშაო საათები:</label>
                       <input
                         type="text"
-                        value={siteSettings.hours}
+                        value={siteSettings.hours || ""}
                         onChange={(e) => setSiteSettings({ ...siteSettings, hours: e.target.value })}
                         className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
                       />
@@ -1421,8 +1460,28 @@ useEffect(() => {
                       <label className="opacity-70 block mb-1">საავტორო უფლებების ტექსტი (Footer):</label>
                       <input
                         type="text"
-                        value={siteSettings.copyright}
+                        value={siteSettings.copyright || ""}
                         onChange={(e) => setSiteSettings({ ...siteSettings, copyright: e.target.value })}
+                        className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                      />
+                    </div>
+                    <div>
+                      <label className="opacity-70 block mb-1">Instagram ლინკი:</label>
+                      <input
+                        type="text"
+                        value={siteSettings.instagram || ""}
+                        onChange={(e) => setSiteSettings({ ...siteSettings, instagram: e.target.value })}
+                        placeholder="https://instagram.com/..."
+                        className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                      />
+                    </div>
+                    <div>
+                      <label className="opacity-70 block mb-1">Facebook ლინკი:</label>
+                      <input
+                        type="text"
+                        value={siteSettings.facebook || ""}
+                        onChange={(e) => setSiteSettings({ ...siteSettings, facebook: e.target.value })}
+                        placeholder="https://facebook.com/..."
                         className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
                       />
                     </div>
@@ -2403,7 +2462,7 @@ useEffect(() => {
       )}
 
       {/* რჩეულების მოდალი */}
-      {showFavoritesModal && (
+     {showFavoritesModal && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
           <div className={`w-full max-w-2xl rounded-3xl border p-6 ${darkMode ? "bg-[#141210] border-stone-800 text-white" : "bg-white border-stone-200 text-stone-900"}`}>
             <div className="flex items-center justify-between pb-4 border-b border-stone-500/20">
@@ -2419,11 +2478,13 @@ useEffect(() => {
                 products
                   .filter((p) => favorites.includes(p.id))
                   .map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 rounded-2xl border border-stone-500/15">
-                      <div className="flex items-center gap-3">
-                        <img src={item.images?.[0]} alt="" className="w-14 h-14 rounded-xl object-cover" />
-                        <div>
-                          <div className="font-serif font-medium">{item.name}</div>
+                    <div key={item.id} className="flex items-center justify-between gap-3 p-3 rounded-2xl border border-stone-500/15">
+                      {/* მთავარი მარცხენა მხარე (სურათი და ტექსტი) */}
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <img src={item.images?.[0]} alt="" className="w-14 h-14 rounded-xl object-cover shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          {/* truncate უზრუნველყოფს რომ გრძელი სახელი გაიკვეცოს და ბოლოში სამი წერტილი დაისვას */}
+                          <div className="font-serif font-medium truncate">{item.name}</div>
                           <div className="flex items-center gap-2">
                             {item.oldPrice && (
                               <span className="text-xs line-through opacity-50">{item.oldPrice}</span>
@@ -2432,7 +2493,9 @@ useEffect(() => {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+
+                      {/* მარჯვენა მხარე (ღილაკები) არ შეიცვლება */}
+                      <div className="flex items-center gap-2 shrink-0">
                         <button
                           onClick={() => {
                             setShowFavoritesModal(false);
