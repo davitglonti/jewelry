@@ -1,17 +1,32 @@
-import React, { useState, useEffect,useRef  } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  Sparkles, Shield, Moon, Sun, Heart, Search, Plus, Trash2, Edit3,
-  ChevronLeft, ChevronRight, ZoomIn, X, Phone, MapPin, Clock,
-  Instagram, Facebook, MessageCircle, Send, Check, Upload, Link as LinkIcon,
-  Globe, Lock, Eye, SlidersHorizontal, Award, Gem, Share2, Menu, ArrowLeft
+  Search, Trash2, ChevronLeft, ChevronRight, ZoomIn, X,
+  MessageCircle, Send, Check, Gem, SlidersHorizontal, Eye, Share2, ArrowLeft
 } from 'lucide-react';
-import { doc, setDoc, onSnapshot } from 'firebase/firestore';
-import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
-import { db, auth } from './lib/firebase';
+import { pick } from './utils/i18n';
 import { DEFAULT_SETTINGS } from './data/defaultSettings';
-import { DEFAULT_PRODUCTS } from './data/defaultProducts';
-import { ALL, SLIDE_INTERVAL_MS, MAX_IMAGE_WIDTH, IMAGE_QUALITY } from './constants';
+import { ALL, SLIDE_INTERVAL_MS } from './constants';
+import { useStore } from './context/StoreContext';
+import { getWhatsAppLink, shareProductLink } from './utils/shareUtils';
+import AdminPage from './pages/AdminPage';
+
+// ახალი გამოყოფილი კომპონენტები:
+import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
+import HeroCarousel from './components/store/HeroCarousel';
+import CraftsmanshipSection from './components/store/CraftsmanshipSection';
+
 export default function App() {
+  const {
+    darkMode, setDarkMode,
+    lang, setLang,
+    siteSettings,
+    products,
+    favorites, toggleFavorite,
+    inquiries, setInquiries,
+    syncData
+  } = useStore();
+
   const [isAdminRoute, setIsAdminRoute] = useState(() => {
     const path = window.location.pathname.replace(/\/+$/, "");
     return path === "/admin";
@@ -25,13 +40,6 @@ export default function App() {
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
-
-  const [darkMode, setDarkMode] = useState(true);
-  const [lang, setLang] = useState("ka");
-  const [siteSettings, setSiteSettings] = useState(DEFAULT_SETTINGS);
-  const [products, setProducts] = useState(DEFAULT_PRODUCTS);
-  const [favorites, setFavorites] = useState([]);
-  const [inquiries, setInquiries] = useState([]);
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -58,19 +66,6 @@ export default function App() {
   const [inquirySent, setInquirySent] = useState(false);
   const [phoneError, setPhoneError] = useState("");
 
-  // ადმინ ავტორიზაცია Email/Password-ით
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
-  const [adminEmail, setAdminEmail] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
-  const [loginError, setLoginError] = useState("");
-  const [adminTab, setAdminTab] = useState("catalog");
-
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [imageUrlInput, setImageUrlInput] = useState("");
-  const [newCategoryInput, setNewCategoryInput] = useState("");
-  const [newMetalInput, setNewMetalInput] = useState("");
-  const [saveMessage, setSaveMessage] = useState("");
-
   useEffect(() => {
     if (!lightboxImage || !selectedProduct?.images) return;
     const handleKeyDown = (e) => {
@@ -85,73 +80,6 @@ export default function App() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lightboxImage, selectedProduct]);
-
-  useEffect(() => {
-    const savedSettings = localStorage.getItem("aurelia_settings_v2");
-    const savedProducts = localStorage.getItem("aurelia_products_v2");
-    const savedFavs = localStorage.getItem("aurelia_favs_v2");
-    const savedInquiries = localStorage.getItem("aurelia_inquiries_v2");
-
-    if (savedSettings) {
-      try { setSiteSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) }); } catch (e) {}
-    }
-    if (savedProducts) {
-      try { setProducts(JSON.parse(savedProducts)); } catch (e) {}
-    }
-    if (savedFavs) {
-      try { setFavorites(JSON.parse(savedFavs)); } catch (e) {}
-    }
-    if (savedInquiries) {
-      try { setInquiries(JSON.parse(savedInquiries)); } catch (e) {}
-    }
-
-    if (db) {
-      const unsub = onSnapshot(doc(db, "aurelia", "storeData"), (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (data.settings) setSiteSettings({ ...DEFAULT_SETTINGS, ...data.settings });
-          if (data.products) setProducts(data.products);
-          if (data.inquiries) setInquiries(data.inquiries);
-        }
-      });
-      return () => unsub();
-    }
-  }, []);
-
-  const syncData = async (newSettings, newProducts, newInquiries = inquiries) => {
-    localStorage.setItem("aurelia_settings_v2", JSON.stringify(newSettings));
-    localStorage.setItem("aurelia_products_v2", JSON.stringify(newProducts));
-    localStorage.setItem("aurelia_inquiries_v2", JSON.stringify(newInquiries));
-
-    if (db) {
-      try {
-        await setDoc(doc(db, "aurelia", "storeData"), {
-          settings: newSettings,
-          products: newProducts,
-          inquiries: newInquiries,
-          updatedAt: new Date().toISOString()
-        });
-      } catch (e) {
-        console.error("Firebase შენახვის შეცდომა:", e);
-      }
-    }
-    setSaveMessage(lang === "ka" ? "ცვლილებები შენახულია!" : "Changes saved!");
-    setTimeout(() => setSaveMessage(""), 2500);
-  };
-
-const [authChecked, setAuthChecked] = useState(false);
-
-useEffect(() => {
-  if (!auth) {
-    setAuthChecked(true);
-    return;
-  }
-  const unsub = onAuthStateChanged(auth, (user) => {
-    setIsAdminAuthenticated(!!user);
-    setAuthChecked(true);
-  });
-  return () => unsub();
-}, []);
 
   const initialItemCode = useRef(new URLSearchParams(window.location.search).get("item"));
 
@@ -185,35 +113,6 @@ useEffect(() => {
     }
   }, [selectedProduct, isAdminRoute]);
 
-  const handleFileUpload = (file, callback) => {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-      const scale = img.width > MAX_IMAGE_WIDTH ? MAX_IMAGE_WIDTH / img.width : 1;
-     
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-       const compressed = canvas.toDataURL("image/jpeg", IMAGE_QUALITY);
-        callback(compressed);
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const toggleFavorite = (id) => {
-    const updated = favorites.includes(id)
-      ? favorites.filter((item) => item !== id)
-      : [...favorites, id];
-    setFavorites(updated);
-    localStorage.setItem("aurelia_favs_v2", JSON.stringify(updated));
-  };
-
   const openProductModal = (product) => {
     setSelectedProduct(product);
     setActiveImageIndex(0);
@@ -227,39 +126,6 @@ useEffect(() => {
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     setZoomPos({ x, y });
-  };
-
-  const handleShareProduct = async (product) => {
-    const code = product.sku || product.id;
-    const shareUrl = `${window.location.origin}/?item=${encodeURIComponent(code)}`;
-    const title = lang === "ka" ? product.name : (product.nameEn || product.name);
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title,
-          text: `${title} (${product.sku}) - ${product.price}`,
-          url: shareUrl
-        });
-        return;
-      } catch (err) {}
-    }
-
-    navigator.clipboard.writeText(shareUrl);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2500);
-  };
-
-  const getWhatsAppLink = (product) => {
-    const cleanPhone = (siteSettings.whatsapp || "995555000000").replace(/[^0-9]/g, "");
-    const itemUrl = `${window.location.origin}/?item=${encodeURIComponent(product.sku || product.id)}`;
-    const priceText = product.oldPrice ? `${product.price} (ძველი ფასი: ${product.oldPrice})` : product.price;
-    const priceTextEn = product.oldPrice ? `${product.price} (Was: ${product.oldPrice})` : product.price;
-
-    const message = lang === "ka"
-      ? `გამარჯობა! მაინტერესებს სამკაული: ${product.name} (კოდი: ${product.sku})${selectedSize ? `, ზომა: ${selectedSize}` : ""}, ფასი: ${priceText}\nბმული: ${itemUrl}`
-      : `Hello! I am interested in: ${product.nameEn || product.name} (SKU: ${product.sku})${selectedSize ? `, Size: ${selectedSize}` : ""}, Price: ${priceTextEn}\nLink: ${itemUrl}`;
-    return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
   };
 
   const handleSendInquiry = (e) => {
@@ -305,1271 +171,48 @@ useEffect(() => {
   };
 
   const filteredProducts = products.filter((item) => {
-  const matchesCat = selectedCategory === ALL || item.category === selectedCategory;
-const matchesMetal = selectedMetal === ALL || item.metal === selectedMetal;
-  const matchesExcl = !onlyExclusive || item.exclusive;
-  const matchesSale = !onlyOnSale || (item.oldPrice && item.oldPrice.trim() !== ""); // <--- ესეც
-  const q = searchQuery.toLowerCase();
-  const matchesSearch =
-    !q ||
-    item.name?.toLowerCase().includes(q) ||
-    item.nameEn?.toLowerCase().includes(q) ||
-    item.sku?.toLowerCase().includes(q) ||
-    item.stones?.toLowerCase().includes(q);
-  return matchesCat && matchesMetal && matchesExcl && matchesSale && matchesSearch;
-});
+    const matchesCat = selectedCategory === ALL || item.category === selectedCategory;
+    const matchesMetal = selectedMetal === ALL || item.metal === selectedMetal;
+    const matchesExcl = !onlyExclusive || item.exclusive;
+    const matchesSale = !onlyOnSale || (item.oldPrice && item.oldPrice.trim() !== "");
+    const q = searchQuery.toLowerCase();
+    const matchesSearch =
+      !q ||
+      item.name?.toLowerCase().includes(q) ||
+      item.nameEn?.toLowerCase().includes(q) ||
+      item.sku?.toLowerCase().includes(q) ||
+      item.stones?.toLowerCase().includes(q);
+    return matchesCat && matchesMetal && matchesExcl && matchesSale && matchesSearch;
+  });
 
   const slides = siteSettings.heroSlides?.length > 0 ? siteSettings.heroSlides : DEFAULT_SETTINGS.heroSlides;
-  const activeSlide = slides[currentSlide % slides.length] || slides[0];
 
-  useEffect(() => {
-    if (!slides || slides.length <= 1) return;
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, SLIDE_INTERVAL_MS);
-    return () => clearInterval(timer);
-  }, [slides.length]);
-
-  // ==========================================
-  // 4. თუ მომხმარებელი არის /admin გვერდზე
-  // ==========================================
-  
-if (isAdminRoute) {
-  return (
-    <div
-      className={`min-h-screen w-full min-w-0 overflow-x-hidden transition-colors duration-300 ${
-        darkMode
-          ? "bg-[#0c0b0a] text-[#f5f0e6]"
-          : "bg-[#faf7f2] text-[#1c1917]"
-      }`}
-    >
-      <header
-        className={`sticky top-0 z-40 w-full min-w-0 px-3 sm:px-8 py-3 sm:py-4 border-b backdrop-blur-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${
-          darkMode
-            ? "bg-[#121110]/95 border-stone-800"
-            : "bg-white/95 border-stone-200"
-        }`}
-      >
-        {/* ბრენდი და ადმინ პანელის სათაური */}
-        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto min-w-0">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-full bg-amber-500/15 text-amber-500 flex items-center justify-center">
-            <Shield className="w-5 h-5" />
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <h1 className="font-serif text-base sm:text-2xl font-semibold leading-tight break-words">
-              {siteSettings.brandName} —{" "}
-              {lang === "ka" ? "ადმინ პანელი" : "Admin Panel"}
-            </h1>
-
-            <span className="text-xs opacity-60">
-              matare.store/admin
-            </span>
-          </div>
-
-          {saveMessage && (
-            <span className="hidden sm:inline-block ml-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-medium">
-              {saveMessage}
-            </span>
-          )}
-        </div>
-
-        {/* ღილაკები — მობილურზე ეკრანის სიგანეში ეტევა */}
-        <div className="flex items-center gap-2 w-full sm:w-auto sm:shrink-0">
-          {/* მუქი და ნათელი რეჟიმი */}
-          <button
-            type="button"
-            onClick={() => setDarkMode(!darkMode)}
-            aria-label={darkMode ? "Light mode" : "Dark mode"}
-            className={`p-2.5 shrink-0 rounded-full border transition-all ${
-              darkMode
-                ? "border-stone-800 bg-stone-900 text-amber-400"
-                : "border-stone-200 bg-stone-100 text-stone-700"
-            }`}
-          >
-            {darkMode ? (
-              <Sun className="w-4 h-4" />
-            ) : (
-              <Moon className="w-4 h-4" />
-            )}
-          </button>
-
-          {/* საიტზე გადასვლა */}
-          <a
-            href="/"
-            className="flex-1 sm:flex-none min-w-0 px-2.5 sm:px-4 py-2.5 rounded-full bg-stone-800 hover:bg-stone-700 text-white text-xs font-medium flex items-center justify-center gap-1.5 text-center transition-all"
-          >
-            <ArrowLeft className="w-4 h-4 shrink-0" />
-
-            <span>
-              {lang === "ka" ? "საიტზე გადასვლა" : "Back to Store"}
-            </span>
-          </a>
-
-          {/* გამოსვლა */}
-          {isAdminAuthenticated && (
-            <button
-              type="button"
-              onClick={() => signOut(auth)}
-              className="shrink-0 px-3 sm:px-4 py-2.5 rounded-full border border-stone-600 text-xs font-medium hover:bg-stone-800 hover:text-white transition-all"
-            >
-              {lang === "ka" ? "გასვლა" : "Logout"}
-            </button>
-          )}
-        </div>
-      </header>
-      <main className="w-full min-w-0 max-w-6xl mx-auto p-3 sm:p-8">
-          {!authChecked ? (
-  <div className="text-center py-20 opacity-60 text-sm">იტვირთება...</div>
-) : !isAdminAuthenticated ? (
-            <div className={`p-10 max-w-md mx-auto mt-16 rounded-3xl border text-center space-y-5 ${darkMode ? "bg-[#121110] border-stone-800" : "bg-white border-stone-200 shadow-lg"}`}>
-              <div className="w-14 h-14 rounded-full bg-amber-500/15 text-amber-500 flex items-center justify-center mx-auto">
-                <Lock className="w-6 h-6" />
-              </div>
-              <h3 className="font-serif text-2xl">ადმინისტრატორის ავტორიზაცია</h3>
-              <p className="text-xs opacity-65">შეიყვანეთ თქვენი ელ-ფოსტა და პაროლი</p>
-              
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  if (!auth) {
-                    setLoginError("Firebase Auth არ არის აქტიური!");
-                    return;
-                  }
-                  try {
-                    await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
-                    setLoginError("");
-                  }  catch (err) {
-                    setLoginError("არასწორი ელ-ფოსტა ან პაროლი!");
-                  }
-                }}
-                className="space-y-3"
-              >
-                <input
-                  type="email"
-                  value={adminEmail}
-                  onChange={(e) => setAdminEmail(e.target.value)}
-                  placeholder="ელფოსტა"
-                  className={`w-full px-4 py-3 rounded-xl text-xs border outline-none ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-100 border-stone-300"}`}
-                />
-                <input
-                  type="password"
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                  placeholder="პაროლი..."
-                  className={`w-full px-4 py-3 rounded-xl text-xs border outline-none ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-100 border-stone-300"}`}
-                />
-                {loginError && <p className="text-xs text-red-400">{loginError}</p>}
-                <button type="submit" className="w-full py-3 rounded-xl bg-amber-500 text-black font-semibold text-sm hover:brightness-110 transition-all">
-                  შესვლა
-                </button>
-              </form>
-            </div>
-          ) : (
-            <div className={`p-6 rounded-3xl border space-y-6 ${darkMode ? "bg-[#121110] border-stone-800" : "bg-white border-stone-200 shadow-sm"}`}>
-              <div className="flex flex-wrap gap-2 pb-4 border-b border-stone-500/20">
-                {[
-                  { id: "catalog", label: "1. კატალოგის მართვა" },
-                  { id: "categories", label: "2. მეტალები & კატეგორიები" },
-                  { id: "carousel", label: "3. ზედა კარუსელი (Hero)" },
-                  { id: "brand", label: "4. ლოგო & სათაურები" },
-                  { id: "craft", label: "5. ოსტატობის სექცია" },
-                  { id: "footer", label: "6. კონტაქტი & ქვედა პანელი" },
-                  { id: "inquiries", label: `7. შემოსული მოთხოვნები (${inquiries.length})` }
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setAdminTab(tab.id)}
-                    className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
-                      adminTab === tab.id
-                        ? "bg-amber-500 text-black"
-                        : darkMode
-                        ? "bg-stone-900 text-stone-300 hover:bg-stone-800"
-                        : "bg-stone-100 text-stone-700 hover:bg-stone-200"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              {adminTab === "catalog" && (
-                <div className="space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <h3 className="font-serif text-xl">სამკაულების სია ({products.length})</h3>
-                    <button
-                      onClick={() =>
-                        setEditingProduct({
-                          id: "item-" + Date.now(),
-                          sku: "AUR-" + Math.floor(100 + Math.random() * 900),
-                          name: "",
-                          nameEn: "",
-                          category: siteSettings.categories?.[0] || "ბეჭდები",
-                          metal: siteSettings.metals?.[0] || "ყვითელი ოქრო",
-                          karat: "750° (18K)",
-                          weight: "",
-                          stones: "",
-                          price: "",
-                          oldPrice: "",
-                          exclusive: false,
-                          sizes: ["16.5", "17.0", "17.5"],
-                          description: "",
-                          descriptionEn: "",
-                          images: []
-                        })
-                      }
-                      className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-500 text-black text-xs font-semibold flex items-center justify-center gap-1.5"
-                    >
-                      <Plus className="w-4 h-4" />
-                      ახალი სამკაულის დამატება
-                    </button>
-                  </div>
-
-                  {editingProduct && (
-                    <div className={`p-5 rounded-2xl border space-y-4 ${darkMode ? "bg-stone-900/90 border-amber-500/40" : "bg-stone-50 border-amber-500"}`}>
-                      <h4 className="font-serif text-lg text-amber-500">სამკაულის რედაქტირება / დამატება</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                        <input
-                          type="text"
-                          placeholder="დასახელება (ქართულად)"
-                          value={editingProduct.name}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
-                          className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
-                        />
-                        <input
-                          type="text"
-                          placeholder="Name (English)"
-                          value={editingProduct.nameEn || ""}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, nameEn: e.target.value })}
-                          className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
-                        />
-                        <input
-                          type="text"
-                          placeholder="კოდი (მაგ: AUR-105)"
-                          value={editingProduct.sku}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, sku: e.target.value })}
-                          className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
-                        />
-                        <select
-                          value={editingProduct.category}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
-                          className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
-                        >
-                          {(siteSettings.categories || []).map((c) => (
-                            <option key={c} value={c}>{c}</option>
-                          ))}
-                        </select>
-                        <select
-                          value={editingProduct.metal}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, metal: e.target.value })}
-                          className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
-                        >
-                          {(siteSettings.metals || []).map((m) => (
-                            <option key={m} value={m}>{m}</option>
-                          ))}
-                        </select>
-                        <input
-                          type="text"
-                          placeholder="ახალი / მიმდინარე ფასი (მაგ: 4,500 ₾)"
-                          value={editingProduct.price}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, price: e.target.value })}
-                          className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-amber-500/50" : "bg-white border-amber-500"}`}
-                        />
-                        <input
-                          type="text"
-                          placeholder="ძველი ფასი ფასდაკლებისას (მაგ: 5,200 ₾)"
-                          value={editingProduct.oldPrice || ""}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, oldPrice: e.target.value })}
-                          className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
-                        />
-                        <input
-                          type="text"
-                          placeholder="სინჯი (მაგ: 750° / 18K)"
-                          value={editingProduct.karat}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, karat: e.target.value })}
-                          className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
-                        />
-                        <input
-                          type="text"
-                          placeholder="წონა (მაგ: 4.5 გრ)"
-                          value={editingProduct.weight}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, weight: e.target.value })}
-                          className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
-                        />
-                        <input
-                          type="text"
-                          placeholder="ქვები (მაგ: ბრილიანტი 0.5ct)"
-                          value={editingProduct.stones}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, stones: e.target.value })}
-                          className={`p-2.5 rounded-xl border sm:col-span-3 ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
-                        />
-                      </div>
-
-                      <div className="text-xs">
-                        <label className="block opacity-70 mb-1">ხელმისაწვდომი ზომები (გამოყავით მძიმით):</label>
-                        <input
-                          type="text"
-                          value={(editingProduct.sizes || []).join(", ")}
-                          onChange={(e) =>
-                            setEditingProduct({
-                              ...editingProduct,
-                              sizes: e.target.value.split(",").map((s) => s.trim()).filter(Boolean)
-                            })
-                          }
-                          placeholder="16.0, 16.5, 17.0, 17.5"
-                          className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <textarea
-                          rows={2}
-                          placeholder="აღწერა (ქართულად)"
-                          value={editingProduct.description}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
-                          className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
-                        />
-                        <textarea
-                          rows={2}
-                          placeholder="Description (English)"
-                          value={editingProduct.descriptionEn || ""}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, descriptionEn: e.target.value })}
-                          className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
-                        />
-                      </div>
-
-                      <div className="space-y-2 text-xs">
-                        <label className="font-medium text-amber-500 block">
-                          სამკაულის ფოტოები (შეგიძლიათ ატვირთოთ რამდენიმე ფოტო ან ჩასვათ ლინკი):
-                        </label>
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                          <label className="px-4 py-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 cursor-pointer flex items-center justify-center gap-2 shrink-0">
-                            <Upload className="w-4 h-4" />
-                            ფოტოს ატვირთვა მოწყობილობიდან
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                handleFileUpload(file, (base64) => {
-                                  setEditingProduct({
-                                    ...editingProduct,
-                                    images: [...(editingProduct.images || []), base64]
-                                  });
-                                });
-                              }}
-                            />
-                          </label>
-
-                          <div className="flex flex-col sm:flex-row items-center gap-2 flex-1 w-full">
-                            <input
-                              type="url"
-                              value={imageUrlInput}
-                              onChange={(e) => setImageUrlInput(e.target.value)}
-                              placeholder="ან ჩასვით ფოტოს ლინკი (https://...)"
-                              className={`w-full sm:flex-1 p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (!imageUrlInput.trim()) return;
-                                setEditingProduct({
-                                  ...editingProduct,
-                                  images: [...(editingProduct.images || []), imageUrlInput.trim()]
-                                });
-                                setImageUrlInput("");
-                              }}
-                              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-stone-700 text-white flex items-center justify-center gap-1 shrink-0"
-                            >
-                              <LinkIcon className="w-3.5 h-3.5" />
-                              დამატება
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-3 pt-2">
-                          {(editingProduct.images || []).map((img, i) => (
-                            <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-amber-500/40">
-                              <img src={img} alt="" className="w-full h-full object-cover" />
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setEditingProduct({
-                                    ...editingProduct,
-                                    images: editingProduct.images.filter((_, idx) => idx !== i)
-                                  })
-                                }
-                                className="absolute top-1 right-1 p-1 rounded-full bg-red-600 text-white"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-3">
-                        <label className="flex items-center gap-2 text-xs cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={editingProduct.exclusive}
-                            onChange={(e) => setEditingProduct({ ...editingProduct, exclusive: e.target.checked })}
-                            className="accent-amber-500 w-4 h-4"
-                          />
-                          <span>ექსკლუზიური მოდელი</span>
-                        </label>
-
-                        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                          <button
-                            type="button"
-                            onClick={() => setEditingProduct(null)}
-                            className="flex-1 sm:flex-none px-4 py-2 rounded-xl border border-stone-600 text-xs text-center"
-                          >
-                            გაუქმება
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const exists = products.some((p) => p.id === editingProduct.id);
-                              const updated = exists
-                                ? products.map((p) => (p.id === editingProduct.id ? editingProduct : p))
-                                : [editingProduct, ...products];
-                              setProducts(updated);
-                              syncData(siteSettings, updated);
-                              setEditingProduct(null);
-                            }}
-                            className="flex-1 sm:flex-none px-5 py-2 rounded-xl bg-amber-500 text-black font-semibold text-xs text-center"
-                          >
-                            შენახვა
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {products.map((p) => (
-                      <div key={p.id} className="p-3.5 rounded-2xl border border-stone-500/20 flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <img src={p.images?.[0]} alt="" className="w-14 h-14 rounded-xl object-cover bg-stone-800" />
-                          <div>
-                            <div className="font-serif font-medium">{p.name}</div>
-                            <div className="text-xs opacity-60">{p.sku} • {p.category} • {p.metal}</div>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              {p.oldPrice && (
-                                <span className="text-xs line-through opacity-45">{p.oldPrice}</span>
-                              )}
-                              <span className="text-xs text-amber-500 font-semibold">{p.price}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => setEditingProduct(p)}
-                            className="p-2 rounded-xl bg-amber-500/15 text-amber-400 hover:bg-amber-500 hover:text-black"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              const updated = products.filter((item) => item.id !== p.id);
-                              setProducts(updated);
-                              syncData(siteSettings, updated);
-                            }}
-                            className="p-2 rounded-xl bg-red-500/15 text-red-400 hover:bg-red-500 hover:text-white"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {adminTab === "categories" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="p-5 rounded-2xl border border-stone-500/20 space-y-4">
-                    <h4 className="font-serif text-lg text-amber-500">კატეგორიების მართვა</h4>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={newCategoryInput}
-                        onChange={(e) => setNewCategoryInput(e.target.value)}
-                        placeholder="ახალი კატეგორია (მაგ: გულსაბნევები)"
-                        className={`flex-1 p-2.5 rounded-xl text-xs border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                      />
-                      <button
-                        onClick={() => {
-                          if (!newCategoryInput.trim()) return;
-                          const updated = {
-                            ...siteSettings,
-                            categories: [...(siteSettings.categories || []), newCategoryInput.trim()]
-                          };
-                          setSiteSettings(updated);
-                          syncData(updated, products);
-                          setNewCategoryInput("");
-                        }}
-                        className="px-4 py-2 rounded-xl bg-amber-500 text-black text-xs font-semibold"
-                      >
-                        დამატება
-                      </button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {(siteSettings.categories || []).map((cat) => (
-                        <span key={cat} className="px-3 py-1.5 rounded-full text-xs bg-stone-500/15 flex items-center gap-2">
-                          {cat}
-                          <button
-                            onClick={() => {
-                              const updated = {
-                                ...siteSettings,
-                                categories: siteSettings.categories.filter((c) => c !== cat)
-                              };
-                              setSiteSettings(updated);
-                              syncData(updated, products);
-                            }}
-                            className="text-red-400 hover:text-red-300"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="p-5 rounded-2xl border border-stone-500/20 space-y-4">
-                    <h4 className="font-serif text-lg text-amber-500">მეტალების / მასალების მართვა</h4>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={newMetalInput}
-                        onChange={(e) => setNewMetalInput(e.target.value)}
-                        placeholder="ახალი მეტალი (მაგ: ვერცხლი 925)"
-                        className={`flex-1 p-2.5 rounded-xl text-xs border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                      />
-                      <button
-                        onClick={() => {
-                          if (!newMetalInput.trim()) return;
-                          const updated = {
-                            ...siteSettings,
-                            metals: [...(siteSettings.metals || []), newMetalInput.trim()]
-                          };
-                          setSiteSettings(updated);
-                          syncData(updated, products);
-                          setNewMetalInput("");
-                        }}
-                        className="px-4 py-2 rounded-xl bg-amber-500 text-black text-xs font-semibold"
-                      >
-                        დამატება
-                      </button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {(siteSettings.metals || []).map((metal) => (
-                        <span key={metal} className="px-3 py-1.5 rounded-full text-xs bg-stone-500/15 flex items-center gap-2">
-                          {metal}
-                          <button
-                            onClick={() => {
-                              const updated = {
-                                ...siteSettings,
-                                metals: siteSettings.metals.filter((m) => m !== metal)
-                              };
-                              setSiteSettings(updated);
-                              syncData(updated, products);
-                            }}
-                            className="text-red-400 hover:text-red-300"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {adminTab === "carousel" && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-serif text-lg text-amber-500">ზედა კარუსელის სლაიდები</h4>
-                    <button
-                      onClick={() => {
-                        const newSlide = {
-                          id: Date.now(),
-                          badge: "ახალი კოლექცია",
-                          badgeEn: "New Collection",
-                          title: "სათაური ქართულად",
-                          titleEn: "Title in English",
-                          subtitle: "აღწერა ქართულად...",
-                          subtitleEn: "Description in English...",
-                          buttonText: "კოლექციის ნახვა",
-                          buttonTextEn: "Explore Collection",
-                          image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1600&q=80"
-                        };
-                        const updated = {
-                          ...siteSettings,
-                          heroSlides: [...(siteSettings.heroSlides || []), newSlide]
-                        };
-                        setSiteSettings(updated);
-                        syncData(updated, products);
-                      }}
-                      className="px-4 py-2 rounded-xl bg-amber-500 text-black text-xs font-semibold flex items-center gap-1.5"
-                    >
-                      <Plus className="w-4 h-4" />
-                      სლაიდის დამატება
-                    </button>
-                  </div>
-
-                  {(siteSettings.heroSlides || []).map((slide, idx) => (
-                    <div key={slide.id || idx} className="p-4 rounded-2xl border border-stone-500/20 space-y-3 text-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-amber-400">სლაიდი #{idx + 1}</span>
-                        {siteSettings.heroSlides.length > 1 && (
-                          <button
-                            onClick={() => {
-                              const updated = {
-                                ...siteSettings,
-                                heroSlides: siteSettings.heroSlides.filter((_, i) => i !== idx)
-                              };
-                              setSiteSettings(updated);
-                              syncData(updated, products);
-                            }}
-                            className="text-red-400 flex items-center gap-1"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" /> წაშლა
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="opacity-60 block mb-1">ბეიჯი (GE):</label>
-                          <input
-                            type="text"
-                            value={slide.badge || ""}
-                            onChange={(e) => {
-                              const copy = [...siteSettings.heroSlides];
-                              copy[idx] = { ...copy[idx], badge: e.target.value };
-                              setSiteSettings({ ...siteSettings, heroSlides: copy });
-                            }}
-                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                          />
-                        </div>
-                        <div>
-                          <label className="opacity-60 block mb-1">Badge (EN):</label>
-                          <input
-                            type="text"
-                            value={slide.badgeEn || ""}
-                            onChange={(e) => {
-                              const copy = [...siteSettings.heroSlides];
-                              copy[idx] = { ...copy[idx], badgeEn: e.target.value };
-                              setSiteSettings({ ...siteSettings, heroSlides: copy });
-                            }}
-                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="opacity-60 block mb-1">მთავარი სათაური (GE):</label>
-                          <input
-                            type="text"
-                            value={slide.title || ""}
-                            onChange={(e) => {
-                              const copy = [...siteSettings.heroSlides];
-                              copy[idx] = { ...copy[idx], title: e.target.value };
-                              setSiteSettings({ ...siteSettings, heroSlides: copy });
-                            }}
-                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                          />
-                        </div>
-                        <div>
-                          <label className="opacity-60 block mb-1">Main Title (EN):</label>
-                          <input
-                            type="text"
-                            value={slide.titleEn || ""}
-                            onChange={(e) => {
-                              const copy = [...siteSettings.heroSlides];
-                              copy[idx] = { ...copy[idx], titleEn: e.target.value };
-                              setSiteSettings({ ...siteSettings, heroSlides: copy });
-                            }}
-                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                          />
-                        </div>
-
-                        <div className="sm:col-span-2">
-                          <label className="opacity-60 block mb-1">აღწერა / ქვესათაური (GE):</label>
-                          <textarea
-                            rows={2}
-                            value={slide.subtitle || ""}
-                            onChange={(e) => {
-                              const copy = [...siteSettings.heroSlides];
-                              copy[idx] = { ...copy[idx], subtitle: e.target.value };
-                              setSiteSettings({ ...siteSettings, heroSlides: copy });
-                            }}
-                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                          />
-                        </div>
-                        <div className="sm:col-span-2">
-                          <label className="opacity-60 block mb-1">Subtitle (EN):</label>
-                          <textarea
-                            rows={2}
-                            value={slide.subtitleEn || ""}
-                            onChange={(e) => {
-                              const copy = [...siteSettings.heroSlides];
-                              copy[idx] = { ...copy[idx], subtitleEn: e.target.value };
-                              setSiteSettings({ ...siteSettings, heroSlides: copy });
-                            }}
-                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="opacity-60 block mb-1">ღილაკის ტექსტი (GE):</label>
-                          <input
-                            type="text"
-                            value={slide.buttonText || ""}
-                            onChange={(e) => {
-                              const copy = [...siteSettings.heroSlides];
-                              copy[idx] = { ...copy[idx], buttonText: e.target.value };
-                              setSiteSettings({ ...siteSettings, heroSlides: copy });
-                            }}
-                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                          />
-                        </div>
-                        <div>
-                          <label className="opacity-60 block mb-1">Button Text (EN):</label>
-                          <input
-                            type="text"
-                            value={slide.buttonTextEn || ""}
-                            onChange={(e) => {
-                              const copy = [...siteSettings.heroSlides];
-                              copy[idx] = { ...copy[idx], buttonTextEn: e.target.value };
-                              setSiteSettings({ ...siteSettings, heroSlides: copy });
-                            }}
-                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                          />
-                        </div>
-
-                        <div className="sm:col-span-2">
-                          <label className="opacity-60 block mb-1">ფონის ფოტოს ბმული (URL ან ატვირთვა):</label>
-                          <input
-                            type="text"
-                            value={slide.image || ""}
-                            onChange={(e) => {
-                              const copy = [...siteSettings.heroSlides];
-                              copy[idx] = { ...copy[idx], image: e.target.value };
-                              setSiteSettings({ ...siteSettings, heroSlides: copy });
-                            }}
-                            className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                          />
-                          
-
-
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-1">
-                        <label className="px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-400 cursor-pointer flex items-center gap-1.5">
-                          <Upload className="w-3.5 h-3.5" />
-                          ფოტოს ატვირთვა ფაილიდან
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              handleFileUpload(e.target.files?.[0], (base64) => {
-                                const copy = [...siteSettings.heroSlides];
-                                copy[idx] = { ...copy[idx], image: base64 };
-                                setSiteSettings({ ...siteSettings, heroSlides: copy });
-                              });
-                            }}
-                          />
-                        </label>
-                        <button
-                          onClick={() => syncData(siteSettings, products)}
-                          className="px-5 py-2 rounded-xl bg-amber-500 text-black font-semibold">
-                          სლაიდის შენახვა
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {adminTab === "brand" && (
-                <div className="space-y-4 max-w-xl text-xs">
-                  <h4 className="font-serif text-lg text-amber-500">ბრენდის სახელი და ლოგო</h4>
-                  <div className="space-y-3">
-                    <input
-                      type="text"
-                      value={siteSettings.brandName}
-                      onChange={(e) => setSiteSettings({ ...siteSettings, brandName: e.target.value })}
-                      placeholder="ბრენდის სახელი (მაგ: AURELIA)"
-                      className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                    />
-                    <input
-                      type="text"
-                      value={siteSettings.brandSubtitle}
-                      onChange={(e) => setSiteSettings({ ...siteSettings, brandSubtitle: e.target.value })}
-                      placeholder="სლოგანი (მაგ: საიუველირო სახლი • 1998)"
-                      className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                    />
-                    <input
-                      type="text"
-                      value={siteSettings.logoUrl}
-                      onChange={(e) => setSiteSettings({ ...siteSettings, logoUrl: e.target.value })}
-                      placeholder="ლოგოს ბმული (ან ატვირთეთ ქვემოდან)"
-                      className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                    />
-                    <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/20 text-amber-400 cursor-pointer">
-                      <Upload className="w-4 h-4" />
-                      ლოგოს ატვირთვა კომპიუტერიდან
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) =>
-                          handleFileUpload(e.target.files?.[0], (b64) =>
-                            setSiteSettings({ ...siteSettings, logoUrl: b64 })
-                          )
-                        }
-                      />
-                    </label>
-                  </div>
-                  <button
-                    onClick={() => syncData(siteSettings, products)}
-                    className="px-6 py-3 rounded-xl bg-amber-500 text-black font-semibold"
-                  >
-                    ცვლილებების შენახვა
-                  </button>
-                </div>
-              )}
-
-              {adminTab === "craft" && (
-                <div className="space-y-4 max-w-2xl text-xs">
-                  <h4 className="font-serif text-lg text-amber-500">„ხელოვნება, რომელიც თაობებს გადაეცემა“ — ტექსტები და ფოტოები</h4>
-                  <input
-                    type="text"
-                    value={siteSettings.craftBadge}
-                    onChange={(e) => setSiteSettings({ ...siteSettings, craftBadge: e.target.value })}
-                    placeholder="პატარა წარწერა (ქართული საიუველირო მემკვიდრეობა)"
-                    className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                  />
-                  <input
-                    type="text"
-                    value={siteSettings.craftTitle}
-                    onChange={(e) => setSiteSettings({ ...siteSettings, craftTitle: e.target.value })}
-                    placeholder="მთავარი სათაური"
-                    className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                  />
-                  <textarea
-                    rows={3}
-                    value={siteSettings.craftDesc}
-                    onChange={(e) => setSiteSettings({ ...siteSettings, craftDesc: e.target.value })}
-                    placeholder="აღწერის ტექსტი"
-                    className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                  />
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                    <div className="space-y-2">
-                      <label className="font-medium block">მარცხენა ფოტო:</label>
-                      <input
-                        type="text"
-                        value={siteSettings.craftImg1}
-                        onChange={(e) => setSiteSettings({ ...siteSettings, craftImg1: e.target.value })}
-                        placeholder="ფოტოს URL"
-                        className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                      />
-                      <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/20 text-amber-400 cursor-pointer">
-                        <Upload className="w-3.5 h-3.5" /> ფაილის ატვირთვა
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) =>
-                            handleFileUpload(e.target.files?.[0], (b64) =>
-                              setSiteSettings({ ...siteSettings, craftImg1: b64 })
-                            )
-                          }
-                        />
-                      </label>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="font-medium block">მარჯვენა ფოტო:</label>
-                      <input
-                        type="text"
-                        value={siteSettings.craftImg2}
-                        onChange={(e) => setSiteSettings({ ...siteSettings, craftImg2: e.target.value })}
-                        placeholder="ფოტოს URL"
-                        className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                      />
-                      <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/20 text-amber-400 cursor-pointer">
-                        <Upload className="w-3.5 h-3.5" /> ფაილის ატვირთვა
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) =>
-                            handleFileUpload(e.target.files?.[0], (b64) =>
-                              setSiteSettings({ ...siteSettings, craftImg2: b64 })
-                            )
-                          }
-                        />
-                      </label>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => syncData(siteSettings, products)}
-                    className="px-6 py-3 rounded-xl bg-amber-500 text-black font-semibold"
-                  >
-                    შენახვა
-                  </button>
-                </div>
-              )}
-
-              {adminTab === "footer" && (
-                <div className="space-y-4 max-w-2xl text-xs">
-                  <h4 className="font-serif text-lg text-amber-500">კონტაქტები, WhatsApp/Messenger და ქვედა პანელი</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="opacity-70 block mb-1">ტელეფონი:</label>
-                      <input
-                        type="text"
-                        value={siteSettings.phone || ""}
-                        onChange={(e) => setSiteSettings({ ...siteSettings, phone: e.target.value })}
-                        className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                      />
-                    </div>
-                    <div>
-                      <label className="opacity-70 block mb-1">WhatsApp ნომერი (მაგ: 995555000000):</label>
-                      <input
-                        type="text"
-                        value={siteSettings.whatsapp || ""}
-                        onChange={(e) => setSiteSettings({ ...siteSettings, whatsapp: e.target.value })}
-                        className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                      />
-                    </div>
-                    <div>
-                      <label className="opacity-70 block mb-1">Messenger ლინკი (მაგ: https://m.me/yourpage):</label>
-                      <input
-                        type="text"
-                        value={siteSettings.messenger || ""}
-                        onChange={(e) => setSiteSettings({ ...siteSettings, messenger: e.target.value })}
-                        className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                      />
-                    </div>
-                    <div>
-                      <label className="opacity-70 block mb-1">მისამართი:</label>
-                      <input
-                        type="text"
-                        value={siteSettings.address || ""}
-                        onChange={(e) => setSiteSettings({ ...siteSettings, address: e.target.value })}
-                        className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                      />
-                    </div>
-                    <div>
-                      <label className="opacity-70 block mb-1">სამუშაო საათები:</label>
-                      <input
-                        type="text"
-                        value={siteSettings.hours || ""}
-                        onChange={(e) => setSiteSettings({ ...siteSettings, hours: e.target.value })}
-                        className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                      />
-                    </div>
-                    <div>
-                      <label className="opacity-70 block mb-1">საავტორო უფლებების ტექსტი (Footer):</label>
-                      <input
-                        type="text"
-                        value={siteSettings.copyright || ""}
-                        onChange={(e) => setSiteSettings({ ...siteSettings, copyright: e.target.value })}
-                        className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                      />
-                    </div>
-                    <div>
-                      <label className="opacity-70 block mb-1">Instagram ლინკი:</label>
-                      <input
-                        type="text"
-                        value={siteSettings.instagram || ""}
-                        onChange={(e) => setSiteSettings({ ...siteSettings, instagram: e.target.value })}
-                        placeholder="https://instagram.com/..."
-                        className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                      />
-                    </div>
-                    <div>
-                      <label className="opacity-70 block mb-1">Facebook ლინკი:</label>
-                      <input
-                        type="text"
-                        value={siteSettings.facebook || ""}
-                        onChange={(e) => setSiteSettings({ ...siteSettings, facebook: e.target.value })}
-                        placeholder="https://facebook.com/..."
-                        className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                      />
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => syncData(siteSettings, products)}
-                    className="px-6 py-3 rounded-xl bg-amber-500 text-black font-semibold"
-                  >
-                    შენახვა
-                  </button>
-                </div>
-              )}
-
-              {adminTab === "inquiries" && (
-                <div className="space-y-3">
-                  <h4 className="font-serif text-lg text-amber-500">მომხმარებლების მოთხოვნები</h4>
-                  {inquiries.length === 0 ? (
-                    <p className="text-xs opacity-60">ჯერ მოთხოვნები არ შემოსულა.</p>
-                  ) : (
-                    inquiries.map((inq) => (
-                      <div key={inq.id} className="p-4 rounded-2xl border border-stone-500/20 flex items-center justify-between text-xs">
-                        <div>
-                          <div className="font-semibold text-sm">{inq.clientName} — {inq.clientPhone}</div>
-                          <div className="text-amber-500">მოდელი: {inq.productName} ({inq.sku}) {inq.size ? `• ზომა: ${inq.size}` : ""}</div>
-                          <div className="opacity-50">{inq.date}</div>
-                        </div>
-                        <button
-                          onClick={() => {
-                            const updated = inquiries.filter((i) => i.id !== inq.id);
-                            setInquiries(updated);
-                            syncData(siteSettings, products, updated);
-                          }}
-                          className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </main>
-      </div>
-    );
+  if (isAdminRoute) {
+    return <AdminPage />;
   }
 
-  // ==========================================
-  // 5. მთავარი საიტი (მომხმარებლის ხედი)
-  // ==========================================
   return (
     <div className={`min-h-screen w-full overflow-x-hidden transition-colors duration-300 ${darkMode ? "bg-[#0c0b0a] text-[#f5f0e6]" : "bg-[#faf7f2] text-[#1c1917]"}`}>
       
-      {/* HEADER */}
-      <header className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-md border-b transition-colors shadow-lg ${darkMode ? "bg-[#0c0b0a]/95 border-amber-500/15" : "bg-white/95 border-stone-200"}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <a href="#" className="flex items-center gap-3 group">
-            {siteSettings.logoUrl ? (
-              <img src={siteSettings.logoUrl} alt={siteSettings.brandName} className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border border-amber-500/40" />
-            ) : (
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-black shadow-lg shadow-amber-500/20">
-                <Sparkles className="w-5 h-5" />
-              </div>
-            )}
-            <div>
-              <span className="font-serif text-xl sm:text-3xl tracking-[0.22em] font-semibold block leading-none">
-                {siteSettings.brandName}
-              </span>
-              <span className="text-[9px] sm:text-xs tracking-[0.18em] text-amber-500/90 uppercase block mt-1">
-                {lang === "ka" ? siteSettings.brandSubtitle : (siteSettings.brandSubtitleEn || siteSettings.brandSubtitle)}
-              </span>
-            </div>
-          </a>
+      {/* Navbar კომპონენტი */}
+      <Navbar
+        lang={lang}
+        setLang={setLang}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        favorites={favorites}
+        setShowFavoritesModal={setShowFavoritesModal}
+        isMobileMenuOpen={isMobileMenuOpen}
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
+      />
 
-          <nav className="hidden md:flex items-center gap-8 text-sm tracking-wider uppercase">
-            <a href="#catalog" className="hover:text-amber-500 transition-colors">
-              {lang === "ka" ? "კოლექცია" : "Collection"}
-            </a>
-            <a href="#craftsmanship" className="hover:text-amber-500 transition-colors">
-              {lang === "ka" ? "ოსტატობა" : "Craftsmanship"}
-            </a>
-            <a href="#contact" className="hover:text-amber-500 transition-colors">
-              {lang === "ka" ? "შოურუმი" : "Showroom"}
-            </a>
-          </nav>
-
-          <div className="hidden md:flex items-center gap-3">
-            <button
-              onClick={() => setLang(lang === "ka" ? "en" : "ka")}
-              className={`px-3 py-2 rounded-full text-xs font-medium border flex items-center gap-1.5 transition-all ${
-                darkMode ? "border-stone-800 bg-stone-900/80 hover:border-amber-500/50" : "border-stone-200 bg-stone-100 hover:border-amber-600"
-              }`}
-            >
-              <Globe className="w-3.5 h-3.5 text-amber-500" />
-              {lang === "ka" ? "EN" : "GE"}
-            </button>
-
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className={`p-2.5 rounded-full border transition-all ${
-                darkMode ? "border-stone-800 bg-stone-900/80 text-amber-400 hover:border-amber-500/50" : "border-stone-200 bg-stone-100 text-stone-700 hover:border-amber-600"
-              }`}
-            >
-              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-
-            <button
-              onClick={() => setShowFavoritesModal(true)}
-              className={`relative p-2.5 rounded-full border transition-all ${
-                darkMode ? "border-stone-800 bg-stone-900/80 hover:border-amber-500/50" : "border-stone-200 bg-stone-100 hover:border-amber-600"
-              }`}
-            >
-              <Heart className={`w-4 h-4 ${favorites.length > 0 ? "fill-amber-500 text-amber-500" : ""}`} />
-              {favorites.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-black text-[10px] font-bold flex items-center justify-center">
-                  {favorites.length}
-                </span>
-              )}
-            </button>
-          </div>
-
-          <div className="flex md:hidden items-center gap-2">
-            <button
-              onClick={() => setShowFavoritesModal(true)}
-              className={`relative p-2 rounded-full border ${darkMode ? "border-stone-800 bg-stone-900" : "border-stone-200 bg-stone-100"}`}
-            >
-              <Heart className={`w-4 h-4 ${favorites.length > 0 ? "fill-amber-500 text-amber-500" : ""}`} />
-              {favorites.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 text-black text-[9px] font-bold flex items-center justify-center">
-                  {favorites.length}
-                </span>
-              )}
-            </button>
-
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`p-2 rounded-full border ${darkMode ? "border-stone-800 bg-stone-900 text-amber-400" : "border-stone-200 bg-stone-100 text-stone-800"}`}
-            >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
-
-        {isMobileMenuOpen && (
-          <div className={`md:hidden border-b p-5 space-y-4 animate-fadeIn ${darkMode ? "bg-[#0c0b0a] border-stone-800" : "bg-white border-stone-200"}`}>
-            <nav className="flex flex-col space-y-3 text-sm tracking-wider uppercase">
-              <a href="#catalog" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
-                {lang === "ka" ? "კოლექცია" : "Collection"}
-              </a>
-              <a href="#craftsmanship" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
-                {lang === "ka" ? "ოსტატობა" : "Craftsmanship"}
-              </a>
-              <a href="#contact" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
-                {lang === "ka" ? "შოურუმი" : "Showroom"}
-              </a>
-            </nav>
-
-            <div className="pt-3 border-t border-stone-500/20 flex items-center gap-2">
-              <button
-                onClick={() => setLang(lang === "ka" ? "en" : "ka")}
-                className={`px-3 py-2 rounded-xl text-xs font-medium border flex items-center gap-1.5 ${
-                  darkMode ? "border-stone-800 bg-stone-900" : "border-stone-200 bg-stone-100"
-                }`}
-              >
-                <Globe className="w-3.5 h-3.5 text-amber-500" />
-                {lang === "ka" ? "EN" : "GE"}
-              </button>
-
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className={`p-2.5 rounded-xl border ${
-                  darkMode ? "border-stone-800 bg-stone-900 text-amber-400" : "border-stone-200 bg-stone-100 text-stone-700"
-                }`}
-              >
-                {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-        )}
-      </header>
-
-      {/* HERO კარუსელი */}
-      <section className="relative h-[500px] sm:h-[640px] overflow-hidden flex items-center">
-        <div className="absolute inset-0">
-          <img
-            src={activeSlide?.image}
-            alt={activeSlide?.title}
-            className="w-full h-full object-cover object-center transition-all duration-1000 scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/35" />
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-12 sm:pt-0">
-          <div className="max-w-xl space-y-3 sm:space-y-5">
-            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs uppercase tracking-[0.2em] bg-amber-500/20 border border-amber-400/40 text-amber-300">
-              <Sparkles className="w-3.5 h-3.5" />
-              {lang === "ka" ? activeSlide?.badge : (activeSlide?.badgeEn || activeSlide?.badge)}
-            </span>
-
-            <h1 className="font-serif text-2xl sm:text-5xl lg:text-6xl font-normal text-white leading-[1.2] sm:leading-[1.15]">
-              {lang === "ka" ? activeSlide?.title : (activeSlide?.titleEn || activeSlide?.title)}
-            </h1>
-
-            <p className="text-stone-300 text-xs sm:text-base lg:text-lg leading-relaxed line-clamp-3 sm:line-clamp-none">
-              {lang === "ka" ? activeSlide?.subtitle : (activeSlide?.subtitleEn || activeSlide?.subtitle)}
-            </p>
-
-            <div className="pt-2 flex flex-wrap items-center gap-3 sm:gap-4">
-              <a
-                href="#catalog"
-                className="px-6 py-3 sm:px-7 sm:py-3.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-black font-semibold text-xs sm:text-sm tracking-wider uppercase shadow-xl shadow-amber-500/25 hover:brightness-110 transition-all"
-              >
-                {lang === "ka" ? (activeSlide?.buttonText || "კოლექციის ნახვა") : (activeSlide?.buttonTextEn || "Explore Collection")}
-              </a>
-              <a
-                href="#contact"
-                className="px-6 py-3 sm:px-7 sm:py-3.5 rounded-full border border-white/30 text-white hover:bg-white/10 text-xs sm:text-sm tracking-wider uppercase transition-all"
-              >
-                {lang === "ka" ? "შოურუმში ვიზიტი" : "Visit Showroom"}
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {slides.length > 1 && (
-          <>
-            <button
-              onClick={() => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)}
-              className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3 rounded-full bg-black/40 hover:bg-black/70 text-white border border-white/15 transition-all"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
-              className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3 rounded-full bg-black/40 hover:bg-black/70 text-white border border-white/15 transition-all"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
-              {slides.map((s, idx) => {
-                const isActive = currentSlide % slides.length === idx;
-                return (
-                  <button
-                    key={s.id || idx}
-                    onClick={() => setCurrentSlide(idx)}
-                    className="relative h-2 rounded-full bg-white/40 overflow-hidden transition-all cursor-pointer"
-                    style={{ width: isActive ? "36px" : "10px" }}
-                  >
-                    {isActive && (
-                      <div
-                        className="absolute top-0 left-0 h-full bg-amber-400"
-                        style={{
-                          width: "100%",
-                          animation: `fillProgress ${SLIDE_INTERVAL_MS}ms linear forwards`
-                        }}
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </>
-        )}
-      </section>
+      {/* Hero კარუსელის კომპონენტი */}
+      <HeroCarousel
+        slides={slides}
+        currentSlide={currentSlide}
+        setCurrentSlide={setCurrentSlide}
+        lang={lang}
+      />
 
       {/* კატალოგის სექცია */}
       <section id="catalog" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -1617,7 +260,7 @@ if (isAdminRoute) {
                     : "bg-stone-100 text-stone-700 hover:bg-stone-200"
                 }`}
               >
-                {cat === ALL  && lang === "en" ? "All" : cat}
+                {cat === ALL && lang === "en" ? "All" : cat}
               </button>
             ))}
           </div>
@@ -1645,31 +288,31 @@ if (isAdminRoute) {
               ))}
             </div>
 
-<div className="flex flex-wrap items-center gap-6">
-  <label className="flex items-center gap-2 cursor-pointer text-xs">
-    <input
-      type="checkbox"
-      checked={onlyExclusive}
-      onChange={(e) => setOnlyExclusive(e.target.checked)}
-      className="accent-amber-500 w-4 h-4 rounded"
-    />
-    <span className="text-amber-500 font-medium">
-      {lang === "ka" ? "ექსკლუზიური მოდელები" : "Exclusive pieces only"}
-    </span>
-  </label>
+            <div className="flex flex-wrap items-center gap-6">
+              <label className="flex items-center gap-2 cursor-pointer text-xs">
+                <input
+                  type="checkbox"
+                  checked={onlyExclusive}
+                  onChange={(e) => setOnlyExclusive(e.target.checked)}
+                  className="accent-amber-500 w-4 h-4 rounded"
+                />
+                <span className="text-amber-500 font-medium">
+                  {lang === "ka" ? "ექსკლუზიური მოდელები" : "Exclusive pieces only"}
+                </span>
+              </label>
 
-  <label className="flex items-center gap-2 cursor-pointer text-xs">
-    <input
-      type="checkbox"
-      checked={onlyOnSale}
-      onChange={(e) => setOnlyOnSale(e.target.checked)}
-      className="accent-amber-500 w-4 h-4 rounded"
-    />
-    <span className="text-amber-500 font-medium">
-      {lang === "ka" ? "ფასდაკლებები" : "On Sale only"}
-    </span>
-  </label>
-</div>
+              <label className="flex items-center gap-2 cursor-pointer text-xs">
+                <input
+                  type="checkbox"
+                  checked={onlyOnSale}
+                  onChange={(e) => setOnlyOnSale(e.target.checked)}
+                  className="accent-amber-500 w-4 h-4 rounded"
+                />
+                <span className="text-amber-500 font-medium">
+                  {lang === "ka" ? "ფასდაკლებები" : "On Sale only"}
+                </span>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -1718,7 +361,7 @@ if (isAdminRoute) {
                       onClick={() => toggleFavorite(product.id)}
                       className="absolute top-3 right-3 p-2.5 rounded-full bg-black/60 text-white hover:bg-black transition-all"
                     >
-                      <Heart className={`w-4 h-4 ${favorites.includes(product.id) ? "fill-amber-500 text-amber-500" : ""}`} />
+                      <Gem className={`w-4 h-4 ${favorites.includes(product.id) ? "fill-amber-500 text-amber-500" : ""}`} />
                     </button>
                   </div>
 
@@ -1732,7 +375,7 @@ if (isAdminRoute) {
                         onClick={() => openProductModal(product)}
                         className="font-serif text-xl font-medium cursor-pointer hover:text-amber-500 transition-colors"
                       >
-                        {lang === "ka" ? product.name : (product.nameEn || product.name)}
+                        {pick(product, "name", lang)}
                       </h3>
                       <p className="text-xs opacity-70 mt-1">
                         {product.metal} • {product.karat}
@@ -1766,148 +409,15 @@ if (isAdminRoute) {
         )}
       </section>
 
-      {/* ოსტატობის სექცია */}
-      <section id="craftsmanship" className={`py-20 border-y ${darkMode ? "bg-[#12100e] border-stone-800/70" : "bg-stone-900 text-white border-stone-800"}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <span className="text-xs uppercase tracking-[0.25em] text-amber-500 block">
-              {lang === "ka" ? siteSettings.craftBadge : (siteSettings.craftBadgeEn || siteSettings.craftBadge)}
-            </span>
-            <h2 className="font-serif text-3xl sm:text-5xl leading-tight text-white">
-              {lang === "ka" ? siteSettings.craftTitle : (siteSettings.craftTitleEn || siteSettings.craftTitle)}
-            </h2>
-            <p className="text-stone-300 leading-relaxed text-base sm:text-lg">
-              {lang === "ka" ? siteSettings.craftDesc : (siteSettings.craftDescEn || siteSettings.craftDesc)}
-            </p>
+      {/* ოსტატობის სექციის კომპონენტი */}
+      <CraftsmanshipSection darkMode={darkMode} lang={lang} siteSettings={siteSettings} />
 
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-4">
-              <div className="p-2.5 sm:p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center sm:items-start text-center sm:text-left overflow-hidden">
-                <Award className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400 mb-1.5 sm:mb-2 shrink-0" />
-                <div className="text-sm sm:text-xl font-serif font-bold text-white leading-tight">100%</div>
-                <div className="text-[10px] sm:text-xs text-stone-400 mt-1 leading-tight break-words w-full">
-                  {lang === "ka" ? "სერტიფიცირებული" : "Certified Gems"}
-                </div>
-              </div>
+      {/* Footer კომპონენტი */}
+      <Footer darkMode={darkMode} lang={lang} siteSettings={siteSettings} />
 
-              <div className="p-2.5 sm:p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center sm:items-start text-center sm:text-left overflow-hidden">
-                <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400 mb-1.5 sm:mb-2 shrink-0" />
-                <div className="text-sm sm:text-xl font-serif font-bold text-white leading-tight">18K / 750°</div>
-                <div className="text-[10px] sm:text-xs text-stone-400 mt-1 leading-tight break-words w-full">
-                  {lang === "ka" ? "უმაღლესი სინჯი" : "Finest Gold"}
-                </div>
-              </div>
-
-              <div className="p-2.5 sm:p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center sm:items-start text-center sm:text-left overflow-hidden">
-                <Gem className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400 mb-1.5 sm:mb-2 shrink-0" />
-                <div className="text-sm sm:text-xl font-serif font-bold text-white leading-tight">
-                  {lang === "ka" ? "ხელნაკეთი" : "Handmade"}
-                </div>
-                <div className="text-[10px] sm:text-xs text-stone-400 mt-1 leading-tight break-words w-full">
-                  {lang === "ka" ? "ექსკლუზიური დიზაინი" : "Exclusive Design"}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 sm:gap-6">
-            <img
-              src={siteSettings.craftImg1}
-              alt="Craftsmanship 1"
-              className="w-full h-72 sm:h-80 object-cover rounded-3xl border border-amber-500/20 shadow-2xl"
-            />
-            <img
-              src={siteSettings.craftImg2}
-              alt="Craftsmanship 2"
-              className="w-full h-72 sm:h-80 object-cover rounded-3xl border border-amber-500/20 shadow-2xl mt-8"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer id="contact" className={`pt-16 pb-12 border-t ${darkMode ? "bg-[#090807] border-stone-800" : "bg-stone-100 border-stone-200"}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 pb-12 border-b border-stone-500/15">
-            <div className="space-y-3">
-              <div className="font-serif text-2xl tracking-[0.2em] font-semibold">
-                {siteSettings.brandName}
-              </div>
-              <p className="text-sm opacity-75 leading-relaxed">
-                {lang === "ka" ? siteSettings.footerDesc : (siteSettings.footerDescEn || siteSettings.footerDesc)}
-              </p>
-              <div className="flex items-center gap-3 pt-2">
-                {siteSettings.instagram && (
-                  <a href={siteSettings.instagram} target="_blank" rel="noreferrer" className="p-2.5 rounded-full bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-black transition-all">
-                    <Instagram className="w-4 h-4" />
-                  </a>
-                )}
-                {siteSettings.facebook && (
-                  <a href={siteSettings.facebook} target="_blank" rel="noreferrer" className="p-2.5 rounded-full bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-black transition-all">
-                    <Facebook className="w-4 h-4" />
-                  </a>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-3 text-sm">
-              <h4 className="font-serif text-lg text-amber-500 uppercase tracking-wider">
-                {lang === "ka" ? "შოურუმი და კონტაქტი" : "Showroom & Contact"}
-              </h4>
-              <p className="flex items-center gap-2.5 opacity-80">
-                <MapPin className="w-4 h-4 text-amber-500 shrink-0" />
-                {lang === "ka" ? siteSettings.address : (siteSettings.addressEn || siteSettings.address)}
-              </p>
-              <p className="flex items-center gap-2.5 opacity-80">
-                <Phone className="w-4 h-4 text-amber-500 shrink-0" />
-                {siteSettings.phone}
-              </p>
-              <p className="flex items-center gap-2.5 opacity-80">
-                <Clock className="w-4 h-4 text-amber-500 shrink-0" />
-                {lang === "ka" ? siteSettings.hours : (siteSettings.hoursEn || siteSettings.hours)}
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="font-serif text-lg text-amber-500 uppercase tracking-wider">
-                {lang === "ka" ? "სწრაფი კონსულტაცია" : "Quick Consultation"}
-              </h4>
-              <p className="text-xs opacity-75">
-                {lang === "ka" ? "მოგვწერეთ პირდაპირ WhatsApp-ში ან Messenger-ში:" : "Message us directly via WhatsApp or Messenger:"}
-              </p>
-              <div className="flex flex-wrap gap-3 pt-1">
-                <a
-                  href={`https://wa.me/${(siteSettings.whatsapp || "").replace(/[^0-9]/g, "")}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-4 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium flex items-center gap-2 transition-all"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  WhatsApp
-                </a>
-                <a
-                  href={siteSettings.messenger || "https://m.me/"}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-4 py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium flex items-center gap-2 transition-all"
-                >
-                  <Send className="w-4 h-4" />
-                  Messenger
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-8 text-center text-xs opacity-60">
-            {siteSettings.copyright}
-          </div>
-        </div>
-      </footer>
-
-    
-      {/* დეტალური მოდალი (სრულეკრანიანი და იდეალურად განაწილებული) */}
+      {/* დეტალური მოდალი */}
       {selectedProduct && (
         <div className="fixed inset-0 z-50 bg-[#0c0b0a] overflow-y-auto animate-fadeIn">
-          {/* ზედა ნავიგაცია და დახურვის ღილაკი */}
           <div className={`sticky top-0 z-40 px-6 py-4 border-b backdrop-blur-md flex items-center justify-between ${darkMode ? "bg-[#121110]/95 border-stone-800" : "bg-white/95 border-stone-200"}`}>
             <button
               onClick={() => setSelectedProduct(null)}
@@ -1931,13 +441,11 @@ if (isAdminRoute) {
             </button>
           </div>
 
-          {/* მთავარი შიგთავსი - სრულ ეკრანზე გაშლილი */}
           <div className="w-full max-w-none px-3 sm:px-5 lg:px-6 py-6 sm:py-8">
             <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 xl:gap-12 items-start">
-              {/* მარცხენა მხარე: სურათები და გალერეა */}
               <div className="space-y-4">
                 <div
-                 className={`relative w-full h-[calc(100vh-155px)] max-h-[700px] min-h-[350px] rounded-3xl overflow-hidden border flex items-center justify-center cursor-zoom-in group ${
+                  className={`relative w-full h-[calc(100vh-155px)] max-h-[700px] min-h-[350px] rounded-3xl overflow-hidden border flex items-center justify-center cursor-zoom-in group ${
                     darkMode ? "bg-stone-900/90 border-stone-800" : "bg-stone-100 border-stone-200"
                   }`}
                   onMouseEnter={() => setIsZoomed(true)}
@@ -1987,7 +495,6 @@ if (isAdminRoute) {
                   )}
                 </div>
 
-                {/* მცირე ფოტოების სლაიდერი ქვევით */}
                 {selectedProduct.images?.length > 1 && (
                   <div className="flex items-center gap-2 overflow-x-auto pb-1">
                     {selectedProduct.images.map((imgUrl, idx) => (
@@ -2005,7 +512,6 @@ if (isAdminRoute) {
                 )}
               </div>
 
-              {/* მარჯვენა მხარე: აღწერა, ფასი, ზომები და ფორმები */}
               <div className="space-y-6">
                 <div>
                   <div className="flex items-center justify-between gap-2">
@@ -2016,7 +522,12 @@ if (isAdminRoute) {
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleShareProduct(selectedProduct)}
+                      onClick={() =>
+                        shareProductLink(selectedProduct, lang, () => {
+                          setCopiedLink(true);
+                          setTimeout(() => setCopiedLink(false), 2500);
+                        })
+                      }
                       className="px-4 py-2 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-black text-xs font-medium flex items-center gap-2 transition-all"
                     >
                       {copiedLink ? (
@@ -2055,10 +566,9 @@ if (isAdminRoute) {
                 </div>
 
                 <p className="text-sm sm:text-base opacity-85 leading-relaxed">
-                  {lang === "ka" ? selectedProduct.description : (selectedProduct.descriptionEn || selectedProduct.description)}
+                  {pick(selectedProduct, "description", lang)}
                 </p>
 
-                {/* მახასიათებლების ბადე */}
                 <div className={`grid grid-cols-2 gap-4 p-5 rounded-3xl border text-xs sm:text-sm ${darkMode ? "bg-stone-900/60 border-stone-800" : "bg-white border-stone-200"}`}>
                   <div>
                     <span className="opacity-60 block text-xs">{lang === "ka" ? "მეტალი:" : "Metal:"}</span>
@@ -2078,7 +588,6 @@ if (isAdminRoute) {
                   </div>
                 </div>
 
-                {/* ზომების არჩევა */}
                 {selectedProduct.sizes && selectedProduct.sizes.length > 0 && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-xs sm:text-sm">
@@ -2136,14 +645,13 @@ if (isAdminRoute) {
                   </div>
                 )}
 
-                {/* სწრაფი მესენჯერები */}
                 <div className="space-y-3 pt-2">
                   <span className="text-xs uppercase tracking-wider opacity-70 block">
                     {lang === "ka" ? "სწრაფი დაკავშირება ამ მოდელზე:" : "Instant Inquiry for this Piece:"}
                   </span>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <a
-                      href={getWhatsAppLink(selectedProduct)}
+                      href={getWhatsAppLink(selectedProduct, siteSettings, lang, selectedSize)}
                       target="_blank"
                       rel="noreferrer"
                       className="py-3.5 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-600/20 transition-all"
@@ -2163,7 +671,6 @@ if (isAdminRoute) {
                   </div>
                 </div>
 
-                {/* ზარის მოთხოვნის ფორმა */}
                 <form onSubmit={handleSendInquiry} noValidate className="space-y-3.5 pt-6 border-t border-stone-500/20">
                   <div className="text-xs font-medium text-amber-500 uppercase tracking-wider">
                     {lang === "ka" ? "ან დაგვიტოვეთ ნომერი კონსულტაციისთვის:" : "Or Request a Private Callback:"}
@@ -2219,7 +726,6 @@ if (isAdminRoute) {
                     </>
                   )}
                 </form>
-
               </div>
             </div>
           </div>
@@ -2241,7 +747,7 @@ if (isAdminRoute) {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                 setActiveImageIndex((prev) => (prev - 1 + (selectedProduct.images?.length || 1)) % (selectedProduct.images?.length || 1));
+                  setActiveImageIndex((prev) => (prev - 1 + (selectedProduct.images?.length || 1)) % (selectedProduct.images?.length || 1));
                 }}
                 className="p-3 rounded-full bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
               >
@@ -2284,7 +790,7 @@ if (isAdminRoute) {
       )}
 
       {/* რჩეულების მოდალი */}
-     {showFavoritesModal && (
+      {showFavoritesModal && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
           <div className={`w-full max-w-2xl rounded-3xl border p-6 ${darkMode ? "bg-[#141210] border-stone-800 text-white" : "bg-white border-stone-200 text-stone-900"}`}>
             <div className="flex items-center justify-between pb-4 border-b border-stone-500/20">
@@ -2301,11 +807,9 @@ if (isAdminRoute) {
                   .filter((p) => favorites.includes(p.id))
                   .map((item) => (
                     <div key={item.id} className="flex items-center justify-between gap-3 p-3 rounded-2xl border border-stone-500/15">
-                      {/* მთავარი მარცხენა მხარე (სურათი და ტექსტი) */}
                       <div className="flex items-center gap-3 min-w-0 flex-1">
                         <img src={item.images?.[0]} alt="" className="w-14 h-14 rounded-xl object-cover shrink-0" />
                         <div className="min-w-0 flex-1">
-                          {/* truncate უზრუნველყოფს რომ გრძელი სახელი გაიკვეცოს და ბოლოში სამი წერტილი დაისვას */}
                           <div className="font-serif font-medium truncate">{item.name}</div>
                           <div className="flex items-center gap-2">
                             {item.oldPrice && (
@@ -2316,7 +820,6 @@ if (isAdminRoute) {
                         </div>
                       </div>
 
-                      {/* მარჯვენა მხარე (ღილაკები) არ შეიცვლება */}
                       <div className="flex items-center gap-2 shrink-0">
                         <button
                           onClick={() => {
@@ -2341,5 +844,3 @@ if (isAdminRoute) {
     </div>
   );
 }
-
-//2520 ხაზი იყო
