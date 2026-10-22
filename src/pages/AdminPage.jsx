@@ -117,15 +117,29 @@ export default function AdminPage() {
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
+                setLoginError("");
+
                 if (!auth) {
                   setLoginError("Firebase Auth არ არის აქტიური!");
                   return;
                 }
+
                 try {
-                  await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
+                  await signInWithEmailAndPassword(
+                    auth,
+                    adminEmail.trim(),
+                    adminPassword.trim()
+                  );
                   setLoginError("");
                 } catch (err) {
-                  setLoginError("არასწორი ელ-ფოსტა ან პაროლი!");
+                  console.error("Firebase Login Error:", err.code, err.message);
+                  if (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password" || err.code === "auth/user-not-found") {
+                    setLoginError("არასწორი ელ-ფოსტა ან პაროლი!");
+                  } else if (err.code === "auth/invalid-email") {
+                    setLoginError("ელ-ფოსტის ფორმატი არასწორია!");
+                  } else {
+                    setLoginError(`შეცდომა: ${err.code || err.message}`);
+                  }
                 }
               }}
               className="space-y-3"
@@ -144,7 +158,7 @@ export default function AdminPage() {
                 placeholder="პაროლი..."
                 className={`w-full px-4 py-3 rounded-xl text-xs border outline-none ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-100 border-stone-300"}`}
               />
-              {loginError && <p className="text-xs text-red-400">{loginError}</p>}
+              {loginError && <p className="text-xs text-red-400 font-medium">{loginError}</p>}
               <button type="submit" className="w-full py-3 rounded-xl bg-amber-500 text-black font-semibold text-sm hover:brightness-110 transition-all">
                 შესვლა
               </button>
@@ -160,7 +174,8 @@ export default function AdminPage() {
                 { id: "brand", label: "4. ლოგო & სათაურები" },
                 { id: "craft", label: "5. ოსტატობის სექცია" },
                 { id: "footer", label: "6. კონტაქტი & ქვედა პანელი" },
-                { id: "inquiries", label: `7. შემოსული მოთხოვნები (${inquiries.length})` }
+                { id: "inquiries", label: `7. შემოსული მოთხოვნები (${inquiries.length})` },
+                { id: "about", label: "8. ჩვენს შესახებ გვერდი" }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -832,21 +847,21 @@ export default function AdminPage() {
                 <h4 className="font-serif text-lg text-amber-500">„ხელოვნება, რომელიც თაობებს გადაეცემა“ — ტექსტები და ფოტოები</h4>
                 <input
                   type="text"
-                  value={siteSettings.craftBadge}
+                  value={siteSettings.craftBadge || ""}
                   onChange={(e) => setSiteSettings({ ...siteSettings, craftBadge: e.target.value })}
-                  placeholder="პატარა წარწერა (ქართული საიუველირო მემკვიდრეობა)"
+                  placeholder="პატარა წარწერა"
                   className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
                 />
                 <input
                   type="text"
-                  value={siteSettings.craftTitle}
+                  value={siteSettings.craftTitle || ""}
                   onChange={(e) => setSiteSettings({ ...siteSettings, craftTitle: e.target.value })}
                   placeholder="მთავარი სათაური"
                   className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
                 />
                 <textarea
                   rows={3}
-                  value={siteSettings.craftDesc}
+                  value={siteSettings.craftDesc || ""}
                   onChange={(e) => setSiteSettings({ ...siteSettings, craftDesc: e.target.value })}
                   placeholder="აღწერის ტექსტი"
                   className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
@@ -857,7 +872,7 @@ export default function AdminPage() {
                     <label className="font-medium block">მარცხენა ფოტო:</label>
                     <input
                       type="text"
-                      value={siteSettings.craftImg1}
+                      value={siteSettings.craftImg1 || ""}
                       onChange={(e) => setSiteSettings({ ...siteSettings, craftImg1: e.target.value })}
                       placeholder="ფოტოს URL"
                       className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
@@ -881,7 +896,7 @@ export default function AdminPage() {
                     <label className="font-medium block">მარჯვენა ფოტო:</label>
                     <input
                       type="text"
-                      value={siteSettings.craftImg2}
+                      value={siteSettings.craftImg2 || ""}
                       onChange={(e) => setSiteSettings({ ...siteSettings, craftImg2: e.target.value })}
                       placeholder="ფოტოს URL"
                       className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
@@ -1027,6 +1042,171 @@ export default function AdminPage() {
                     </div>
                   ))
                 )}
+              </div>
+            )}
+
+            {/* TAB 8: ABOUT PAGE MANAGEMENT */}
+            {adminTab === "about" && (
+              <div className="space-y-6 max-w-3xl text-xs">
+                <h4 className="font-serif text-lg text-amber-500">
+                  „ჩვენს შესახებ“ გვერდის მართვა
+                </h4>
+
+                {/* Hero სექცია (სათაურები და აღწერები ორივე ენაზე) */}
+                <div className="space-y-3">
+                  <label className="font-medium block text-amber-400">თავი / სათაური (Hero Section):</label>
+                  <input
+                    type="text"
+                    value={siteSettings.aboutHeroTitle || ""}
+                    onChange={(e) => setSiteSettings({ ...siteSettings, aboutHeroTitle: e.target.value })}
+                    placeholder="მთავარი სათაური (ქართულად)"
+                    className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                  />
+                  <input
+                    type="text"
+                    value={siteSettings.aboutHeroTitleEn || ""}
+                    onChange={(e) => setSiteSettings({ ...siteSettings, aboutHeroTitleEn: e.target.value })}
+                    placeholder="Main Title (English)"
+                    className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                  />
+                  <textarea
+                    rows={2}
+                    value={siteSettings.aboutHeroSubtitle || ""}
+                    onChange={(e) => setSiteSettings({ ...siteSettings, aboutHeroSubtitle: e.target.value })}
+                    placeholder="ქვესათაური / აღწერა (ქართულად)"
+                    className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                  />
+                  <textarea
+                    rows={2}
+                    value={siteSettings.aboutHeroSubtitleEn || ""}
+                    onChange={(e) => setSiteSettings({ ...siteSettings, aboutHeroSubtitleEn: e.target.value })}
+                    placeholder="Subtitle (English)"
+                    className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                  />
+                </div>
+
+                {/* დამატებითი ისტორია */}
+                <div className="space-y-3 pt-4 border-t border-stone-500/20">
+                  <label className="font-medium block text-amber-400">დამატებითი ისტორია / აბზაცი:</label>
+                  <textarea
+                    rows={4}
+                    value={siteSettings.aboutExtraText || ""}
+                    onChange={(e) => setSiteSettings({ ...siteSettings, aboutExtraText: e.target.value })}
+                    placeholder="ტექსტი რომელიც ჩნდება 'ჩვენს შესახებ' გვერდზე..."
+                    className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                  />
+                </div>
+
+                {/* 4 ღირებულების ბარათი (ქართული და ინგლისური ველებით) */}
+                <div className="pt-4 border-t border-stone-500/20 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      value={siteSettings.aboutValuesBadge || "რატომ გვირჩევენ ჩვენ"}
+                      onChange={(e) => setSiteSettings({ ...siteSettings, aboutValuesBadge: e.target.value })}
+                      placeholder="პატარა წარწერა (რატომ გვირჩევენ ჩვენ)"
+                      className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                    />
+                    <input
+                      type="text"
+                      value={siteSettings.aboutValuesTitle || "ჩვენი სტანდარტი და ღირებულებები"}
+                      onChange={(e) => setSiteSettings({ ...siteSettings, aboutValuesTitle: e.target.value })}
+                      placeholder="სექციის მთავარი სათაური"
+                      className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {(siteSettings.aboutValues?.length === 4
+                      ? siteSettings.aboutValues
+                      : [
+                          { titleKa: "ბუნებრივი ქვები", titleEn: "Natural Gemstones", descKa: "ვიყენებთ მხოლოდ სერტიფიცირებულ ბრილიანტებსა და ნატურალურ ძვირფას ქვებს.", descEn: "We use only certified diamonds and 100% natural precious gemstones." },
+                          { titleKa: "უმაღლესი სინჯი", titleEn: "Finest Gold Purity", descKa: "ყველა ნაკეთობა მოწმდება და დადასტურებულია უმაღლესი სინჯით (585° / 750° / 925°).", descEn: "Every piece is hallmarked and verified for authentic karat purity." },
+                          { titleKa: "საუკუნოვანი გარანტია", titleEn: "Lifetime Warranty", descKa: "ჩვენს ყველა სამკაულს მოყვება ხარისხის სერტიფიკატი და უფასო წმენდა-განახლების სერვისი.", descEn: "Includes an authenticity certificate and complimentary professional cleaning." },
+                          { titleKa: "ინდივიდუალური მიდგომა", titleEn: "Bespoke Service", descKa: "შესაძლებელია ზომის მორგება და ექსკლუზიური მოდელების ინდივიდუალური შეკვეთა.", descEn: "Custom sizing and personalized consultations for your special moments." }
+                        ]
+                    ).map((card, idx) => (
+                      <div key={idx} className="p-4 rounded-2xl border border-stone-500/20 space-y-2">
+                        <span className="text-amber-400 font-semibold block">ღირებულების ბარათი #{idx + 1}</span>
+                        
+                        {/* ქართული ტექსტები */}
+                        <input
+                          type="text"
+                          value={card.titleKa || ""}
+                          onChange={(e) => {
+                            const currentCards = siteSettings.aboutValues?.length === 4 ? [...siteSettings.aboutValues] : [
+                              { titleKa: "ბუნებრივი ქვები", titleEn: "Natural Gemstones", descKa: "ვიყენებთ მხოლოდ სერტიფიცირებულ ბრილიანტებსა და ნატურალურ ძვირფას ქვებს.", descEn: "We use only certified diamonds and 100% natural precious gemstones." },
+                              { titleKa: "უმაღლესი სინჯი", titleEn: "Finest Gold Purity", descKa: "ყველა ნაკეთობა მოწმდება და დადასტურებულია უმაღლესი სინჯით (585° / 750° / 925°).", descEn: "Every piece is hallmarked and verified for authentic karat purity." },
+                              { titleKa: "საუკუნოვანი გარანტია", titleEn: "Lifetime Warranty", descKa: "ჩვენს ყველა სამკაულს მოყვება ხარისხის სერტიფიკატი და უფასო წმენდა-განახლების სერვისი.", descEn: "Includes an authenticity certificate and complimentary professional cleaning." },
+                              { titleKa: "ინდივიდუალური მიდგომა", titleEn: "Bespoke Service", descKa: "შესაძლებელია ზომის მორგება და ექსკლუზიური მოდელების ინდივიდუალური შეკვეთა.", descEn: "Custom sizing and personalized consultations for your special moments." }
+                            ];
+                            currentCards[idx] = { ...currentCards[idx], titleKa: e.target.value };
+                            setSiteSettings({ ...siteSettings, aboutValues: currentCards });
+                          }}
+                          placeholder="სათაური (ქართულად)"
+                          className={`w-full p-2 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                        />
+                        <textarea
+                          rows={2}
+                          value={card.descKa || ""}
+                          onChange={(e) => {
+                            const currentCards = siteSettings.aboutValues?.length === 4 ? [...siteSettings.aboutValues] : [
+                              { titleKa: "ბუნებრივი ქვები", titleEn: "Natural Gemstones", descKa: "ვიყენებთ მხოლოდ სერტიფიცირებულ ბრილიანტებსა და ნატურალურ ძვირფას ქვებს.", descEn: "We use only certified diamonds and 100% natural precious gemstones." },
+                              { titleKa: "უმაღლესი სინჯი", titleEn: "Finest Gold Purity", descKa: "ყველა ნაკეთობა მოწმდება და დადასტურებულია უმაღლესი სინჯით (585° / 750° / 925°).", descEn: "Every piece is hallmarked and verified for authentic karat purity." },
+                              { titleKa: "საუკუნოვანი გარანტია", titleEn: "Lifetime Warranty", descKa: "ჩვენს ყველა სამკაულს მოყვება ხარისხის სერტიფიკატი და უფასო წმენდა-განახლების სერვისი.", descEn: "Includes an authenticity certificate and complimentary professional cleaning." },
+                              { titleKa: "ინდივიდუალური მიდგომა", titleEn: "Bespoke Service", descKa: "შესაძლებელია ზომის მორგება და ექსკლუზიური მოდელების ინდივიდუალური შეკვეთა.", descEn: "Custom sizing and personalized consultations for your special moments." }
+                            ];
+                            currentCards[idx] = { ...currentCards[idx], descKa: e.target.value };
+                            setSiteSettings({ ...siteSettings, aboutValues: currentCards });
+                          }}
+                          placeholder="აღწერა (ქართულად)"
+                          className={`w-full p-2 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                        />
+
+                        {/* ინგლისური ტექსტები */}
+                        <input
+                          type="text"
+                          value={card.titleEn || ""}
+                          onChange={(e) => {
+                            const currentCards = siteSettings.aboutValues?.length === 4 ? [...siteSettings.aboutValues] : [
+                              { titleKa: "ბუნებრივი ქვები", titleEn: "Natural Gemstones", descKa: "ვიყენებთ მხოლოდ სერტიფიცირებულ ბრილიანტებსა და ნატურალურ ძვირფას ქვებს.", descEn: "We use only certified diamonds and 100% natural precious gemstones." },
+                              { titleKa: "უმაღლესი სინჯი", titleEn: "Finest Gold Purity", descKa: "ყველა ნაკეთობა მოწმდება და დადასტურებულია უმაღლესი სინჯით (585° / 750° / 925°).", descEn: "Every piece is hallmarked and verified for authentic karat purity." },
+                              { titleKa: "საუკუნოვანი გარანტია", titleEn: "Lifetime Warranty", descKa: "ჩვენს ყველა სამკაულს მოყვება ხარისხის სერტიფიკატი და უფასო წმენდა-განახლების სერვისი.", descEn: "Includes an authenticity certificate and complimentary professional cleaning." },
+                              { titleKa: "ინდივიდუალური მიდგომა", titleEn: "Bespoke Service", descKa: "შესაძლებელია ზომის მორგება და ექსკლუზიური მოდელების ინდივიდუალური შეკვეთა.", descEn: "Custom sizing and personalized consultations for your special moments." }
+                            ];
+                            currentCards[idx] = { ...currentCards[idx], titleEn: e.target.value };
+                            setSiteSettings({ ...siteSettings, aboutValues: currentCards });
+                          }}
+                          placeholder="Title (English)"
+                          className={`w-full p-2 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                        />
+                        <textarea
+                          rows={2}
+                          value={card.descEn || ""}
+                          onChange={(e) => {
+                            const currentCards = siteSettings.aboutValues?.length === 4 ? [...siteSettings.aboutValues] : [
+                              { titleKa: "ბუნებრივი ქვები", titleEn: "Natural Gemstones", descKa: "ვიყენებთ მხოლოდ სერტიფიცირებულ ბრილიანტებსა და ნატურალურ ძვირფას ქვებს.", descEn: "We use only certified diamonds and 100% natural precious gemstones." },
+                              { titleKa: "უმაღლესი სინჯი", titleEn: "Finest Gold Purity", descKa: "ყველა ნაკეთობა მოწმდება და დადასტურებულია უმაღლესი სინჯით (585° / 750° / 925°).", descEn: "Every piece is hallmarked and verified for authentic karat purity." },
+                              { titleKa: "საუკუნოვანი გარანტია", titleEn: "Lifetime Warranty", descKa: "ჩვენს ყველა სამკაულს მოყვება ხარისხის სერტიფიკატი და უფასო წმენდა-განახლების სერვისი.", descEn: "Includes an authenticity certificate and complimentary professional cleaning." },
+                              { titleKa: "ინდივიდუალური მიდგომა", titleEn: "Bespoke Service", descKa: "შესაძლებელია ზომის მორგება და ექსკლუზიური მოდელების ინდივიდუალური შეკვეთა.", descEn: "Custom sizing and personalized consultations for your special moments." }
+                            ];
+                            currentCards[idx] = { ...currentCards[idx], descEn: e.target.value };
+                            setSiteSettings({ ...siteSettings, aboutValues: currentCards });
+                          }}
+                          placeholder="Description (English)"
+                          className={`w-full p-2 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => syncData(siteSettings, products)}
+                  className="px-6 py-3 rounded-xl bg-amber-500 text-black font-semibold mt-4"
+                >
+                  ცვლილებების შენახვა
+                </button>
               </div>
             )}
           </div>

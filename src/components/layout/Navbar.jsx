@@ -13,7 +13,7 @@ export default function Navbar({
   return (
     <header className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-md border-b transition-colors shadow-lg ${darkMode ? "bg-[#0c0b0a]/95 border-amber-500/15" : "bg-white/95 border-stone-200"}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        <a href="#" className="flex items-center gap-3 group">
+        <a href="/" className="flex items-center gap-3 group">
           {siteSettings.logoUrl ? (
             <img src={siteSettings.logoUrl} alt={siteSettings.brandName} className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border border-amber-500/40" />
           ) : (
@@ -32,9 +32,18 @@ export default function Navbar({
         </a>
 
         <nav className="hidden md:flex items-center gap-8 text-sm tracking-wider uppercase">
-          <a href="#catalog" className="hover:text-amber-500 transition-colors">{lang === "ka" ? "კოლექცია" : "Collection"}</a>
-          <a href="#craftsmanship" className="hover:text-amber-500 transition-colors">{lang === "ka" ? "ოსტატობა" : "Craftsmanship"}</a>
-          <a href="#contact" className="hover:text-amber-500 transition-colors">{lang === "ka" ? "შოურუმი" : "Showroom"}</a>
+          <a href="/#catalog" className="hover:text-amber-500 transition-colors">
+            {lang === "ka" ? "კოლექცია" : "Collection"}
+          </a>
+          <a href="/about" className="hover:text-amber-500 transition-colors">
+            {lang === "ka" ? "ჩვენს შესახებ" : "About Us"}
+          </a>
+          <a href="/#craftsmanship" className="hover:text-amber-500 transition-colors">
+            {lang === "ka" ? "ოსტატობა" : "Craftsmanship"}
+          </a>
+          <a href="/#contact" className="hover:text-amber-500 transition-colors">
+            {lang === "ka" ? "შოურუმი" : "Showroom"}
+          </a>
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
@@ -97,13 +106,16 @@ export default function Navbar({
       {isMobileMenuOpen && (
         <div className={`md:hidden border-b p-5 space-y-4 animate-fadeIn ${darkMode ? "bg-[#0c0b0a] border-stone-800" : "bg-white border-stone-200"}`}>
           <nav className="flex flex-col space-y-3 text-sm tracking-wider uppercase">
-            <a href="#catalog" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
+            <a href="/#catalog" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
               {lang === "ka" ? "კოლექცია" : "Collection"}
             </a>
-            <a href="#craftsmanship" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
+            <a href="/about" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
+              {lang === "ka" ? "ჩვენს შესახებ" : "About Us"}
+            </a>
+            <a href="/#craftsmanship" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
               {lang === "ka" ? "ოსტატობა" : "Craftsmanship"}
             </a>
-            <a href="#contact" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
+            <a href="/#contact" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
               {lang === "ka" ? "შოურუმი" : "Showroom"}
             </a>
           </nav>
