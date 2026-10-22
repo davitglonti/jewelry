@@ -794,29 +794,41 @@ export default function AdminPage() {
             {/* TAB 4: BRAND */}
             {adminTab === "brand" && (
               <div className="space-y-4 max-w-xl text-xs">
-                <h4 className="font-serif text-lg text-amber-500">ბრენდის სახელი და ლოგო</h4>
+                <h4 className="font-serif text-lg text-amber-500">ბრენდის სახელი, სათაური და ლოგო</h4>
                 <div className="space-y-3">
-                  <input
-                    type="text"
-                    value={siteSettings.brandName}
-                    onChange={(e) => setSiteSettings({ ...siteSettings, brandName: e.target.value })}
-                    placeholder="ბრენდის სახელი (მაგ: AURELIA)"
-                    className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                  />
-                  <input
-                    type="text"
-                    value={siteSettings.brandSubtitle}
-                    onChange={(e) => setSiteSettings({ ...siteSettings, brandSubtitle: e.target.value })}
-                    placeholder="სლოგანი (მაგ: საიუველირო სახლი • 1998)"
-                    className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                  />
-                  <input
-                    type="text"
-                    value={siteSettings.logoUrl}
-                    onChange={(e) => setSiteSettings({ ...siteSettings, logoUrl: e.target.value })}
-                    placeholder="ლოგოს ბმული (ან ატვირთეთ ქვემოდან)"
-                    className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                  />
+                  <div>
+                    <label className="opacity-70 block mb-1">ბრენდის სახელი (საიტზე შიგნით):</label>
+                    <input
+                      type="text"
+                      value={siteSettings.brandName || ""}
+                      onChange={(e) => setSiteSettings({ ...siteSettings, brandName: e.target.value })}
+                      placeholder="მაგ: AURELIA"
+                      className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="opacity-70 block mb-1">ბრაუზერის სათაური (Tab-ში რაც წერია):</label>
+                    <input
+                      type="text"
+                      value={siteSettings.browserTitle || ""}
+                      onChange={(e) => setSiteSettings({ ...siteSettings, browserTitle: e.target.value })}
+                      placeholder="მაგ: AURELIA — საიუველირო სახლი"
+                      className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="opacity-70 block mb-1">ლოგო (ჩანს საიტზე და ბრაუზერის ტაბში Favicon-ად):</label>
+                    <input
+                      type="text"
+                      value={siteSettings.logoUrl || ""}
+                      onChange={(e) => setSiteSettings({ ...siteSettings, logoUrl: e.target.value })}
+                      placeholder="https://... ან ატვირთეთ ქვემოდან"
+                      className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                    />
+                  </div>
+
                   <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/20 text-amber-400 cursor-pointer">
                     <Upload className="w-4 h-4" />
                     ლოგოს ატვირთვა კომპიუტერიდან
@@ -832,6 +844,7 @@ export default function AdminPage() {
                     />
                   </label>
                 </div>
+
                 <button
                   onClick={() => syncData(siteSettings, products)}
                   className="px-6 py-3 rounded-xl bg-amber-500 text-black font-semibold"

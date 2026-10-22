@@ -32,7 +32,6 @@ export function StoreProvider({ children }) {
   const [darkMode, setDarkMode] = useState(true);
   const [lang, setLang] = useState("ka");
 
-  // ქეშიდან სინქრონულად, პირველივე რენდერზე (არა useEffect-ში)
   const [siteSettings, setSiteSettings] = useState(() => {
     const cached = readCache(KEYS.settings);
     return cached ? { ...DEFAULT_SETTINGS, ...cached } : DEFAULT_SETTINGS;
@@ -46,6 +45,65 @@ export function StoreProvider({ children }) {
   const [settingsLoaded, setSettingsLoaded] = useState(
     () => !!readCache(KEYS.settings) || !db
   );
+
+  // Favicon: იგივე logoUrl, რაც საიტზე ლოგოდ ჩანს
+  useEffect(() => {
+    const iconUrl = siteSettings.logoUrl;
+    if (!iconUrl) return;
+
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
+    }
+
+    // base64-ის შემთხვევაში ტიპს თვითონ სურათიდან ვიღებთ
+    const match = iconUrl.match(/^data:(image\/[a-zA-Z+.-]+);/);
+    if (match) link.type = match[1];
+    else link.removeAttribute("type");
+
+    link.href = iconUrl;
+  }, [siteSettings.logoUrl]);
+
+  // გვერდის სათაური მისამართის მიხედვით, ერთ ადგილას
+  useEffect(() => {
+    const updateTitle = () => {
+      const brand = siteSettings.brandName || "AURELIA";
+      const en = lang === "en";
+      const path = window.location.pathname;
+
+      if (path.startsWith("/admin")) {
+        document.title = `${en ? "Admin Panel" : "ადმინ პანელი"} — ${brand}`;
+      } else if (path.startsWith("/about")) {
+        document.title = `${en ? "About Us" : "ჩვენს შესახებ"} — ${brand}`;
+      } else {
+        const code = new URLSearchParams(window.location.search).get("item");
+        const product = code
+          ? products.find((p) =>
+              [p.sku, p.id].some(
+                (v) => v?.toString().toLowerCase() === code.toLowerCase()
+              )
+            )
+          : null;
+
+        if (product) {
+          const name = en && product.nameEn ? product.nameEn : product.name;
+          document.title = `${name} — ${brand}`;
+        } else {
+          document.title = siteSettings.browserTitle || `${brand} — საიუველირო სახლი`;
+        }
+      }
+    };
+
+    updateTitle();
+    window.addEventListener("urlchange", updateTitle);
+    window.addEventListener("popstate", updateTitle);
+    return () => {
+      window.removeEventListener("urlchange", updateTitle);
+      window.removeEventListener("popstate", updateTitle);
+    };
+  }, [siteSettings, products, lang]);
 
   // Firebase-იდან ჩატვირთვა
   useEffect(() => {
