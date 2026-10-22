@@ -10,12 +10,13 @@ import CraftsmanshipSection from '../components/store/CraftsmanshipSection';
 import ProductDetailModal from '../components/modals/ProductDetailModal';
 import FavoritesModal from '../components/modals/FavoritesModal';
 import LightboxModal from '../components/modals/LightboxModal';
-
+import PageLoader from '../components/layout/PageLoader';
 export default function StorePage() {
   const {
     darkMode, setDarkMode,
     lang, setLang,
     siteSettings,
+    settingsLoaded,
     products,
     favorites
   } = useStore();
@@ -68,7 +69,7 @@ export default function StorePage() {
   };
 
   const slides = siteSettings.heroSlides?.length > 0 ? siteSettings.heroSlides : DEFAULT_SETTINGS.heroSlides;
-
+if (!settingsLoaded) return <PageLoader />;
   return (
     <div className={`min-h-screen w-full overflow-x-hidden transition-colors duration-300 ${darkMode ? "bg-[#0c0b0a] text-[#f5f0e6]" : "bg-[#faf7f2] text-[#1c1917]"}`}>
       <Navbar

@@ -6,53 +6,88 @@ import { DEFAULT_PRODUCTS } from '../data/defaultProducts';
 
 const StoreContext = createContext();
 
+const KEYS = {
+  settings: "aurelia_settings_v2",
+  products: "aurelia_products_v2",
+  favs: "aurelia_favs_v2",
+  inquiries: "aurelia_inquiries_v2",
+};
+
+const readCache = (key) => {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+const writeCache = (key, value) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {}
+};
+
 export function StoreProvider({ children }) {
   const [darkMode, setDarkMode] = useState(true);
   const [lang, setLang] = useState("ka");
-  const [siteSettings, setSiteSettings] = useState(DEFAULT_SETTINGS);
-  const [products, setProducts] = useState(DEFAULT_PRODUCTS);
-  const [favorites, setFavorites] = useState([]);
-  const [inquiries, setInquiries] = useState([]);
+
+  // ქეშიდან სინქრონულად, პირველივე რენდერზე (არა useEffect-ში)
+  const [siteSettings, setSiteSettings] = useState(() => {
+    const cached = readCache(KEYS.settings);
+    return cached ? { ...DEFAULT_SETTINGS, ...cached } : DEFAULT_SETTINGS;
+  });
+  const [products, setProducts] = useState(() => readCache(KEYS.products) || DEFAULT_PRODUCTS);
+  const [favorites, setFavorites] = useState(() => readCache(KEYS.favs) || []);
+  const [inquiries, setInquiries] = useState(() => readCache(KEYS.inquiries) || []);
   const [saveMessage, setSaveMessage] = useState("");
 
-  // LocalStorage + Firebase ჩატვირთვა
+  // true: ქეში არსებობს, ან Firebase საერთოდ არ არის -> loader არ გვჭირდება
+  const [settingsLoaded, setSettingsLoaded] = useState(
+    () => !!readCache(KEYS.settings) || !db
+  );
+
+  // Firebase-იდან ჩატვირთვა
   useEffect(() => {
-    const savedSettings = localStorage.getItem("aurelia_settings_v2");
-    const savedProducts = localStorage.getItem("aurelia_products_v2");
-    const savedFavs = localStorage.getItem("aurelia_favs_v2");
-    const savedInquiries = localStorage.getItem("aurelia_inquiries_v2");
+    if (!db) return;
 
-    if (savedSettings) {
-      try { setSiteSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) }); } catch (e) {}
-    }
-    if (savedProducts) {
-      try { setProducts(JSON.parse(savedProducts)); } catch (e) {}
-    }
-    if (savedFavs) {
-      try { setFavorites(JSON.parse(savedFavs)); } catch (e) {}
-    }
-    if (savedInquiries) {
-      try { setInquiries(JSON.parse(savedInquiries)); } catch (e) {}
-    }
+    // თუ Firebase 6 წამში არ პასუხობს, მაინც გამოვაჩინოთ საიტი
+    const fallbackTimer = setTimeout(() => setSettingsLoaded(true), 6000);
 
-    if (db) {
-      const unsub = onSnapshot(doc(db, "aurelia", "storeData"), (docSnap) => {
+    const unsub = onSnapshot(
+      doc(db, "aurelia", "storeData"),
+      (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
-          if (data.settings) setSiteSettings({ ...DEFAULT_SETTINGS, ...data.settings });
-          if (data.products) setProducts(data.products);
+          if (data.settings) {
+            setSiteSettings({ ...DEFAULT_SETTINGS, ...data.settings });
+            writeCache(KEYS.settings, data.settings);
+          }
+          if (data.products) {
+            setProducts(data.products);
+            writeCache(KEYS.products, data.products);
+          }
           if (data.inquiries) setInquiries(data.inquiries);
         }
-      });
-      return () => unsub();
-    }
+        setSettingsLoaded(true);
+      },
+      (error) => {
+        console.error("Firebase ჩატვირთვის შეცდომა:", error);
+        setSettingsLoaded(true);
+      }
+    );
+
+    return () => {
+      clearTimeout(fallbackTimer);
+      unsub();
+    };
   }, []);
 
   // მონაცემების შენახვა (Firebase + LocalStorage)
   const syncData = async (newSettings, newProducts, newInquiries = inquiries) => {
-    localStorage.setItem("aurelia_settings_v2", JSON.stringify(newSettings));
-    localStorage.setItem("aurelia_products_v2", JSON.stringify(newProducts));
-    localStorage.setItem("aurelia_inquiries_v2", JSON.stringify(newInquiries));
+    writeCache(KEYS.settings, newSettings);
+    writeCache(KEYS.products, newProducts);
+    writeCache(KEYS.inquiries, newInquiries);
 
     if (db) {
       try {
@@ -60,7 +95,7 @@ export function StoreProvider({ children }) {
           settings: newSettings,
           products: newProducts,
           inquiries: newInquiries,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         });
       } catch (e) {
         console.error("Firebase შენახვის შეცდომა:", e);
@@ -76,7 +111,7 @@ export function StoreProvider({ children }) {
       ? favorites.filter((item) => item !== id)
       : [...favorites, id];
     setFavorites(updated);
-    localStorage.setItem("aurelia_favs_v2", JSON.stringify(updated));
+    writeCache(KEYS.favs, updated);
   };
 
   return (
@@ -85,11 +120,12 @@ export function StoreProvider({ children }) {
         darkMode, setDarkMode,
         lang, setLang,
         siteSettings, setSiteSettings,
+        settingsLoaded,
         products, setProducts,
         favorites, toggleFavorite,
         inquiries, setInquiries,
         saveMessage,
-        syncData
+        syncData,
       }}
     >
       {children}
