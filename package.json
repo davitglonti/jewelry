@@ -4,11 +4,12 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-  "dev": "vite",
-  "build": "node ./node_modules/vite/bin/vite.js build",
-  "preview": "vite preview"
-},
+    "dev": "vite",
+    "build": "node ./node_modules/vite/bin/vite.js build",
+    "preview": "vite preview"
+  },
   "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
     "firebase": "^10.13.0",
     "lucide-react": "^0.436.0",
     "react": "^18.3.1",
@@ -16,6 +17,9 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.6.1",
+    "postcss": "^8.5.31",
+    "tailwindcss": "^4.3.3",
     "vite": "^5.4.1"
   }
 }
