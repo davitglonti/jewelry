@@ -58,7 +58,6 @@ export function StoreProvider({ children }) {
       document.head.appendChild(link);
     }
 
-    // base64-ის შემთხვევაში ტიპს თვითონ სურათიდან ვიღებთ
     const match = iconUrl.match(/^data:(image\/[a-zA-Z+.-]+);/);
     if (match) link.type = match[1];
     else link.removeAttribute("type");
@@ -66,10 +65,10 @@ export function StoreProvider({ children }) {
     link.href = iconUrl;
   }, [siteSettings.logoUrl]);
 
-  // გვერდის სათაური მისამართის მიხედვით, ერთ ადგილას
+  // გვერდის სათაური მისამართის მიხედვით (/product/:sku მხარდაჭერით)
   useEffect(() => {
     const updateTitle = () => {
-      const brand = siteSettings.brandName || "AURELIA";
+      const brand = siteSettings.brandName || "მატარე";
       const en = lang === "en";
       const path = window.location.pathname;
 
@@ -77,8 +76,9 @@ export function StoreProvider({ children }) {
         document.title = `${en ? "Admin Panel" : "ადმინ პანელი"} — ${brand}`;
       } else if (path.startsWith("/about")) {
         document.title = `${en ? "About Us" : "ჩვენს შესახებ"} — ${brand}`;
-      } else {
-        const code = new URLSearchParams(window.location.search).get("item");
+      } else if (path.startsWith("/product/")) {
+        const rawCode = path.replace("/product/", "").replace(/\/+$/, "");
+        const code = decodeURIComponent(rawCode);
         const product = code
           ? products.find((p) =>
               [p.sku, p.id].some(
@@ -93,6 +93,8 @@ export function StoreProvider({ children }) {
         } else {
           document.title = siteSettings.browserTitle || `${brand} — საიუველირო სახლი`;
         }
+      } else {
+        document.title = siteSettings.browserTitle || `${brand} — საიუველირო სახლი`;
       }
     };
 
@@ -109,7 +111,6 @@ export function StoreProvider({ children }) {
   useEffect(() => {
     if (!db) return;
 
-    // თუ Firebase 6 წამში არ პასუხობს, მაინც გამოვაჩინოთ საიტი
     const fallbackTimer = setTimeout(() => setSettingsLoaded(true), 6000);
 
     const unsub = onSnapshot(

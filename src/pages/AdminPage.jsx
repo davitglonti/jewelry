@@ -4,7 +4,7 @@ import {
   Link as LinkIcon, X, Edit3, Trash2
 } from 'lucide-react';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { auth } from '../lib/firebaseAuth';
 import { useStore } from '../context/StoreContext';
 import { handleFileUpload } from '../utils/imageUtils';
 
