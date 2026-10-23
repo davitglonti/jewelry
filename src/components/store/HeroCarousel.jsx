@@ -17,11 +17,14 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
   if (!activeSlide) return null;
 
   return (
-    <section className="relative h-[500px] sm:h-[640px] overflow-hidden flex items-center">
+    <section className="relative h-[500px] sm:h-[640px] overflow-hidden flex items-center bg-black">
       <div className="absolute inset-0">
         <img
           src={activeSlide?.image}
-          alt={activeSlide?.title}
+          alt={pick(activeSlide, "title", lang) || "მატარე — საიუველირო კოლექცია"}
+          loading="eager"
+          fetchPriority="high"
+          decoding="sync"
           className="w-full h-full object-cover object-center transition-all duration-1000 scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/35" />
@@ -63,12 +66,14 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
         <>
           <button
             onClick={() => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)}
+            aria-label={lang === "ka" ? "წინა სლაიდი" : "Previous slide"}
             className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3 rounded-full bg-black/40 hover:bg-black/70 text-white border border-white/15 transition-all"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <button
             onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
+            aria-label={lang === "ka" ? "შემდეგი სლაიდი" : "Next slide"}
             className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3 rounded-full bg-black/40 hover:bg-black/70 text-white border border-white/15 transition-all"
           >
             <ChevronRight className="w-5 h-5" />
@@ -81,6 +86,7 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
                 <button
                   key={s.id || idx}
                   onClick={() => setCurrentSlide(idx)}
+                  aria-label={`Slide ${idx + 1}`}
                   className="relative h-2 rounded-full bg-white/40 overflow-hidden transition-all cursor-pointer"
                   style={{ width: isActive ? "36px" : "10px" }}
                 >

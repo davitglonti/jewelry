@@ -1,7 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import StorePage from './pages/StorePage';
-import AdminPage from './pages/AdminPage';
-import AboutPage from './pages/AboutPage';
+
+// ეს გვერდები მთავარ გვერდზე შესვლისას აღარ დაამძიმებს საიტს
+const AdminPage = lazy(() => import('./pages/AdminPage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const ProductPage = lazy(() => import('./pages/ProductPage'));
+
+// მსუბუქი ჩამტვირთავი ეკრანი გვერდებს შორის გადასვლისას
+const PageLoader = () => (
+  <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+    <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState(() =>
@@ -16,8 +26,29 @@ export default function App() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  if (currentPath === "/admin") return <AdminPage />;
-  if (currentPath === "/about") return <AboutPage />;
+  if (currentPath === "/admin") {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <AdminPage />
+      </Suspense>
+    );
+  }
+
+  if (currentPath === "/about") {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <AboutPage />
+      </Suspense>
+    );
+  }
+
+  if (currentPath.startsWith("/product")) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <ProductPage />
+      </Suspense>
+    );
+  }
 
   return <StorePage />;
 }

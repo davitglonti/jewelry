@@ -153,6 +153,8 @@ export default function CatalogSection({ openProductModal }) {
                   <img
                     src={mainImg}
                     alt={product.name}
+                    loading="lazy"
+                    decoding="async"
                     onClick={() => openProductModal(product)}
                     className="w-full h-full object-cover cursor-pointer group-hover:scale-110 transition-transform duration-700"
                   />
