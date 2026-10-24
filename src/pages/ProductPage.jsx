@@ -15,6 +15,7 @@ import LightboxModal from '../components/modals/LightboxModal';
 import FavoritesModal from '../components/modals/FavoritesModal';
 import Video360Viewer from '../components/store/Video360Viewer';
 import StockStatusBadge from '../components/store/StockStatusBadge';
+import RingSizerModal from '../components/modals/RingSizerModal';
 
 export default function ProductPage({ skuProp }) {
   // ვიღებთ პროდუქტის კოდს URL-იდან (მაგ: /product/AUR-102)
@@ -47,6 +48,7 @@ export default function ProductPage({ skuProp }) {
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const [showSizeGuide, setShowSizeGuide] = useState(false);
+  const [showRingSizer, setShowRingSizer] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
 
@@ -583,10 +585,13 @@ export default function ProductPage({ skuProp }) {
                   </span>
                   <button
                     type="button"
-                    onClick={() => setShowSizeGuide(!showSizeGuide)}
-                    className="text-amber-500 underline hover:text-amber-600 font-medium"
+                    onClick={() => setShowRingSizer(true)}
+                    className="inline-flex items-center gap-1.5 text-amber-500 hover:text-amber-400 font-medium transition-colors"
                   >
-                    {lang === "ka" ? "ზომის გზამკვლევი" : "Size Guide"}
+                    <span className="underline">{lang === "ka" ? "ზომის ონლაინ საზომი" : "Ring Size Guide"}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 font-semibold tracking-wide uppercase">
+                      {lang === "ka" ? "ინტერაქტიული" : "Interactive"}
+                    </span>
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2.5">
@@ -896,6 +901,19 @@ export default function ProductPage({ skuProp }) {
           setShowFavoritesModal(false);
           goToProduct(prod.sku || prod.id);
         }}
+      />
+
+      <RingSizerModal
+        isOpen={showRingSizer}
+        onClose={() => setShowRingSizer(false)}
+        onSelectSize={(newSize) => {
+          const match = selectedProduct?.sizes?.find(
+            (s) => s === newSize || s.startsWith(newSize) || newSize.startsWith(s)
+          );
+          setSelectedSize(match || newSize);
+        }}
+        availableSizes={selectedProduct?.sizes || []}
+        productName={lang === "ka" ? selectedProduct?.name : (selectedProduct?.nameEn || selectedProduct?.name)}
       />
     </div>
   );

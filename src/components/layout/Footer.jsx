@@ -66,6 +66,14 @@ export default function Footer({ darkMode, lang, siteSettings }) {
                 </a>
               </li>
               <li>
+                <a href="/size-guide" className="hover:text-amber-500 transition-colors flex items-center gap-1.5 text-amber-500/90 font-medium">
+                  <span>{lang === "ka" ? "ზომის გზამკვლევი" : "Size Guide"}</span>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-500/15 border border-amber-500/30 uppercase font-semibold">
+                    {lang === "ka" ? "საზომი" : "Guide"}
+                  </span>
+                </a>
+              </li>
+              <li>
                 <a href="/#faq" className="hover:text-amber-500 transition-colors">
                   {lang === "ka" ? "კითხვა-პასუხი (FAQ)" : "FAQ"}
                 </a>

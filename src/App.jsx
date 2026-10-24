@@ -8,6 +8,7 @@ const ProductPage = lazy(() => import('./pages/ProductPage'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
 const CatalogPage = lazy(() => import('./pages/CatalogPage'));
+const SizeGuidePage = lazy(() => import('./pages/SizeGuidePage'));
 
 // მსუბუქი ჩამტვირთავი ეკრანი გვერდებს შორის გადასვლისას
 const PageLoader = () => (
@@ -65,6 +66,14 @@ export default function App() {
     return (
       <Suspense fallback={<PageLoader />}>
         <CatalogPage />
+      </Suspense>
+    );
+  }
+
+  if (currentPath === "/size-guide" || currentPath === "/sizes" || currentPath === "/ring-size") {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <SizeGuidePage />
       </Suspense>
     );
   }

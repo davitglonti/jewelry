@@ -7,6 +7,7 @@ import { pick, formatPrice, calculateDiscountPercent } from '../../utils/i18n';
 import { getWhatsAppLink, shareProductLink } from '../../utils/shareUtils';
 import { useStore } from '../../context/StoreContext';
 import StockStatusBadge from '../store/StockStatusBadge';
+import RingSizerModal from './RingSizerModal';
 
 export default function ProductDetailModal({
   selectedProduct,
@@ -22,6 +23,7 @@ export default function ProductDetailModal({
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const [showSizeGuide, setShowSizeGuide] = useState(false);
+  const [showRingSizer, setShowRingSizer] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
   const [clientName, setClientName] = useState("");
@@ -281,10 +283,13 @@ export default function ProductDetailModal({
                   </span>
                   <button
                     type="button"
-                    onClick={() => setShowSizeGuide(!showSizeGuide)}
-                    className="text-amber-500 underline hover:text-amber-600 font-medium"
+                    onClick={() => setShowRingSizer(true)}
+                    className="inline-flex items-center gap-1.5 text-amber-500 hover:text-amber-400 font-medium transition-colors"
                   >
-                    {lang === "ka" ? "ზომის გზამკვლევი" : "Size Guide"}
+                    <span className="underline">{lang === "ka" ? "ზომის ონლაინ საზომი" : "Ring Size Guide"}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 font-semibold tracking-wide uppercase">
+                      {lang === "ka" ? "ინტერაქტიული" : "Interactive"}
+                    </span>
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2.5">
@@ -416,6 +421,19 @@ export default function ProductDetailModal({
 
         </div>
       </div>
+
+      <RingSizerModal
+        isOpen={showRingSizer}
+        onClose={() => setShowRingSizer(false)}
+        onSelectSize={(newSize) => {
+          const match = selectedProduct?.sizes?.find(
+            (s) => s === newSize || s.startsWith(newSize) || newSize.startsWith(s)
+          );
+          setSelectedSize(match || newSize);
+        }}
+        availableSizes={selectedProduct?.sizes || []}
+        productName={lang === "ka" ? selectedProduct?.name : (selectedProduct?.nameEn || selectedProduct?.name)}
+      />
     </div>
   );
 }
