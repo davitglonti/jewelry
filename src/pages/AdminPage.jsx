@@ -202,6 +202,7 @@ export default function AdminPage() {
                     onClick={() =>
                       setEditingProduct({
                         id: "item-" + Date.now(),
+                        createdAt: Date.now(),
                         sku: "AUR-" + Math.floor(100 + Math.random() * 900),
                         name: "",
                         nameEn: "",

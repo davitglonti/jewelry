@@ -11,6 +11,24 @@ const KEYS = {
   inquiries: "aurelia_inquiries_v2",
 };
 
+export const sortNewestFirst = (list) => {
+  if (!Array.isArray(list)) return [];
+  return [...list].sort((a, b) => {
+    const getTimestamp = (item) => {
+      if (item.createdAt && typeof item.createdAt === 'number') return item.createdAt;
+      if (typeof item.id === 'string' && item.id.startsWith('item-')) {
+        const num = parseInt(item.id.replace('item-', ''), 10);
+        if (!isNaN(num) && num > 1000000) return num;
+      }
+      return 0;
+    };
+    const tA = getTimestamp(a);
+    const tB = getTimestamp(b);
+    if (tA !== tB) return tB - tA; // უახლესი პირველ ადგილზე
+    return 0;
+  });
+};
+
 const readCache = (key) => {
   try {
     const raw = localStorage.getItem(key);
@@ -34,7 +52,7 @@ export function StoreProvider({ children }) {
     const cached = readCache(KEYS.settings);
     return cached ? { ...DEFAULT_SETTINGS, ...cached } : DEFAULT_SETTINGS;
   });
-  const [products, setProducts] = useState(() => readCache(KEYS.products) || DEFAULT_PRODUCTS);
+  const [products, setProducts] = useState(() => sortNewestFirst(readCache(KEYS.products) || DEFAULT_PRODUCTS));
   const [favorites, setFavorites] = useState(() => readCache(KEYS.favs) || []);
   const [inquiries, setInquiries] = useState(() => readCache(KEYS.inquiries) || []);
   const [saveMessage, setSaveMessage] = useState("");
@@ -133,8 +151,9 @@ export function StoreProvider({ children }) {
           (colSnap) => {
             if (!colSnap.empty) {
               const list = colSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-              setProducts(list);
-              writeCache(KEYS.products, list);
+              const sorted = sortNewestFirst(list);
+              setProducts(sorted);
+              writeCache(KEYS.products, sorted);
             }
           },
           (error) => console.error("Firebase products შეცდომა:", error)
@@ -174,11 +193,13 @@ export function StoreProvider({ children }) {
 
         if (!colSnap.empty) {
           const list = colSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-          setProducts(list);
-          writeCache(KEYS.products, list);
+          const sorted = sortNewestFirst(list);
+          setProducts(sorted);
+          writeCache(KEYS.products, sorted);
         } else if (docSnap.exists() && docSnap.data()?.products?.length > 0) {
-          setProducts(docSnap.data().products);
-          writeCache(KEYS.products, docSnap.data().products);
+          const sorted = sortNewestFirst(docSnap.data().products);
+          setProducts(sorted);
+          writeCache(KEYS.products, sorted);
         }
       } catch (err) {
         console.error("Firebase ჩატვირთვის შეცდომა:", err);
@@ -193,8 +214,10 @@ export function StoreProvider({ children }) {
 
   // მონაცემების შენახვა (Firebase + LocalStorage)
   const syncData = async (newSettings, newProducts, newInquiries = inquiries) => {
+    const sortedProducts = sortNewestFirst(newProducts);
+    setProducts(sortedProducts);
     writeCache(KEYS.settings, newSettings);
-    writeCache(KEYS.products, newProducts);
+    writeCache(KEYS.products, sortedProducts);
     writeCache(KEYS.inquiries, newInquiries);
 
     try {
@@ -212,8 +235,11 @@ export function StoreProvider({ children }) {
         });
 
         // 2. თითოეული პროდუქტის შენახვა ცალკე დოკუმენტად products კოლექციაში
-        const savePromises = newProducts.map((p) => {
-          const cleanProduct = { ...p };
+        const savePromises = sortedProducts.map((p) => {
+          const cleanProduct = {
+            ...p,
+            createdAt: p.createdAt || (typeof p.id === 'string' && p.id.startsWith('item-') ? parseInt(p.id.replace('item-', ''), 10) || Date.now() : Date.now())
+          };
           return setDoc(doc(db, "products", p.id), cleanProduct);
         });
         await Promise.all(savePromises);
@@ -221,7 +247,7 @@ export function StoreProvider({ children }) {
         // 3. თუ რომელიმე პროდუქტი წაიშალა სიიდან, წავშალოთ Firestore-იდანაც
         try {
           const existingDocs = await getDocs(collection(db, "products"));
-          const currentIds = new Set(newProducts.map((p) => p.id));
+          const currentIds = new Set(sortedProducts.map((p) => p.id));
           const deletePromises = [];
           existingDocs.forEach((d) => {
             if (!currentIds.has(d.id)) {
