@@ -3,7 +3,7 @@ import { Search, Gem, SlidersHorizontal, Heart, Eye } from 'lucide-react';
 import { ALL } from '../../constants';
 import { pick } from '../../utils/i18n';
 import { useStore } from '../../context/StoreContext';
-import { getOptimizedImageUrl, getUnsplashSrcSet } from '../../utils/imageUtils';
+import { getOptimizedImageUrl, getProductCardSrcSet } from '../../utils/imageUtils';
 
 export default function CatalogSection({ openProductModal }) {
   const { darkMode, lang, siteSettings, products, favorites, toggleFavorite } = useStore();
@@ -152,8 +152,8 @@ export default function CatalogSection({ openProductModal }) {
               >
                 <div className="relative aspect-square overflow-hidden bg-stone-900">
                   <img
-                    src={getOptimizedImageUrl(mainImg, 400, 70)}
-                    srcSet={getUnsplashSrcSet(mainImg)}
+                    src={getOptimizedImageUrl(mainImg, 380, 68)}
+                    srcSet={getProductCardSrcSet(mainImg)}
                     sizes="(max-width: 640px) 360px, (max-width: 1024px) 300px, 280px"
                     alt={product.name}
                     loading="lazy"

@@ -28,7 +28,7 @@ export const sanitizeImageUrl = (url, fallback = "https://images.unsplash.com/ph
   return url;
 };
 
-export const getOptimizedImageUrl = (url, width = 500, quality = 70) => {
+export const getOptimizedImageUrl = (url, width = 450, quality = 68) => {
   const cleanUrl = sanitizeImageUrl(url);
   if (cleanUrl.includes('images.unsplash.com')) {
     try {
@@ -52,6 +52,18 @@ export const getUnsplashSrcSet = (url) => {
     const u = new URL(cleanUrl);
     const base = `${u.origin}${u.pathname}`;
     return `${base}?auto=format&fit=crop&w=360&q=70 360w, ${base}?auto=format&fit=crop&w=540&q=70 540w, ${base}?auto=format&fit=crop&w=720&q=75 720w, ${base}?auto=format&fit=crop&w=1200&q=75 1200w`;
+  } catch {
+    return undefined;
+  }
+};
+
+export const getProductCardSrcSet = (url) => {
+  const cleanUrl = sanitizeImageUrl(url);
+  if (!cleanUrl.includes('images.unsplash.com')) return undefined;
+  try {
+    const u = new URL(cleanUrl);
+    const base = `${u.origin}${u.pathname}`;
+    return `${base}?auto=format&fit=crop&w=320&q=65 320w, ${base}?auto=format&fit=crop&w=480&q=68 480w, ${base}?auto=format&fit=crop&w=640&q=70 640w, ${base}?auto=format&fit=crop&w=900&q=72 900w`;
   } catch {
     return undefined;
   }
