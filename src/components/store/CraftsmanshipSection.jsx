@@ -86,9 +86,9 @@ export default function CraftsmanshipSection({
         {/* ფოტოების მხარე */}
         <div className={`grid grid-cols-2 gap-4 sm:gap-6 ${reverseLayout ? "lg:order-1" : "lg:order-2"}`}>
           <img
-            src={getOptimizedImageUrl(siteSettings.craftImg1, 600, 75)}
+            src={getOptimizedImageUrl(siteSettings.craftImg1, 450, 68)}
             srcSet={getUnsplashSrcSet(siteSettings.craftImg1)}
-            sizes="(max-width: 640px) 50vw, 400px"
+            sizes="(max-width: 640px) 46vw, 380px"
             alt={lang === "ka" ? "საიუველირო ოსტატობა — ხელნაკეთი პროცესი" : "Jewelry craftsmanship process"}
             loading="lazy"
             decoding="async"
@@ -97,9 +97,9 @@ export default function CraftsmanshipSection({
             className="w-full h-72 sm:h-80 object-cover rounded-3xl border border-amber-500/20 shadow-2xl"
           />
           <img
-            src={getOptimizedImageUrl(siteSettings.craftImg2, 600, 75)}
+            src={getOptimizedImageUrl(siteSettings.craftImg2, 450, 68)}
             srcSet={getUnsplashSrcSet(siteSettings.craftImg2)}
-            sizes="(max-width: 640px) 50vw, 400px"
+            sizes="(max-width: 640px) 46vw, 380px"
             alt={lang === "ka" ? "საიუველირო ხელოვნება და დეტალები" : "Jewelry craftsmanship and fine details"}
             loading="lazy"
             decoding="async"

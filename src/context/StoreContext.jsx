@@ -14,6 +14,32 @@ const KEYS = {
   compare: "aurelia_compare_v1",
 };
 
+const FIRESTORE_PROJECT_ID = "jewelry-4fdb3";
+const REST_BASE = `https://firestore.googleapis.com/v1/projects/${FIRESTORE_PROJECT_ID}/databases/(default)/documents`;
+
+// Firestore REST API ობიექტების მსუბუქი პარსერი (არ მოითხოვს მძიმე Firebase SDK-ს ჩატვირთვას)
+export function parseFirestoreFields(fields) {
+  if (!fields) return {};
+  const res = {};
+  for (const key of Object.keys(fields)) {
+    const val = fields[key];
+    if ('stringValue' in val) res[key] = val.stringValue;
+    else if ('integerValue' in val) res[key] = parseInt(val.integerValue, 10);
+    else if ('doubleValue' in val) res[key] = parseFloat(val.doubleValue);
+    else if ('booleanValue' in val) res[key] = val.booleanValue;
+    else if ('nullValue' in val) res[key] = null;
+    else if ('arrayValue' in val) {
+      res[key] = (val.arrayValue.values || []).map(v => {
+        if ('stringValue' in v) return v.stringValue;
+        if ('mapValue' in v) return parseFirestoreFields(v.mapValue.fields);
+        return v;
+      });
+    }
+    else if ('mapValue' in val) res[key] = parseFirestoreFields(val.mapValue.fields);
+  }
+  return res;
+}
+
 export const sortNewestFirst = (list) => {
   if (!Array.isArray(list)) return [];
   return [...list].sort((a, b) => {
@@ -190,25 +216,24 @@ export function StoreProvider({ children }) {
       };
     }
 
-    // 2. ჩვეულებრივი მომხმარებლისთვის ვიყენებთ ასინქრონულ ჩატვირთვას
+    // 2. ჩვეულებრივი მომხმარებლისთვის ვიყენებთ მსუბუქ ასინქრონულ REST ფეჩს
+    // არ ვტვირთავთ მძიმე Firebase SDK-ს (476 KB) და არ ვხსნით Listen/channel (2.9 MB) სტრიმინგს მთავარ გვერდზე!
     let isMounted = true;
-    const timer = setTimeout(async () => {
-      try {
-        const [{ db }, { getDoc, getDocs, doc, collection }] = await Promise.all([
-          import('../lib/firebase'),
-          import('firebase/firestore')
-        ]);
-        if (!db || !isMounted) return;
+    let cancelTimer = null;
 
-        const [docSnap, colSnap, artSnap] = await Promise.all([
-          getDoc(doc(db, "aurelia", "storeData")),
-          getDocs(collection(db, "products")),
-          getDocs(collection(db, "articles")).catch(() => ({ empty: true }))
+    const runPublicSync = async () => {
+      if (!isMounted) return;
+      try {
+        const [storeRes, prodRes, artRes] = await Promise.all([
+          fetch(`${REST_BASE}/aurelia/storeData`).then(r => r.ok ? r.json() : null).catch(() => null),
+          fetch(`${REST_BASE}/products`).then(r => r.ok ? r.json() : null).catch(() => null),
+          fetch(`${REST_BASE}/articles`).then(r => r.ok ? r.json() : null).catch(() => null),
         ]);
+
         if (!isMounted) return;
 
-        if (docSnap.exists()) {
-          const data = docSnap.data();
+        if (storeRes && storeRes.fields) {
+          const data = parseFirestoreFields(storeRes.fields);
           if (data.settings) {
             setSiteSettings({ ...DEFAULT_SETTINGS, ...data.settings });
             writeCache(KEYS.settings, data.settings);
@@ -216,30 +241,54 @@ export function StoreProvider({ children }) {
           if (data.inquiries) setInquiries(data.inquiries);
         }
 
-        if (!colSnap.empty) {
-          const list = colSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        if (prodRes && prodRes.documents && prodRes.documents.length > 0) {
+          const list = prodRes.documents.map((d) => ({
+            id: d.name.split('/').pop(),
+            ...parseFirestoreFields(d.fields)
+          }));
           const sorted = sortNewestFirst(list);
-          setProducts(sorted);
-          writeCache(KEYS.products, sorted);
-        } else if (docSnap.exists() && docSnap.data()?.products?.length > 0) {
-          const sorted = sortNewestFirst(docSnap.data().products);
           setProducts(sorted);
           writeCache(KEYS.products, sorted);
         }
 
-        if (!artSnap.empty) {
-          const artList = artSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        if (artRes && artRes.documents && artRes.documents.length > 0) {
+          const artList = artRes.documents.map((d) => ({
+            id: d.name.split('/').pop(),
+            ...parseFirestoreFields(d.fields)
+          }));
           setArticles(artList);
           writeCache(KEYS.articles, artList);
         }
       } catch (err) {
-        console.error("Firebase ჩატვირთვის შეცდომა:", err);
+        console.warn("Public background sync skipped:", err);
       }
-    }, 1200);
+    };
+
+    // 🚀 სინქრონიზაცია ეშვება მხოლოდ მას შემდეგ, რაც გვერდი სრულად ჩაიტვირთება და ბრაუზერი თავისუფალია (Idle)
+    // ეს უზრუნველყოფს, რომ LCP და FCP-ს დროს ქსელი არ დაიტვირთოს და მობილურზე მაქსიმალური სისწრაფე (95+) შენარჩუნდეს.
+    const scheduleSync = () => {
+      if ('requestIdleCallback' in window) {
+        cancelTimer = window.requestIdleCallback(() => runPublicSync(), { timeout: 5000 });
+      } else {
+        cancelTimer = setTimeout(runPublicSync, 4000);
+      }
+    };
+
+    if (document.readyState === 'complete') {
+      scheduleSync();
+    } else {
+      window.addEventListener('load', scheduleSync, { once: true });
+    }
 
     return () => {
       isMounted = false;
-      clearTimeout(timer);
+      if (cancelTimer) {
+        if ('cancelIdleCallback' in window && typeof cancelTimer === 'number') {
+          window.cancelIdleCallback(cancelTimer);
+        } else {
+          clearTimeout(cancelTimer);
+        }
+      }
     };
   }, []);
 

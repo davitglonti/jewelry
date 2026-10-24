@@ -52,7 +52,7 @@ export const getUnsplashSrcSet = (url) => {
   try {
     const u = new URL(cleanUrl);
     const base = `${u.origin}${u.pathname}`;
-    return `${base}?auto=format&fit=crop&w=360&q=70 360w, ${base}?auto=format&fit=crop&w=540&q=70 540w, ${base}?auto=format&fit=crop&w=720&q=75 720w, ${base}?auto=format&fit=crop&w=1200&q=75 1200w`;
+    return `${base}?auto=format&fit=crop&w=360&q=65 360w, ${base}?auto=format&fit=crop&w=500&q=68 500w, ${base}?auto=format&fit=crop&w=720&q=70 720w, ${base}?auto=format&fit=crop&w=1200&q=72 1200w`;
   } catch {
     return undefined;
   }
@@ -64,7 +64,7 @@ export const getProductCardSrcSet = (url) => {
   try {
     const u = new URL(cleanUrl);
     const base = `${u.origin}${u.pathname}`;
-    return `${base}?auto=format&fit=crop&w=320&q=65 320w, ${base}?auto=format&fit=crop&w=480&q=68 480w, ${base}?auto=format&fit=crop&w=640&q=70 640w, ${base}?auto=format&fit=crop&w=900&q=72 900w`;
+    return `${base}?auto=format&fit=crop&w=260&q=65 260w, ${base}?auto=format&fit=crop&w=360&q=65 360w, ${base}?auto=format&fit=crop&w=480&q=68 480w, ${base}?auto=format&fit=crop&w=640&q=70 640w, ${base}?auto=format&fit=crop&w=900&q=72 900w`;
   } catch {
     return undefined;
   }
