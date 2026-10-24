@@ -33,6 +33,23 @@ export default function CatalogPage() {
   const [searchQuery, setSearchQuery] = useState(initialParams.get("q") || "");
   const [sortBy, setSortBy] = useState("newest"); // "newest", "price-asc", "price-desc"
 
+  // მობილურის ბადის ხედი: 3 სვეტი (ნაგულისხმევი, მინიმალური სქროლვისთვის) ან 2 სვეტი
+  const [mobileCols, setMobileCols] = useState(() => {
+    try {
+      const saved = localStorage.getItem("aurelia_catalog_cols");
+      return saved ? Number(saved) : 3;
+    } catch {
+      return 3;
+    }
+  });
+
+  const handleMobileColsChange = (cols) => {
+    setMobileCols(cols);
+    try {
+      localStorage.setItem("aurelia_catalog_cols", String(cols));
+    } catch {}
+  };
+
   // Update document title & CollectionPage Schema
   useEffect(() => {
     const brand = siteSettings.brandName || "AURELIA";
@@ -413,167 +430,204 @@ export default function CatalogPage() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5 xl:gap-5">
-              {filteredProducts.map((product) => {
-                const mainImg = product.images?.[0] || product.image || "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80";
-                const secondaryImg = product.images?.[1] || null;
-                const productName = pick(product, "name", lang);
-                const discountPct = calculateDiscountPercent(product.price, product.oldPrice);
+            <div>
+              {/* Toolbar: Counter on Left & Mobile Columns Switcher (2 vs 3) on Right */}
+              <div className="flex items-center justify-between mb-3.5 px-1 text-xs">
+                <span className="opacity-70 font-medium text-[11px] sm:text-xs">
+                  {lang === "ka" ? `სულ: ${filteredProducts.length} სამკაული` : `Total: ${filteredProducts.length} pieces`}
+                </span>
 
-                return (
-                  <article
-                    key={product.id}
-                    className={`group rounded-2xl sm:rounded-3xl overflow-hidden border transition-all duration-300 flex flex-col ${
-                      darkMode
-                        ? "bg-[#141210] border-stone-800/80 hover:border-amber-500/40"
-                        : "bg-white border-stone-200/90 hover:border-amber-500 shadow-sm hover:shadow-xl"
+                {/* Mobile View Switcher (2 vs 3 columns) */}
+                <div className="flex sm:hidden items-center gap-1 bg-stone-500/10 p-0.5 rounded-xl border border-stone-500/20">
+                  <span className="text-[10px] opacity-60 px-1 font-medium">{lang === "ka" ? "ხედი:" : "View:"}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleMobileColsChange(2)}
+                    className={`px-2.5 py-0.5 rounded-lg text-xs font-semibold transition-all ${
+                      mobileCols === 2
+                        ? "bg-amber-500 text-black shadow-xs"
+                        : "opacity-60 hover:opacity-100"
                     }`}
+                    title="2 სვეტი"
                   >
-                    <div className="relative aspect-square overflow-hidden bg-stone-900 cursor-pointer" onClick={() => openProduct(product)}>
-                      {/* Primary Photo */}
-                      <img
-                        src={getOptimizedImageUrl(mainImg, 380, 68)}
-                        srcSet={getProductCardSrcSet(mainImg)}
-                        sizes="(max-width: 640px) 360px, (max-width: 1024px) 300px, 260px"
-                        alt={productName || "სამკაული"}
-                        loading="lazy"
-                        decoding="async"
-                        width="400"
-                        height="400"
-                        className={`w-full h-full object-cover transition-all duration-700 ease-out ${
-                          secondaryImg ? "group-hover:opacity-0 group-hover:scale-105" : "group-hover:scale-105"
-                        }`}
-                      />
+                    <span>2</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleMobileColsChange(3)}
+                    className={`px-2.5 py-0.5 rounded-lg text-xs font-semibold transition-all ${
+                      mobileCols === 3
+                        ? "bg-amber-500 text-black shadow-xs"
+                        : "opacity-60 hover:opacity-100"
+                    }`}
+                    title="3 სვეტი"
+                  >
+                    <span>3</span>
+                  </button>
+                </div>
+              </div>
 
-                      {/* Secondary Photo on Hover */}
-                      {secondaryImg && (
+              {/* Responsive Grid */}
+              <div className={`grid gap-2 sm:gap-4 xl:gap-5 ${
+                mobileCols === 3
+                  ? "grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5"
+                  : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5"
+              }`}>
+                {filteredProducts.map((product) => {
+                  const mainImg = product.images?.[0] || product.image || "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80";
+                  const secondaryImg = product.images?.[1] || null;
+                  const productName = pick(product, "name", lang);
+                  const discountPct = calculateDiscountPercent(product.price, product.oldPrice);
+
+                  return (
+                    <article
+                      key={product.id}
+                      onClick={() => openProduct(product)}
+                      className={`group cursor-pointer rounded-xl sm:rounded-3xl overflow-hidden border transition-all duration-300 flex flex-col justify-between ${
+                        darkMode
+                          ? "bg-[#141210] border-stone-800/80 hover:border-amber-500/40 shadow-xs hover:shadow-lg"
+                          : "bg-white border-stone-200/90 hover:border-amber-500 shadow-xs hover:shadow-lg"
+                      }`}
+                    >
+                      <div className="relative aspect-square overflow-hidden bg-stone-900 cursor-pointer">
+                        {/* Primary Photo */}
                         <img
-                          src={getOptimizedImageUrl(secondaryImg, 380, 68)}
-                          srcSet={getProductCardSrcSet(secondaryImg)}
-                          sizes="(max-width: 640px) 360px, (max-width: 1024px) 300px, 260px"
-                          alt={`${productName || "სამკაული"} - ხედი 2`}
+                          src={getOptimizedImageUrl(mainImg, 380, 68)}
+                          srcSet={getProductCardSrcSet(mainImg)}
+                          sizes="(max-width: 640px) 200px, (max-width: 1024px) 260px, 300px"
+                          alt={productName || "სამკაული"}
                           loading="lazy"
                           decoding="async"
                           width="400"
                           height="400"
-                          className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out pointer-events-none"
-                        />
-                      )}
-
-                      {/* Badges */}
-                      <div className="absolute top-3 left-3 flex flex-col items-start gap-1.5 z-10 pointer-events-none">
-                        {product.exclusive && (
-                          <span className="self-start px-3 py-1 rounded-full text-[10px] uppercase tracking-widest bg-black/80 text-amber-400 border border-amber-500/40 backdrop-blur-md">
-                            {lang === "ka" ? "ექსკლუზივი" : "Exclusive"}
-                          </span>
-                        )}
-                        {discountPct ? (
-                          <span className="self-start px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-600 text-white backdrop-blur-md shadow-md shadow-red-950/40 flex items-center gap-1">
-                            <span>{lang === "ka" ? "ფასდაკლება" : "Sale"}</span>
-                            <span className="font-mono bg-black/35 px-1 py-0.2 rounded text-[10px]">-{discountPct}%</span>
-                          </span>
-                        ) : null}
-                        {product.stockStatus === 'preorder' && (
-                          <span className="self-start px-2.5 py-1 rounded-full text-[10px] font-semibold bg-amber-950/90 text-amber-300 border border-amber-500/40 backdrop-blur-md shadow-md">
-                            {lang === 'ka' ? '🟡 შეკვეთით' : 'Pre-order'}
-                          </span>
-                        )}
-                        {product.stockStatus === 'sold_out' && (
-                          <span className="self-start px-2.5 py-1 rounded-full text-[10px] font-semibold bg-stone-900/90 text-stone-300 border border-stone-600 backdrop-blur-md shadow-md">
-                            {lang === 'ka' ? '⚪ ამოიწურა' : 'Sold out'}
-                          </span>
-                        )}
-                      </div>
-
-                      {product.images?.length > 1 && (
-                        <span className="absolute bottom-3 left-3 px-2.5 py-1 rounded-full text-[10px] bg-black/70 text-white backdrop-blur-sm z-10 pointer-events-none">
-                          +{product.images.length} {lang === "ka" ? "ფოტო" : "photos"}
-                        </span>
-                      )}
-
-                      <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
-                        {/* Favorite Button */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFavorite(product.id);
-                          }}
-                          aria-label={
-                            favorites.includes(product.id)
-                              ? (lang === "ka" ? `${productName} — რჩეულებიდან ამოშლა` : `Remove ${productName} from favorites`)
-                              : (lang === "ka" ? `${productName} — რჩეულებში დამატება` : `Add ${productName} to favorites`)
-                          }
-                          className="p-2 sm:p-2.5 rounded-full bg-black/65 text-white hover:bg-black transition-all shadow-md backdrop-blur-sm"
-                        >
-                          <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${favorites.includes(product.id) ? "fill-amber-500 text-amber-500" : ""}`} />
-                        </button>
-
-                        {/* Compare Button */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleCompare(product.id);
-                          }}
-                          title={
-                            compareList?.includes(product.id)
-                              ? (lang === "ka" ? "შედარებიდან ამოშლა" : "Remove from compare")
-                              : (lang === "ka" ? "შედარებაში დამატება" : "Add to compare")
-                          }
-                          className={`p-2 sm:p-2.5 rounded-full transition-all shadow-md backdrop-blur-sm ${
-                            compareList?.includes(product.id)
-                              ? "bg-amber-500 text-black shadow-amber-500/30 scale-105"
-                              : "bg-black/65 text-white hover:bg-black hover:text-amber-400"
+                          className={`w-full h-full object-cover transition-all duration-700 ease-out ${
+                            secondaryImg ? "group-hover:opacity-0 group-hover:scale-105" : "group-hover:scale-105"
                           }`}
-                        >
-                          <ArrowLeftRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </button>
-                      </div>
-                    </div>
+                        />
 
-                    <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3.5">
-                      <div>
-                        <div className="flex items-center justify-between text-[11px] opacity-60 mb-1">
-                          <span>{product.category}</span>
-                          <span className="font-mono">{product.sku}</span>
-                        </div>
-                        <h3
-                          onClick={() => openProduct(product)}
-                          className="font-serif text-lg sm:text-xl font-medium cursor-pointer hover:text-amber-500 transition-colors line-clamp-1"
-                        >
-                          {productName}
-                        </h3>
-                        <p className="text-xs opacity-70 mt-1 truncate">
-                          {product.metal} • {product.karat}
-                        </p>
-                      </div>
+                        {/* Secondary Photo on Hover */}
+                        {secondaryImg && (
+                          <img
+                            src={getOptimizedImageUrl(secondaryImg, 380, 68)}
+                            srcSet={getProductCardSrcSet(secondaryImg)}
+                            sizes="(max-width: 640px) 200px, (max-width: 1024px) 260px, 300px"
+                            alt={`${productName || "სამკაული"} - ხედი 2`}
+                            loading="lazy"
+                            decoding="async"
+                            width="400"
+                            height="400"
+                            className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out pointer-events-none"
+                          />
+                        )}
 
-                      <div className="pt-3 border-t border-stone-500/15 flex items-center justify-between gap-2">
-                        <div className="flex flex-col">
+                        {/* Badges */}
+                        <div className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 flex flex-col items-start gap-1 z-10 pointer-events-none max-w-[65%]">
+                          {product.exclusive && (
+                            <span className="self-start px-1.5 sm:px-2 py-0.5 rounded-full text-[7px] sm:text-[9px] uppercase tracking-wider font-semibold bg-black/80 text-amber-400 border border-amber-500/40 backdrop-blur-md truncate max-w-full">
+                              {lang === "ka" ? "ექსკლუზივი" : "Exclusive"}
+                            </span>
+                          )}
                           {discountPct ? (
-                            <span className="text-[11px] line-through opacity-50 font-normal">
-                              {formatPrice(product.oldPrice)}
+                            <span className="self-start px-1 sm:px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold uppercase tracking-wider bg-red-600 text-white backdrop-blur-md shadow-md">
+                              -{discountPct}%
                             </span>
                           ) : null}
-                          <span className="font-serif text-lg sm:text-xl text-amber-500 font-semibold leading-tight">
-                            {formatPrice(product.price)}
-                          </span>
+                          {product.stockStatus === 'preorder' && (
+                            <span className="self-start px-1.5 sm:px-2 py-0.5 rounded-full text-[7px] sm:text-[9px] font-semibold bg-amber-950/90 text-amber-300 border border-amber-500/40 backdrop-blur-md shadow-md">
+                              {lang === 'ka' ? '🟡 შეკვეთით' : 'Pre-order'}
+                            </span>
+                          )}
+                          {product.stockStatus === 'sold_out' && (
+                            <span className="self-start px-1.5 sm:px-2 py-0.5 rounded-full text-[7px] sm:text-[9px] font-semibold bg-stone-900/90 text-stone-300 border border-stone-600 backdrop-blur-md shadow-md">
+                              {lang === 'ka' ? '⚪ ამოიწურა' : 'Sold out'}
+                            </span>
+                          )}
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => openProduct(product)}
-                          aria-label={`${lang === "ka" ? "დეტალურად ნახვა" : "View details"}: ${productName}`}
-                          className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-black transition-all flex items-center gap-1.5 shrink-0"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>{lang === "ka" ? "დეტალურად" : "Details"}</span>
-                        </button>
+
+                        {/* Action Buttons: Favorite & Compare Side-by-Side */}
+                        <div className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 flex items-center gap-1 z-10">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFavorite(product.id);
+                            }}
+                            aria-label={
+                              favorites.includes(product.id)
+                                ? (lang === "ka" ? `${productName} — რჩეულებიდან ამოშლა` : `Remove ${productName} from favorites`)
+                                : (lang === "ka" ? `${productName} — რჩეულებში დამატება` : `Add ${productName} to favorites`)
+                            }
+                            className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full backdrop-blur-md flex items-center justify-center transition-all shadow ${
+                              favorites.includes(product.id)
+                                ? "bg-rose-500 text-white shadow-rose-500/30"
+                                : "bg-black/60 text-white hover:text-rose-400"
+                            }`}
+                          >
+                            <Heart className={`w-3 sm:w-4 h-3 sm:h-4 ${favorites.includes(product.id) ? "fill-white text-white" : ""}`} />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleCompare(product.id);
+                            }}
+                            title={
+                              compareList?.includes(product.id)
+                                ? (lang === "ka" ? "შედარებიდან ამოშლა" : "Remove from compare")
+                                : (lang === "ka" ? "შედარებაში დამატება" : "Add to compare")
+                            }
+                            className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full backdrop-blur-md flex items-center justify-center transition-all shadow border ${
+                              compareList?.includes(product.id)
+                                ? "bg-amber-500 text-black border-amber-400 font-semibold shadow-amber-500/30 scale-105"
+                                : "bg-black/60 text-white border-transparent hover:text-amber-400"
+                            }`}
+                          >
+                            <ArrowLeftRight className="w-3 sm:w-4 h-3 sm:h-4" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  </article>
-                );
-              })}
+
+                      {/* Card Details */}
+                      <div className="p-2 sm:p-4 flex-1 flex flex-col justify-between space-y-1 sm:space-y-2">
+                        <div>
+                          <div className="flex items-center justify-between text-[8px] sm:text-[10px] opacity-60 mb-0.5 gap-1">
+                            <span className="truncate uppercase tracking-wider">{product.category}</span>
+                            <span className="font-mono text-amber-500/80 shrink-0">#{product.sku}</span>
+                          </div>
+                          <h3
+                            onClick={() => openProduct(product)}
+                            className="font-serif text-[11px] sm:text-base font-normal cursor-pointer hover:text-amber-500 transition-colors line-clamp-1 leading-snug"
+                            title={productName}
+                          >
+                            {productName}
+                          </h3>
+                        </div>
+
+                        {/* Price Row */}
+                        <div className="pt-1.5 sm:pt-2 border-t border-stone-500/15 flex items-baseline justify-between gap-1">
+                          <div className="flex items-baseline gap-1">
+                            <span className="font-serif text-xs sm:text-base text-amber-500 font-bold leading-tight whitespace-nowrap">
+                              {formatPrice(product.price)}
+                            </span>
+                            {discountPct ? (
+                              <span className="text-[9px] sm:text-xs line-through text-stone-500 font-normal leading-none whitespace-nowrap">
+                                {formatPrice(product.oldPrice)}
+                              </span>
+                            ) : null}
+                          </div>
+
+                          {discountPct ? (
+                            <span className="text-[8px] sm:text-[10px] font-bold text-red-400 font-mono">
+                              -{discountPct}%
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
