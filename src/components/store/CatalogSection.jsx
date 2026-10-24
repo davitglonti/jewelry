@@ -18,7 +18,7 @@ export default function CatalogSection({ openProductModal }) {
   return (
     <section id="catalog" className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-16 sm:py-20">
       {/* Header with Luxury Title on Left and "View Full Collection" Button on Right */}
-      <div className="flex flex-row items-end justify-between mb-8 sm:mb-12 gap-2 sm:gap-6 pb-4 sm:pb-6 border-b border-stone-500/15">
+      <div className="flex flex-row items-end justify-between mb-4 sm:mb-6 gap-2 sm:gap-6 pb-3 sm:pb-4 border-b border-stone-500/15">
         <div>
           <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-amber-500 block mb-1.5 font-medium">
             {lang === "ka" ? "საიუველირო ვიტრინა" : "Fine Jewelry Showcase"}
@@ -160,10 +160,10 @@ export default function CatalogSection({ openProductModal }) {
                         openProductModal(product);
                       }}
                       aria-label={`${lang === "ka" ? "დეტალურად ნახვა" : "View details"}: ${productName}`}
-                      className="hidden sm:flex px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-black transition-all items-center gap-1 shrink-0"
+                      className="flex px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-black transition-all items-center gap-1 shrink-0 whitespace-nowrap"
                     >
                       <Eye className="w-3.5 h-3.5" />
-                      <span>{lang === "ka" ? "დეტალ." : "Details"}</span>
+                      <span>{lang === "ka" ? "დეტალურად" : "Details"}</span>
                     </button>
                   </div>
                 </div>
