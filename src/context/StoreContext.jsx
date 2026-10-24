@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { DEFAULT_SETTINGS } from '../data/defaultSettings';
 import { DEFAULT_PRODUCTS } from '../data/defaultProducts';
@@ -41,10 +41,7 @@ export function StoreProvider({ children }) {
   const [inquiries, setInquiries] = useState(() => readCache(KEYS.inquiries) || []);
   const [saveMessage, setSaveMessage] = useState("");
 
-  // true: ქეში არსებობს, ან Firebase საერთოდ არ არის -> loader არ გვჭირდება
-  const [settingsLoaded, setSettingsLoaded] = useState(
-    () => !!readCache(KEYS.settings) || !db
-  );
+  const [settingsLoaded, setSettingsLoaded] = useState(true);
 
   // Favicon: იგივე logoUrl, რაც საიტზე ლოგოდ ჩანს
   useEffect(() => {
@@ -111,11 +108,41 @@ export function StoreProvider({ children }) {
   useEffect(() => {
     if (!db) return;
 
-    const fallbackTimer = setTimeout(() => setSettingsLoaded(true), 6000);
+    // ადმინ პანელში ვიყენებთ real-time onSnapshot-ს
+    if (window.location.pathname.startsWith("/admin")) {
+      let unsub = () => {};
+      import('firebase/firestore').then(({ onSnapshot, doc }) => {
+        unsub = onSnapshot(
+          doc(db, "aurelia", "storeData"),
+          (docSnap) => {
+            if (docSnap.exists()) {
+              const data = docSnap.data();
+              if (data.settings) {
+                setSiteSettings({ ...DEFAULT_SETTINGS, ...data.settings });
+                writeCache(KEYS.settings, data.settings);
+              }
+              if (data.products) {
+                setProducts(data.products);
+                writeCache(KEYS.products, data.products);
+              }
+              if (data.inquiries) setInquiries(data.inquiries);
+            }
+          },
+          (error) => {
+            console.error("Firebase ჩატვირთვის შეცდომა:", error);
+          }
+        );
+      });
+      return () => unsub();
+    }
 
-    const unsub = onSnapshot(
-      doc(db, "aurelia", "storeData"),
-      (docSnap) => {
+    // ჩვეულებრივი მომხმარებლისთვის ვიყენებთ ერთჯერად getDoc-ს, რათა არ დაკიდოს კავშირი
+    let isMounted = true;
+    const timer = setTimeout(async () => {
+      try {
+        const { getDoc, doc } = await import('firebase/firestore');
+        const docSnap = await getDoc(doc(db, "aurelia", "storeData"));
+        if (!isMounted) return;
         if (docSnap.exists()) {
           const data = docSnap.data();
           if (data.settings) {
@@ -128,17 +155,14 @@ export function StoreProvider({ children }) {
           }
           if (data.inquiries) setInquiries(data.inquiries);
         }
-        setSettingsLoaded(true);
-      },
-      (error) => {
-        console.error("Firebase ჩატვირთვის შეცდომა:", error);
-        setSettingsLoaded(true);
+      } catch (err) {
+        console.error("Firebase ჩატვირთვის შეცდომა:", err);
       }
-    );
+    }, 150);
 
     return () => {
-      clearTimeout(fallbackTimer);
-      unsub();
+      isMounted = false;
+      clearTimeout(timer);
     };
   }, []);
 

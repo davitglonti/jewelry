@@ -2,10 +2,11 @@ import React, { useEffect } from 'react';
 import { Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { pick } from '../../utils/i18n';
 import { SLIDE_INTERVAL_MS } from '../../constants';
-import { getOptimizedImageUrl, getUnsplashSrcSet } from '../../utils/imageUtils';
+import { getOptimizedImageUrl, getUnsplashSrcSet, sanitizeImageUrl } from '../../utils/imageUtils';
 
 export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, lang }) {
   const activeSlide = slides[currentSlide % slides.length] || slides[0];
+  const slideImage = sanitizeImageUrl(activeSlide?.image);
 
   useEffect(() => {
     if (!slides || slides.length <= 1) return;
@@ -21,8 +22,8 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
     <section className="relative h-[500px] sm:h-[640px] overflow-hidden flex items-center bg-black">
       <div className="absolute inset-0">
         <img
-          src={getOptimizedImageUrl(activeSlide?.image, 1200, 80)}
-          srcSet={getUnsplashSrcSet(activeSlide?.image)}
+          src={getOptimizedImageUrl(slideImage, 1200, 75)}
+          srcSet={getUnsplashSrcSet(slideImage)}
           sizes="100vw"
           alt={pick(activeSlide, "title", lang) || "მატარე — საიუველირო კოლექცია"}
           loading="eager"
@@ -30,7 +31,7 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
           decoding="async"
           width="1200"
           height="640"
-          className="w-full h-full object-cover object-center transition-all duration-1000 scale-105"
+          className="w-full h-full object-cover object-center transition-transform duration-1000"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/35" />
       </div>
@@ -97,9 +98,8 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
                 >
                   {isActive && (
                     <div
-                      className="absolute top-0 left-0 h-full bg-amber-400"
+                      className="absolute top-0 left-0 w-full h-full bg-amber-400 origin-left"
                       style={{
-                        width: "100%",
                         animation: `fillProgress ${SLIDE_INTERVAL_MS}ms linear forwards`
                       }}
                     />

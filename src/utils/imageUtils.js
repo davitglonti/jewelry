@@ -20,29 +20,38 @@ export const handleFileUpload = (file, callback) => {
   reader.readAsDataURL(file);
 };
 
-export const getOptimizedImageUrl = (url, width = 600, quality = 75) => {
-  if (!url || typeof url !== 'string') return url;
-  if (url.includes('images.unsplash.com')) {
+export const sanitizeImageUrl = (url, fallback = "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80") => {
+  if (!url || typeof url !== 'string') return fallback;
+  if (url.includes('images.unsplash.com/photo--') || url.includes('images.unsplash.com/-1515')) {
+    return fallback;
+  }
+  return url;
+};
+
+export const getOptimizedImageUrl = (url, width = 500, quality = 70) => {
+  const cleanUrl = sanitizeImageUrl(url);
+  if (cleanUrl.includes('images.unsplash.com')) {
     try {
-      const u = new URL(url);
+      const u = new URL(cleanUrl);
       u.searchParams.set('auto', 'format');
       u.searchParams.set('fit', 'crop');
       u.searchParams.set('w', String(width));
       u.searchParams.set('q', String(quality));
       return u.toString();
     } catch {
-      return url;
+      return cleanUrl;
     }
   }
-  return url;
+  return cleanUrl;
 };
 
 export const getUnsplashSrcSet = (url) => {
-  if (!url || typeof url !== 'string' || !url.includes('images.unsplash.com')) return undefined;
+  const cleanUrl = sanitizeImageUrl(url);
+  if (!cleanUrl.includes('images.unsplash.com')) return undefined;
   try {
-    const u = new URL(url);
+    const u = new URL(cleanUrl);
     const base = `${u.origin}${u.pathname}`;
-    return `${base}?auto=format&fit=crop&w=480&q=75 480w, ${base}?auto=format&fit=crop&w=800&q=75 800w, ${base}?auto=format&fit=crop&w=1400&q=80 1400w`;
+    return `${base}?auto=format&fit=crop&w=360&q=70 360w, ${base}?auto=format&fit=crop&w=540&q=70 540w, ${base}?auto=format&fit=crop&w=720&q=75 720w, ${base}?auto=format&fit=crop&w=1200&q=75 1200w`;
   } catch {
     return undefined;
   }

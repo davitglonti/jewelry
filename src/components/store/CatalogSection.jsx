@@ -152,16 +152,16 @@ export default function CatalogSection({ openProductModal }) {
               >
                 <div className="relative aspect-square overflow-hidden bg-stone-900">
                   <img
-                    src={getOptimizedImageUrl(mainImg, 450, 75)}
+                    src={getOptimizedImageUrl(mainImg, 400, 70)}
                     srcSet={getUnsplashSrcSet(mainImg)}
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    sizes="(max-width: 640px) 360px, (max-width: 1024px) 300px, 280px"
                     alt={product.name}
                     loading="lazy"
                     decoding="async"
                     width="400"
                     height="400"
                     onClick={() => openProductModal(product)}
-                    className="w-full h-full object-cover cursor-pointer group-hover:scale-110 transition-transform duration-700"
+                    className="w-full h-full object-cover cursor-pointer group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute top-3 left-3 flex flex-col gap-1.5">
                     {product.exclusive && (
