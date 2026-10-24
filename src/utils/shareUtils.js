@@ -36,7 +36,7 @@ export const shareProductLink = async (product, lang, onCopySuccess) => {
     setMeta('meta[name="twitter:image"]', 'name', 'twitter:image', imageUrl);
     setMeta('link[rel="image_src"]', 'rel', 'image_src', imageUrl);
     setMeta('meta[property="og:url"]', 'property', 'og:url', shareUrl);
-    setMeta('meta[property="og:title"]', 'property', 'og:title', `${title} — AURELIA`);
+    setMeta('meta[property="og:title"]', 'property', 'og:title', `${title} — მატარე`);
   }
 
   // სტანდარტული Web Share API (სუფთა რეჟიმი Title-ით და URL-ით)

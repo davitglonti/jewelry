@@ -38,9 +38,18 @@
       ]
     }
   ],
+  "functions": {
+    "api/*.js": {
+      "includeFiles": "dist/**"
+    }
+  },
   "rewrites": [
     {
-      "source": "/((?!assets/|robots\\.txt|sitemap\\.xml|llms\\.txt|ai-catalog\\.json|.*\\..*).*)",
+      "source": "/product/:sku*",
+      "destination": "/api/product?sku=:sku*"
+    },
+    {
+      "source": "/((?!assets/|robots\\.txt|sitemap\\.xml|llms\\.txt|ai-catalog\\.json|brand-logo\\.jpg|logo\\.svg|.*\\..*).*)",
       "destination": "/index.html"
     }
   ]

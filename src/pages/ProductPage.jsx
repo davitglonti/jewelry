@@ -111,7 +111,7 @@ export default function ProductPage({ skuProp }) {
 
     const numericPrice = (selectedProduct.price || "").toString().replace(/[^0-9.]/g, "") || "0";
     const productUrl = `https://www.matare.store/product/${encodeURIComponent(selectedProduct.sku || selectedProduct.id)}`;
-    const mainImage = (selectedProduct.images && selectedProduct.images[0]) || "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80";
+    const mainImage = (selectedProduct.images && selectedProduct.images[0]) || "https://www.matare.store/brand-logo.jpg";
 
     // 1. სათაური & Meta Description
     document.title = `${prodName} — ${brand}`;
