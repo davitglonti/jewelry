@@ -20,7 +20,7 @@ export default function CatalogSection({ openProductModal }) {
       {/* Header with Luxury Title on Left and "View Full Collection" Button on Right */}
       <div className="flex flex-row items-end justify-between mb-4 sm:mb-6 gap-2 sm:gap-6 pb-3 sm:pb-4 border-b border-stone-500/15">
         <div>
-          <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-amber-500 block mb-1 font-medium">
+          <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-amber-500 block mb-1.5 font-medium">
             {lang === "ka" ? "საიუველირო ვიტრინა" : "Fine Jewelry Showcase"}
           </span>
           <h2 className="font-serif text-xl sm:text-4xl xl:text-5xl font-normal tracking-wide">
@@ -31,14 +31,14 @@ export default function CatalogSection({ openProductModal }) {
         {/* "View Full Collection" button placed at the top-right */}
         <a
           href="/catalog"
-          className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-black font-semibold text-[10px] sm:text-xs tracking-wider uppercase transition-all duration-300 shadow-sm hover:shadow-amber-500/20 active:scale-95 shrink-0 whitespace-nowrap"
+          className="inline-flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-6 py-1.5 sm:py-3 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-black font-semibold text-[11px] sm:text-sm tracking-wider uppercase transition-all duration-300 shadow-sm hover:shadow-amber-500/20 hover:scale-105 active:scale-95 shrink-0 whitespace-nowrap"
         >
           <span>{lang === "ka" ? `სრული კოლექცია (${products.length})` : `Explore All (${products.length})`}</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </a>
       </div>
 
-      {/* Grid of showcase pieces */}
+      {/* Grid of showcase pieces (Horizontal Luxury Shelf on mobile, 5-column grid on desktop) */}
       {showcaseProducts.length === 0 ? (
         <div className="text-center py-20 opacity-60">
           <p className="text-lg">{lang === "ka" ? "სამკაულები მალე დაემატება." : "Jewelry pieces coming soon."}</p>
@@ -55,7 +55,7 @@ export default function CatalogSection({ openProductModal }) {
               <article
                 key={product.id}
                 onClick={() => openProductModal(product)}
-                className={`group cursor-pointer rounded-2xl sm:rounded-3xl overflow-hidden border transition-all duration-300 flex flex-col justify-between shrink-0 xl:shrink w-[43vw] min-w-[155px] max-w-[185px] sm:w-[220px] sm:min-w-[220px] xl:w-auto xl:min-w-0 snap-start ${
+                className={`group cursor-pointer rounded-2xl sm:rounded-3xl overflow-hidden border transition-all duration-300 flex flex-col justify-between shrink-0 xl:shrink w-[43vw] min-w-[155px] max-w-[185px] sm:w-[220px] sm:min-w-[220px] sm:max-w-none xl:w-auto xl:min-w-0 snap-start ${
                   darkMode
                     ? "bg-[#141210] border-stone-800/80 hover:border-amber-500/40 shadow-md hover:shadow-xl hover:shadow-amber-500/5"
                     : "bg-white border-stone-200/90 hover:border-amber-500 shadow-sm hover:shadow-xl"
@@ -107,8 +107,8 @@ export default function CatalogSection({ openProductModal }) {
                     ) : null}
                   </div>
 
-                  {/* Action Buttons: Favorite & Compare Side-by-Side */}
-                  <div className="absolute top-2 right-2 flex items-center gap-1 z-10">
+                  {/* Action Buttons: Favorite & Compare (Side-by-side on mobile, stacked on desktop) */}
+                  <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex sm:flex-col items-center sm:items-end gap-1 sm:gap-1.5 z-10">
                     <button
                       type="button"
                       onClick={(e) => {
@@ -120,13 +120,13 @@ export default function CatalogSection({ openProductModal }) {
                           ? (lang === "ka" ? `${productName} — რჩეულებიდან ამოშლა` : `Remove ${productName} from favorites`)
                           : (lang === "ka" ? `${productName} — რჩეულებში დამატება` : `Add ${productName} to favorites`)
                       }
-                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full backdrop-blur-md flex items-center justify-center transition-all shadow ${
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full backdrop-blur-md flex items-center justify-center transition-all shadow-md ${
                         favorites.includes(product.id)
                           ? "bg-rose-500 text-white shadow-rose-500/30"
-                          : "bg-black/60 text-white hover:text-rose-400 hover:bg-black/80"
+                          : "bg-black/65 text-white hover:text-rose-400 hover:bg-black"
                       }`}
                     >
-                      <Heart className={`w-3.5 h-3.5 ${favorites.includes(product.id) ? "fill-white" : ""}`} />
+                      <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${favorites.includes(product.id) ? "fill-white text-white" : ""}`} />
                     </button>
 
                     <button
@@ -140,47 +140,65 @@ export default function CatalogSection({ openProductModal }) {
                           ? (lang === "ka" ? "შედარებიდან ამოშლა" : "Remove from compare")
                           : (lang === "ka" ? "შედარებაში დამატება" : "Add to compare")
                       }
-                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full backdrop-blur-md flex items-center justify-center transition-all shadow border ${
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full backdrop-blur-md flex items-center justify-center transition-all shadow-md border ${
                         compareList?.includes(product.id)
                           ? "bg-amber-500 text-black border-amber-400 font-semibold shadow-amber-500/30 scale-105"
-                          : "bg-black/60 text-white border-transparent hover:bg-black/80 hover:text-amber-400"
+                          : "bg-black/65 text-white border-transparent hover:bg-black hover:text-amber-400"
                       }`}
                     >
-                      <ArrowLeftRight className="w-3.5 h-3.5" />
+                      <ArrowLeftRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 </div>
 
                 {/* Card Details */}
-                <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2">
+                <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2 sm:space-y-3">
                   <div>
-                    <div className="flex items-center justify-between text-[10px] opacity-60 mb-1 gap-1">
-                      <span className="truncate uppercase tracking-wider text-[9px] font-medium">{product.category || "სამკაული"}</span>
-                      <span className="font-mono text-[9px] shrink-0 text-amber-500/80">#{product.sku}</span>
+                    <div className="flex items-center justify-between text-[10px] sm:text-[11px] opacity-60 mb-1 gap-1">
+                      <span className="truncate uppercase tracking-wider text-[9px] sm:text-[10px] font-medium">{product.category || "სამკაული"}</span>
+                      <span className="font-mono text-[9px] sm:text-[11px] shrink-0 text-amber-500/80">#{product.sku}</span>
                     </div>
                     <h3
-                      className="font-serif text-xs sm:text-base font-normal hover:text-amber-500 transition-colors line-clamp-1 leading-snug"
+                      className="font-serif text-xs sm:text-base font-medium hover:text-amber-500 transition-colors line-clamp-1 leading-snug"
                       title={productName}
                     >
                       {productName}
                     </h3>
+                    <p className="text-[10px] sm:text-xs opacity-70 truncate hidden sm:block mt-1">
+                      {product.metal} • {product.karat}
+                    </p>
                   </div>
 
-                  {/* Clean Luxury Price Row */}
-                  <div className="pt-2.5 border-t border-stone-500/15 flex items-baseline justify-between gap-1.5">
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="font-serif text-sm sm:text-lg text-amber-500 font-bold leading-tight whitespace-nowrap">
-                        {formatPrice(product.price)}
-                      </span>
+                  {/* Price Row & Desktop Details Pill */}
+                  <div className="pt-2 sm:pt-2.5 border-t border-stone-500/15 flex items-center justify-between gap-1">
+                    <div className="flex flex-col">
                       {discountPct ? (
-                        <span className="text-[10px] sm:text-xs line-through text-stone-500 font-normal leading-none whitespace-nowrap">
+                        <span className="text-[10px] sm:text-[11px] line-through opacity-50 font-normal">
                           {formatPrice(product.oldPrice)}
                         </span>
                       ) : null}
+                      <span className="font-serif text-sm sm:text-lg text-amber-500 font-semibold leading-tight">
+                        {formatPrice(product.price)}
+                      </span>
                     </div>
 
+                    {/* Details Pill Button: Fully restored on desktop */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openProductModal(product);
+                      }}
+                      aria-label={`${lang === "ka" ? "დეტალურად ნახვა" : "View details"}: ${productName}`}
+                      className="hidden sm:flex px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-black transition-all items-center gap-1 shrink-0 whitespace-nowrap active:scale-95"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>{lang === "ka" ? "დეტალურად" : "Details"}</span>
+                    </button>
+
+                    {/* Compact discount badge on mobile where button is hidden */}
                     {discountPct ? (
-                      <span className="text-[9px] sm:text-[10px] font-bold text-red-400 font-mono">
+                      <span className="sm:hidden text-[9px] font-bold text-red-400 font-mono">
                         -{discountPct}%
                       </span>
                     ) : null}

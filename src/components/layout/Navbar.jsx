@@ -21,47 +21,49 @@ export default function Navbar({
       </a>
 
       <header className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-md border-b transition-colors shadow-lg ${darkMode ? "bg-[#0c0b0a]/95 border-amber-500/15" : "bg-white/95 border-stone-200"}`}>
-        <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 h-20 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-3 group" aria-label={siteSettings.brandName || "მთავარი გვერდი"}>
+        <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 h-20 flex items-center justify-between gap-2 sm:gap-4">
+          <a href="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0" aria-label={siteSettings.brandName || "მთავარი გვერდი"}>
             {siteSettings.logoUrl ? (
-              <img src={siteSettings.logoUrl} alt={siteSettings.brandName} className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border border-amber-500/40" />
+              <img src={siteSettings.logoUrl} alt={siteSettings.brandName} className="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover border border-amber-500/40 shrink-0" />
             ) : (
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-black shadow-lg shadow-amber-500/20">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-black shadow-lg shadow-amber-500/20 shrink-0">
                 <Sparkles className="w-5 h-5" />
               </div>
             )}
-            <div>
-              <span className="font-serif text-xl sm:text-3xl tracking-[0.22em] font-semibold block leading-none">
+            <div className="shrink-0">
+              <span className="font-serif text-xl sm:text-2xl xl:text-3xl tracking-[0.16em] xl:tracking-[0.22em] font-semibold block leading-none">
                 {siteSettings.brandName}
               </span>
-              <span className="text-[9px] sm:text-xs tracking-[0.18em] text-amber-500/90 uppercase block mt-1">
+              <span className="text-[9px] sm:text-[10px] xl:text-xs tracking-[0.12em] xl:tracking-[0.18em] text-amber-500/90 uppercase block mt-1">
                 {lang === "ka" ? siteSettings.brandSubtitle : (siteSettings.brandSubtitleEn || siteSettings.brandSubtitle)}
               </span>
             </div>
           </a>
 
-          <nav className="hidden md:flex items-center gap-8 text-sm tracking-wider uppercase" aria-label="Main navigation">
-            <a href="/catalog" className="hover:text-amber-500 transition-colors">
+          {/* Desktop Navigation (visible on lg: 1024px and up) */}
+          <nav className="hidden lg:flex items-center gap-3.5 xl:gap-6 2xl:gap-8 text-xs xl:text-sm tracking-wide xl:tracking-wider uppercase shrink-0" aria-label="Main navigation">
+            <a href="/catalog" className="hover:text-amber-500 transition-colors whitespace-nowrap">
               {lang === "ka" ? "კოლექცია" : "Collection"}
             </a>
-            <a href="/about" className="hover:text-amber-500 transition-colors">
+            <a href="/about" className="hover:text-amber-500 transition-colors whitespace-nowrap">
               {lang === "ka" ? "ჩვენს შესახებ" : "About Us"}
             </a>
-            <a href="/#craftsmanship" className="hover:text-amber-500 transition-colors">
+            <a href="/#craftsmanship" className="hover:text-amber-500 transition-colors whitespace-nowrap">
               {lang === "ka" ? "ოსტატობა" : "Craftsmanship"}
             </a>
-            <a href="/blog" className="hover:text-amber-500 transition-colors">
+            <a href="/blog" className="hover:text-amber-500 transition-colors whitespace-nowrap">
               {lang === "ka" ? "ბლოგი" : "Journal"}
             </a>
-            <a href="/size-guide" className="hover:text-amber-500 transition-colors">
+            <a href="/size-guide" className="hover:text-amber-500 transition-colors whitespace-nowrap">
               {lang === "ka" ? "ზომის გიდი" : "Size Guide"}
             </a>
-            <a href="/#contact" className="hover:text-amber-500 transition-colors">
+            <a href="/#contact" className="hover:text-amber-500 transition-colors whitespace-nowrap">
               {lang === "ka" ? "შოურუმი" : "Showroom"}
             </a>
           </nav>
 
-          <div className="hidden md:flex items-center gap-3">
+          {/* Desktop Action Icons (visible on lg: 1024px and up) */}
+          <div className="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
             <button
               type="button"
               onClick={() => setLang(lang === "ka" ? "en" : "ka")}
@@ -102,12 +104,37 @@ export default function Navbar({
             </button>
           </div>
 
-          <div className="flex md:hidden items-center gap-2">
+          {/* Mobile & Tablet Action Icons (< 1024px) */}
+          <div className="flex lg:hidden items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Quick switches on tablet / medium screens (>= 640px) */}
+            <button
+              type="button"
+              onClick={() => setLang(lang === "ka" ? "en" : "ka")}
+              aria-label={lang === "ka" ? "Switch language to English" : "ენის გადართვა ქართულზე"}
+              className={`hidden sm:flex px-2.5 py-1.5 rounded-full text-xs font-medium border items-center gap-1 transition-all ${
+                darkMode ? "border-stone-800 bg-stone-900 text-stone-300" : "border-stone-200 bg-stone-100 text-stone-700"
+              }`}
+            >
+              <Globe className="w-3.5 h-3.5 text-amber-500" />
+              {lang === "ka" ? "EN" : "GE"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setDarkMode(!darkMode)}
+              aria-label={darkMode ? (lang === "ka" ? "დღის რეჟიმზე გადართვა" : "Switch to light mode") : (lang === "ka" ? "ღამის რეჟიმზე გადართვა" : "Switch to dark mode")}
+              className={`hidden sm:flex p-2 rounded-full border transition-all ${
+                darkMode ? "border-stone-800 bg-stone-900 text-amber-400" : "border-stone-200 bg-stone-100 text-stone-700"
+              }`}
+            >
+              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+
             <button
               type="button"
               onClick={() => setShowFavoritesModal(true)}
               aria-label={lang === "ka" ? `რჩეული სამკაულები (${favorites.length})` : `Saved items (${favorites.length})`}
-              className={`relative p-2 rounded-full border ${darkMode ? "border-stone-800 bg-stone-900" : "border-stone-200 bg-stone-100"}`}
+              className={`relative p-2 rounded-full border transition-all ${darkMode ? "border-stone-800 bg-stone-900 text-stone-300" : "border-stone-200 bg-stone-100 text-stone-700"}`}
             >
               <Heart className={`w-4 h-4 ${favorites.length > 0 ? "fill-amber-500 text-amber-500" : ""}`} />
               {favorites.length > 0 && (
@@ -121,15 +148,16 @@ export default function Navbar({
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label={isMobileMenuOpen ? (lang === "ka" ? "მენიუს დახურვა" : "Close menu") : (lang === "ka" ? "მენიუს გახსნა" : "Open menu")}
-              className={`p-2 rounded-full border ${darkMode ? "border-stone-800 bg-stone-900 text-amber-400" : "border-stone-200 bg-stone-100 text-stone-800"}`}
+              className={`p-2 rounded-full border transition-all ${darkMode ? "border-stone-800 bg-stone-900 text-amber-400" : "border-stone-200 bg-stone-100 text-stone-800"}`}
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
+        {/* Mobile & Tablet Dropdown Navigation (< 1024px) */}
         {isMobileMenuOpen && (
-          <div className={`md:hidden border-b p-5 space-y-4 animate-fadeIn ${darkMode ? "bg-[#0c0b0a] border-stone-800" : "bg-white border-stone-200"}`}>
+          <div className={`lg:hidden border-b p-5 space-y-4 animate-fadeIn ${darkMode ? "bg-[#0c0b0a] border-stone-800" : "bg-white border-stone-200"}`}>
             <nav className="flex flex-col space-y-3 text-sm tracking-wider uppercase" aria-label="Mobile navigation">
               <a href="/catalog" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
                 {lang === "ka" ? "კოლექცია" : "Collection"}
@@ -151,7 +179,7 @@ export default function Navbar({
               </a>
             </nav>
 
-            <div className="pt-3 border-t border-stone-500/20 flex items-center gap-2">
+            <div className="pt-3 border-t border-stone-500/20 flex items-center gap-2 sm:hidden">
               <button
                 type="button"
                 onClick={() => setLang(lang === "ka" ? "en" : "ka")}

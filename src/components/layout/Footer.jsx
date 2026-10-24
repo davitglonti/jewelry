@@ -66,16 +66,13 @@ export default function Footer({ darkMode, lang, siteSettings }) {
                 </a>
               </li>
               <li>
-                <a href="/blog" className={`transition-colors font-medium ${isDark ? "text-amber-400 hover:text-amber-300" : "text-amber-700 hover:text-amber-800"}`}>
+                <a href="/blog" className={`${linkHover} transition-colors`}>
                   {lang === "ka" ? "ბლოგი / რჩევები" : "Blog / Journal"}
                 </a>
               </li>
               <li>
-                <a href="/size-guide" className={`transition-colors flex items-center gap-1.5 font-medium ${isDark ? "text-amber-400 hover:text-amber-300" : "text-amber-700 hover:text-amber-800"}`}>
-                  <span>{lang === "ka" ? "ზომის გზამკვლევი" : "Size Guide"}</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/50 uppercase font-semibold">
-                    {lang === "ka" ? "საზომი" : "Guide"}
-                  </span>
+                <a href="/size-guide" className={`${linkHover} transition-colors`}>
+                  {lang === "ka" ? "ზომის გზამკვლევი" : "Size Guide"}
                 </a>
               </li>
               <li>

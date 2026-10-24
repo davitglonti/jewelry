@@ -544,8 +544,8 @@ export default function CatalogPage() {
                           )}
                         </div>
 
-                        {/* Action Buttons: Favorite & Compare Side-by-Side */}
-                        <div className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 flex items-center gap-1 z-10">
+                        {/* Action Buttons: Favorite & Compare */}
+                        <div className="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 flex sm:flex-col items-center sm:items-end gap-1 sm:gap-1.5 z-10">
                           <button
                             type="button"
                             onClick={(e) => {
@@ -602,23 +602,41 @@ export default function CatalogPage() {
                           >
                             {productName}
                           </h3>
+                          <p className="text-xs opacity-70 mt-1 truncate hidden sm:block">
+                            {product.metal} • {product.karat}
+                          </p>
                         </div>
 
-                        {/* Price Row */}
-                        <div className="pt-1.5 sm:pt-2 border-t border-stone-500/15 flex items-baseline justify-between gap-1">
-                          <div className="flex items-baseline gap-1">
-                            <span className="font-serif text-xs sm:text-base text-amber-500 font-bold leading-tight whitespace-nowrap">
-                              {formatPrice(product.price)}
-                            </span>
+                        {/* Price Row & Details Button on Desktop */}
+                        <div className="pt-1.5 sm:pt-2.5 border-t border-stone-500/15 flex items-center justify-between gap-1 sm:gap-2">
+                          <div className="flex flex-col">
                             {discountPct ? (
-                              <span className="text-[9px] sm:text-xs line-through text-stone-500 font-normal leading-none whitespace-nowrap">
+                              <span className="text-[9px] sm:text-[11px] line-through opacity-50 font-normal">
                                 {formatPrice(product.oldPrice)}
                               </span>
                             ) : null}
+                            <span className="font-serif text-xs sm:text-base lg:text-lg xl:text-xl text-amber-500 font-semibold leading-tight whitespace-nowrap">
+                              {formatPrice(product.price)}
+                            </span>
                           </div>
 
+                          {/* Details button on desktop */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openProduct(product);
+                            }}
+                            aria-label={`${lang === "ka" ? "დეტალურად ნახვა" : "View details"}: ${productName}`}
+                            className="hidden sm:flex px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-black transition-all items-center gap-1.5 shrink-0 whitespace-nowrap active:scale-95"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>{lang === "ka" ? "დეტალურად" : "Details"}</span>
+                          </button>
+
+                          {/* Discount tag on mobile */}
                           {discountPct ? (
-                            <span className="text-[8px] sm:text-[10px] font-bold text-red-400 font-mono">
+                            <span className="sm:hidden text-[8px] font-bold text-red-400 font-mono">
                               -{discountPct}%
                             </span>
                           ) : null}
