@@ -18,23 +18,23 @@ export default function CatalogSection({ openProductModal }) {
   return (
     <section id="catalog" className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-16 sm:py-20">
       {/* Header with Luxury Title on Left and "View Full Collection" Button on Right */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 sm:mb-16 gap-6 pb-6 border-b border-stone-500/15">
+      <div className="flex flex-row items-end justify-between mb-8 sm:mb-12 gap-2 sm:gap-6 pb-4 sm:pb-6 border-b border-stone-500/15">
         <div>
-          <span className="text-xs uppercase tracking-[0.25em] text-amber-500 block mb-2 font-medium">
+          <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-amber-500 block mb-1.5 font-medium">
             {lang === "ka" ? "საიუველირო ვიტრინა" : "Fine Jewelry Showcase"}
           </span>
-          <h2 className="font-serif text-3xl sm:text-5xl font-normal tracking-wide">
+          <h2 className="font-serif text-2xl sm:text-4xl xl:text-5xl font-normal tracking-wide">
             {lang === "ka" ? "ჩვენი კოლექცია" : "Our Collection"}
           </h2>
         </div>
 
-        {/* "View Full Collection" button placed at the top-right above the grid */}
+        {/* "View Full Collection" button placed at the top-right (both on mobile & desktop) */}
         <a
           href="/catalog"
-          className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-black font-semibold text-xs sm:text-sm tracking-wider uppercase transition-all duration-300 shadow-sm hover:shadow-amber-500/20 hover:scale-105 shrink-0 self-start sm:self-end"
+          className="inline-flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-6 py-1.5 sm:py-3 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-black font-semibold text-[11px] sm:text-sm tracking-wider uppercase transition-all duration-300 shadow-sm hover:shadow-amber-500/20 hover:scale-105 shrink-0 whitespace-nowrap"
         >
           <span>{lang === "ka" ? `სრული კოლექცია (${products.length})` : `Explore All (${products.length})`}</span>
-          <ArrowRight className="w-4 h-4" />
+          <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </a>
       </div>
 
