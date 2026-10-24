@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Trash2 } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
+import { formatPrice } from '../../utils/i18n';
 
 export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
   const { darkMode, lang, products, favorites, toggleFavorite } = useStore();
@@ -44,9 +45,9 @@ export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
                       <div className="font-serif font-medium truncate">{item.name}</div>
                       <div className="flex items-center gap-2">
                         {item.oldPrice && (
-                          <span className="text-xs line-through opacity-50">{item.oldPrice}</span>
+                          <span className="text-xs line-through opacity-50">{formatPrice(item.oldPrice)}</span>
                         )}
-                        <span className="text-xs text-amber-500 font-semibold">{item.price}</span>
+                        <span className="text-xs text-amber-500 font-semibold">{formatPrice(item.price)}</span>
                       </div>
                     </div>
                   </div>

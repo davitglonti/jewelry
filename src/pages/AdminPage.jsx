@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import {
   Shield, Sun, Moon, ArrowLeft, Lock, Plus, Upload,
   Link as LinkIcon, X, Edit3, Trash2, BookOpen, ExternalLink, Tag,
-  HelpCircle, Truck, ShieldCheck, Sparkles
+  HelpCircle, Truck, ShieldCheck, Sparkles, Star, AlertCircle
 } from 'lucide-react';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../lib/firebaseAuth';
 import { useStore } from '../context/StoreContext';
 import { handleFileUpload } from '../utils/imageUtils';
+import { formatPrice } from '../utils/i18n';
 import ValueCardsEditor, { DEFAULT_VALUE_CARDS } from '../components/admin/ValueCardsEditor';
 import { DEFAULT_FAQ_ITEMS, DEFAULT_PRODUCT_ASSURANCE } from '../data/defaultSettings';
 
@@ -37,6 +38,20 @@ export default function AdminPage() {
   const [newMetalInput, setNewMetalInput] = useState("");
   const [newBlogCategoryInput, setNewBlogCategoryInput] = useState("");
   const [editingFaq, setEditingFaq] = useState(null);
+  const [homeWarning, setHomeWarning] = useState("");
+  const parsePriceNumber = (val) => {
+    if (!val) return null;
+    const cleaned = val.toString().replace(/,/g, '').replace(/[^\d.]/g, '');
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? null : num;
+  };
+
+  const triggerHomeWarning = (msg) => {
+    setHomeWarning(msg);
+    setTimeout(() => {
+      setHomeWarning((prev) => (prev === msg ? "" : prev));
+    }, 6000);
+  };
   const currentBlogCategories = siteSettings.blogCategories && siteSettings.blogCategories.length > 0
     ? siteSettings.blogCategories
     : ["გიდი", "ოქრო", "ბრილიანტი", "მოვლა", "სტილი"];
@@ -59,6 +74,30 @@ export default function AdminPage() {
         darkMode ? "bg-[#0c0b0a] text-[#f5f0e6]" : "bg-[#faf7f2] text-[#1c1917]"
       }`}
     >
+      {/* Floating Bottom-Right Red Warning Toast */}
+      {homeWarning && (
+        <div className="fixed bottom-6 right-6 z-50 max-w-md w-[calc(100%-3rem)] sm:w-auto p-4 rounded-2xl bg-[#1c0808]/95 border-2 border-red-500 text-white shadow-2xl shadow-black/80 flex items-start gap-3 backdrop-blur-md transition-all animate-bounce-short">
+          <div className="p-1.5 rounded-xl bg-red-500/20 text-red-400 shrink-0 mt-0.5">
+            <AlertCircle className="w-5 h-5 text-red-400" />
+          </div>
+          <div className="flex-1 pr-1">
+            <div className="text-[11px] font-bold text-red-400 uppercase tracking-wider mb-0.5">
+              გაფრთხილება
+            </div>
+            <p className="text-xs sm:text-sm font-medium text-stone-100 leading-snug">
+              {homeWarning}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setHomeWarning("")}
+            className="p-1.5 rounded-xl text-stone-400 hover:text-white hover:bg-white/10 shrink-0 transition-colors"
+            aria-label="დახურვა"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
       <header
         className={`sticky top-0 z-40 w-full min-w-0 px-3 sm:px-8 py-3 sm:py-4 border-b backdrop-blur-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${
           darkMode ? "bg-[#121110]/95 border-stone-800" : "bg-white/95 border-stone-200"
@@ -210,7 +249,29 @@ export default function AdminPage() {
             {adminTab === "catalog" && (
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <h3 className="font-serif text-xl">სამკაულების სია ({products.length})</h3>
+                  <div>
+                    <h3 className="font-serif text-xl">სამკაულების სია ({products.length})</h3>
+                    {(() => {
+                      const featuredCount = products.filter((p, i) => typeof p.showOnHome === "boolean" ? p.showOnHome : i < 5).length;
+                      return (
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          <p className="text-xs opacity-60">
+                            მთავარ გვერდზე გამოტანილია: <span className={`font-semibold ${featuredCount > 5 ? "text-red-400 font-bold" : featuredCount === 5 ? "text-amber-400" : "text-amber-500"}`}>{featuredCount} / 5</span> სამკაული
+                          </p>
+                          {featuredCount > 5 && (
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-red-500/20 text-red-300 border border-red-500/40 font-semibold animate-pulse">
+                              ⚠️ გადაჭარბებულია ({featuredCount}/5) — მთავარზე გამოჩნდება მხოლოდ 5
+                            </span>
+                          )}
+                          {featuredCount === 5 && (
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 font-semibold">
+                              ✓ ვიტრინა სავსეა (5/5)
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
                   <button
                     onClick={() =>
                       setEditingProduct({
@@ -227,6 +288,7 @@ export default function AdminPage() {
                         price: "",
                         oldPrice: "",
                         exclusive: false,
+                        showOnHome: products.filter((p, i) => typeof p.showOnHome === "boolean" ? p.showOnHome : i < 5).length < 5,
                         sizes: ["16.5", "17.0", "17.5"],
                         description: "",
                         descriptionEn: "",
@@ -240,13 +302,16 @@ export default function AdminPage() {
                   </button>
                 </div>
 
+                
+
+
                 {editingProduct && (
                   <div className={`p-5 rounded-2xl border space-y-4 ${darkMode ? "bg-stone-900/90 border-amber-500/40" : "bg-stone-50 border-amber-500"}`}>
                     <h4 className="font-serif text-lg text-amber-500">სამკაულის რედაქტირება / დამატება</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                       <input
                         type="text"
-                        placeholder="დასახელება (ქართულად)"
+                        placeholder="დასახელება (ქართულად) *"
                         value={editingProduct.name}
                         onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
                         className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
@@ -283,20 +348,55 @@ export default function AdminPage() {
                           <option key={m} value={m}>{m}</option>
                         ))}
                       </select>
-                      <input
-                        type="text"
-                        placeholder="ახალი / მიმდინარე ფასი (მაგ: 4,500 ₾)"
-                        value={editingProduct.price}
-                        onChange={(e) => setEditingProduct({ ...editingProduct, price: e.target.value })}
-                        className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-amber-500/50" : "bg-white border-amber-500"}`}
-                      />
-                      <input
-                        type="text"
-                        placeholder="ძველი ფასი ფასდაკლებისას (მაგ: 5,200 ₾)"
-                        value={editingProduct.oldPrice || ""}
-                        onChange={(e) => setEditingProduct({ ...editingProduct, oldPrice: e.target.value })}
-                        className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
-                      />
+                      {(() => {
+                        const curPriceNum = parsePriceNumber(editingProduct.price);
+                        const oldPriceNum = parsePriceNumber(editingProduct.oldPrice);
+                        const isOldInvalid = oldPriceNum !== null && curPriceNum !== null && curPriceNum >= oldPriceNum;
+
+                        return (
+                          <>
+                            <div className="flex flex-col">
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  placeholder="ახალი / მიმდინარე ფასი (მაგ: 4,500) *"
+                                  value={editingProduct.price}
+                                  onChange={(e) => setEditingProduct({ ...editingProduct, price: e.target.value })}
+                                  className={`w-full p-2.5 pr-8 rounded-xl border ${darkMode ? "bg-stone-800 border-amber-500/50" : "bg-white border-amber-500"}`}
+                                />
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-500 pointer-events-none select-none">
+                                  ₾
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex flex-col">
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  placeholder="ძველი ფასი ფასდაკლებისას (მაგ: 5,200)"
+                                  value={editingProduct.oldPrice || ""}
+                                  onChange={(e) => setEditingProduct({ ...editingProduct, oldPrice: e.target.value })}
+                                  className={`w-full p-2.5 pr-8 rounded-xl border transition-all ${
+                                    isOldInvalid
+                                      ? "border-red-500 bg-red-500/10 text-red-200 focus:border-red-500"
+                                      : darkMode
+                                        ? "bg-stone-800 border-stone-700"
+                                        : "bg-white border-stone-300"
+                                  }`}
+                                />
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-500 pointer-events-none select-none">
+                                  ₾
+                                </span>
+                              </div>
+                              {isOldInvalid && (
+                                <span className="text-[10px] text-red-400 mt-1 font-medium">
+                                  ⚠️ ძველი ფასი ახალ ფასზე მეტი უნდა იყოს!
+                                </span>
+                              )}
+                            </div>
+                          </>
+                        );
+                      })()}
                       <input
                         type="text"
                         placeholder="სინჯი (მაგ: 750° / 18K)"
@@ -355,7 +455,7 @@ export default function AdminPage() {
 
                     <div className="space-y-2 text-xs">
                       <label className="font-medium text-amber-500 block">
-                        სამკაულის ფოტოები (შეგიძლიათ ატვირთოთ რამდენიმე ფოტო ან ჩასვათ ლინკი):
+                        სამკაულის ფოტოები * (მინიმუმ 1 ფოტო სავალდებულოა):
                       </label>
                       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                         <label className="px-4 py-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 cursor-pointer flex items-center justify-center gap-2 shrink-0">
@@ -426,15 +526,46 @@ export default function AdminPage() {
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-3">
-                      <label className="flex items-center gap-2 text-xs cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={editingProduct.exclusive}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, exclusive: e.target.checked })}
-                          className="accent-amber-500 w-4 h-4"
-                        />
-                        <span>ექსკლუზიური მოდელი</span>
-                      </label>
+                      <div className="flex flex-wrap items-center gap-5">
+                        {(() => {
+                          const featuredCount = products.filter((p, i) => (typeof p.showOnHome === "boolean" ? p.showOnHome : i < 5) && p.id !== editingProduct.id).length;
+                          const isCurrentlyChecked = Boolean(typeof editingProduct.showOnHome === "boolean" ? editingProduct.showOnHome : true);
+                          const isFull = featuredCount >= 5;
+
+                          return (
+                            <label className={`flex items-center gap-2 text-xs select-none ${!isCurrentlyChecked && isFull ? "opacity-60 cursor-not-allowed" : "cursor-pointer"}`}>
+                              <input
+                                type="checkbox"
+                                checked={isCurrentlyChecked}
+                                onChange={(e) => {
+                                  const willBeChecked = e.target.checked;
+                                  if (willBeChecked && isFull) {
+                                    triggerHomeWarning("⚠️ მთავარი გვერდის ვიტრინა სავსეა (მაქსიმუმ 5 სამკაული ერთ ხაზზე). მე-6 ნივთის დასამატებლად ჯერ მოხსენით სხვა ნივთი მთავარი გვერდიდან!");
+                                    return;
+                                  }
+                                  setHomeWarning("");
+                                  setEditingProduct({ ...editingProduct, showOnHome: willBeChecked });
+                                }}
+                                className="accent-amber-500 w-4 h-4 rounded cursor-pointer"
+                              />
+                              <span className="flex items-center gap-1.5 font-medium text-amber-500">
+                                <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                                მთავარ გვერდზე ჩვენება (მაქს. 5)
+                              </span>
+                            </label>
+                          );
+                        })()}
+
+                        <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={editingProduct.exclusive}
+                            onChange={(e) => setEditingProduct({ ...editingProduct, exclusive: e.target.checked })}
+                            className="accent-amber-500 w-4 h-4 rounded cursor-pointer"
+                          />
+                          <span>ექსკლუზიური მოდელი</span>
+                        </label>
+                      </div>
 
                       <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                         <button
@@ -447,13 +578,62 @@ export default function AdminPage() {
                         <button
                           type="button"
                           onClick={() => {
+                            // 1. დასახელების შემოწმება
+                            if (!editingProduct.name || !editingProduct.name.trim()) {
+                              triggerHomeWarning("⚠️ გთხოვთ მიუთითოთ სამკაულის დასახელება (სავალდებულოა)!");
+                              return;
+                            }
+
+                            // 2. ფასის შემოწმება
+                            if (!editingProduct.price || !editingProduct.price.trim()) {
+                              triggerHomeWarning("⚠️ გთხოვთ მიუთითოთ სამკაულის ფასი (სავალდებულოა)!");
+                              return;
+                            }
+
+                            // 3. ფოტოების შემოწმება (მინიმუმ 1 ფოტო)
+                            if (!editingProduct.images || editingProduct.images.length === 0) {
+                              triggerHomeWarning("⚠️ გთხოვთ დაამატოთ მინიმუმ 1 ფოტო სამკაულისთვის (სავალდებულოა)!");
+                              return;
+                            }
+
+                            // 4. ფასდაკლების / ძველი ფასის შემოწმება (ახალი ფასი < ძველი ფასი)
+                            const curPriceNum = parsePriceNumber(editingProduct.price);
+                            const oldPriceNum = parsePriceNumber(editingProduct.oldPrice);
+                            if (oldPriceNum !== null) {
+                              if (curPriceNum !== null && curPriceNum >= oldPriceNum) {
+                                triggerHomeWarning("⚠️ ახალი ფასი არ შეიძლება იყოს ძველ ფასზე მეტი ან ტოლი! ფასდაკლებისთვის ძველი ფასი უნდა აღემატებოდეს ახალ ფასს.");
+                                return;
+                              }
+                            }
+
+                            // 5. მთავარ გვერდზე 5-იანი ლიმიტის შემოწმება
+                            const otherFeaturedCount = products.filter((p, i) => (typeof p.showOnHome === "boolean" ? p.showOnHome : i < 5) && p.id !== editingProduct.id).length;
+                            if (editingProduct.showOnHome && otherFeaturedCount >= 5) {
+                              triggerHomeWarning("⚠️ მთავარი გვერდის ვიტრინა სავსეა (მაქსიმუმ 5 სამკაული ერთ ხაზზე). გთხოვთ გათიშოთ მთავარზე ჩვენება ან ჯერ მოხსნათ სხვა სამკაული მთავარიდან!");
+                              return;
+                            }
+
                             const exists = products.some((p) => p.id === editingProduct.id);
+                            const ensureLari = (val) => {
+                              if (!val) return "";
+                              const str = val.toString().trim();
+                              if (!str) return "";
+                              return str.includes("₾") ? str : (str + " ₾");
+                            };
+
+                            const productToSave = {
+                              ...editingProduct,
+                              price: ensureLari(editingProduct.price),
+                              oldPrice: editingProduct.oldPrice?.trim() ? ensureLari(editingProduct.oldPrice) : ""
+                            };
+
                             const updated = exists
-                              ? products.map((p) => (p.id === editingProduct.id ? editingProduct : p))
-                              : [editingProduct, ...products];
+                              ? products.map((p) => (p.id === productToSave.id ? productToSave : p))
+                              : [productToSave, ...products];
                             setProducts(updated);
                             syncData(siteSettings, updated);
                             setEditingProduct(null);
+                            setHomeWarning("");
                           }}
                           className="flex-1 sm:flex-none px-5 py-2 rounded-xl bg-amber-500 text-black font-semibold text-xs text-center"
                         >
@@ -465,39 +645,84 @@ export default function AdminPage() {
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {products.map((p) => (
-                    <div key={p.id} className="p-3.5 rounded-2xl border border-stone-500/20 flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <img src={p.images?.[0]} alt="" className="w-14 h-14 rounded-xl object-cover bg-stone-800" />
-                        <div>
-                          <div className="font-serif font-medium">{p.name}</div>
-                          <div className="text-xs opacity-60">{p.sku} • {p.category} • {p.metal}</div>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            {p.oldPrice && <span className="text-xs line-through opacity-45">{p.oldPrice}</span>}
-                            <span className="text-xs text-amber-500 font-semibold">{p.price}</span>
+                  {products.map((p, pIdx) => {
+                    const isFeatured = typeof p.showOnHome === "boolean" ? p.showOnHome : (pIdx < 5);
+                    return (
+                      <div key={p.id} className="p-3.5 rounded-2xl border border-stone-500/20 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <img src={p.images?.[0]} alt="" className="w-14 h-14 rounded-xl object-cover bg-stone-800 shrink-0" />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-serif font-medium truncate">{p.name}</span>
+                              {isFeatured && (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0 font-medium flex items-center gap-1">
+                                  <Star className="w-2.5 h-2.5 fill-amber-400" />
+                                  მთავარზე
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs opacity-60 truncate">{p.sku} • {p.category} • {p.metal}</div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              {p.oldPrice && <span className="text-xs line-through opacity-45">{formatPrice(p.oldPrice)}</span>}
+                              <span className="text-xs text-amber-500 font-semibold">{formatPrice(p.price)}</span>
+                            </div>
                           </div>
                         </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const featuredCount = products.filter((item, itemIdx) => typeof item.showOnHome === "boolean" ? item.showOnHome : (itemIdx < 5)).length;
+                              if (!isFeatured && featuredCount >= 5) {
+                                triggerHomeWarning("⚠️ მთავარი გვერდის ვიტრინა სავსეა (მაქსიმუმ 5 სამკაული ერთ ხაზზე). მე-6 ნივთის დასამატებლად ჯერ მოხსენით ვარსკვლავი რომელიმე არსებულ ნივთს!");
+                                return;
+                              }
+                              setHomeWarning("");
+                              const updated = products.map((item, itemIdx) => {
+                                const currentStatus = typeof item.showOnHome === "boolean" ? item.showOnHome : (itemIdx < 5);
+                                if (item.id === p.id) {
+                                  return { ...item, showOnHome: !currentStatus };
+                                }
+                                return typeof item.showOnHome === "boolean" ? item : { ...item, showOnHome: currentStatus };
+                              });
+                              setProducts(updated);
+                              syncData(siteSettings, updated);
+                            }}
+                            title={isFeatured ? "მთავარ გვერდზე გამოტანილია (დააწკაპუნეთ მოსახსნელად)" : "მთავარ გვერდზე გამოტანა"}
+                            className={`p-2 rounded-xl transition-all flex items-center gap-1 text-xs ${
+                              isFeatured
+                                ? "bg-amber-500/20 text-amber-400 border border-amber-500/40 hover:bg-amber-500/30"
+                                : "bg-stone-500/10 text-stone-400 hover:text-amber-400 hover:bg-stone-500/20"
+                            }`}
+                          >
+                            <Star className={`w-4 h-4 ${isFeatured ? "fill-amber-400 text-amber-400" : ""}`} />
+                            <span className="hidden sm:inline text-[11px] font-medium">
+                              {isFeatured ? "მთავარზეა" : "მთავარზე"}
+                            </span>
+                          </button>
+
+                          <button
+                            onClick={() => setEditingProduct(p)}
+                            className="p-2 rounded-xl bg-amber-500/15 text-amber-400 hover:bg-amber-500 hover:text-black"
+                            title="რედაქტირება"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              const updated = products.filter((item) => item.id !== p.id);
+                              setProducts(updated);
+                              syncData(siteSettings, updated);
+                            }}
+                            className="p-2 rounded-xl bg-red-500/15 text-red-400 hover:bg-red-500 hover:text-white"
+                            title="წაშლა"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => setEditingProduct(p)}
-                          className="p-2 rounded-xl bg-amber-500/15 text-amber-400 hover:bg-amber-500 hover:text-black"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            const updated = products.filter((item) => item.id !== p.id);
-                            setProducts(updated);
-                            syncData(siteSettings, updated);
-                          }}
-                          className="p-2 rounded-xl bg-red-500/15 text-red-400 hover:bg-red-500 hover:text-white"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

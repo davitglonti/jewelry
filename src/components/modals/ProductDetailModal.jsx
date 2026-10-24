@@ -3,7 +3,7 @@ import {
   ArrowLeft, X, ZoomIn, ChevronLeft, ChevronRight,
   Check, Share2, MessageCircle, Send
 } from 'lucide-react';
-import { pick } from '../../utils/i18n';
+import { pick, formatPrice } from '../../utils/i18n';
 import { getWhatsAppLink, shareProductLink } from '../../utils/shareUtils';
 import { useStore } from '../../context/StoreContext';
 
@@ -219,11 +219,11 @@ export default function ProductDetailModal({
               <div className="flex items-baseline gap-4 mt-3">
                 {selectedProduct.oldPrice && (
                   <span className="font-serif text-xl line-through opacity-40">
-                    {selectedProduct.oldPrice}
+                    {formatPrice(selectedProduct.oldPrice)}
                   </span>
                 )}
                 <span className="font-serif text-3xl text-amber-500 font-semibold">
-                  {selectedProduct.price}
+                  {formatPrice(selectedProduct.price)}
                 </span>
                 {selectedProduct.oldPrice && (
                   <span className="px-3 py-1 rounded-full text-xs font-semibold uppercase bg-red-500/10 text-red-500 border border-red-500/20">

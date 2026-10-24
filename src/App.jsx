@@ -7,6 +7,7 @@ const AboutPage = lazy(() => import('./pages/AboutPage'));
 const ProductPage = lazy(() => import('./pages/ProductPage'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
+const CatalogPage = lazy(() => import('./pages/CatalogPage'));
 
 // მსუბუქი ჩამტვირთავი ეკრანი გვერდებს შორის გადასვლისას
 const PageLoader = () => (
@@ -56,6 +57,14 @@ export default function App() {
     return (
       <Suspense fallback={<PageLoader />}>
         <BlogPostPage />
+      </Suspense>
+    );
+  }
+
+  if (currentPath === "/catalog" || currentPath === "/collection") {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <CatalogPage />
       </Suspense>
     );
   }

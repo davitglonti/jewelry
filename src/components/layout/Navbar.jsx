@@ -41,7 +41,7 @@ export default function Navbar({
           </a>
 
           <nav className="hidden md:flex items-center gap-8 text-sm tracking-wider uppercase" aria-label="Main navigation">
-            <a href="/#catalog" className="hover:text-amber-500 transition-colors">
+            <a href="/catalog" className="hover:text-amber-500 transition-colors">
               {lang === "ka" ? "კოლექცია" : "Collection"}
             </a>
             <a href="/about" className="hover:text-amber-500 transition-colors">
@@ -128,7 +128,7 @@ export default function Navbar({
         {isMobileMenuOpen && (
           <div className={`md:hidden border-b p-5 space-y-4 animate-fadeIn ${darkMode ? "bg-[#0c0b0a] border-stone-800" : "bg-white border-stone-200"}`}>
             <nav className="flex flex-col space-y-3 text-sm tracking-wider uppercase" aria-label="Mobile navigation">
-              <a href="/#catalog" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
+              <a href="/catalog" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
                 {lang === "ka" ? "კოლექცია" : "Collection"}
               </a>
               <a href="/about" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
