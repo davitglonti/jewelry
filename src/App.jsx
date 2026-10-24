@@ -1,5 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import StorePage from './pages/StorePage';
+import CompareFloatingBar from './components/store/CompareFloatingBar';
+import CompareModal from './components/modals/CompareModal';
 
 // ეს გვერდები მთავარ გვერდზე შესვლისას აღარ დაამძიმებს საიტს (Code Splitting)
 const AdminPage = lazy(() => import('./pages/AdminPage'));
@@ -38,53 +40,51 @@ export default function App() {
     );
   }
 
+  let content = <StorePage />;
+
   if (currentPath === "/about") {
-    return (
+    content = (
       <Suspense fallback={<PageLoader />}>
         <AboutPage />
       </Suspense>
     );
-  }
-
-  if (currentPath === "/blog") {
-    return (
+  } else if (currentPath === "/blog") {
+    content = (
       <Suspense fallback={<PageLoader />}>
         <BlogPage />
       </Suspense>
     );
-  }
-
-  if (currentPath.startsWith("/blog/")) {
-    return (
+  } else if (currentPath.startsWith("/blog/")) {
+    content = (
       <Suspense fallback={<PageLoader />}>
         <BlogPostPage />
       </Suspense>
     );
-  }
-
-  if (currentPath === "/catalog" || currentPath === "/collection") {
-    return (
+  } else if (currentPath === "/catalog" || currentPath === "/collection") {
+    content = (
       <Suspense fallback={<PageLoader />}>
         <CatalogPage />
       </Suspense>
     );
-  }
-
-  if (currentPath === "/size-guide" || currentPath === "/sizes" || currentPath === "/ring-size") {
-    return (
+  } else if (currentPath === "/size-guide" || currentPath === "/sizes" || currentPath === "/ring-size") {
+    content = (
       <Suspense fallback={<PageLoader />}>
         <SizeGuidePage />
       </Suspense>
     );
-  }
-
-  if (currentPath.startsWith("/product")) {
-    return (
+  } else if (currentPath.startsWith("/product")) {
+    content = (
       <Suspense fallback={<PageLoader />}>
         <ProductPage />
       </Suspense>
     );
   }
 
-  return <StorePage />;
+  return (
+    <>
+      {content}
+      <CompareFloatingBar />
+      <CompareModal />
+    </>
+  );
 }

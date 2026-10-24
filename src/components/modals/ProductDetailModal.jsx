@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   ArrowLeft, X, ZoomIn, ChevronLeft, ChevronRight,
-  Check, Share2, MessageCircle, Send
+  Check, Share2, MessageCircle, Send, ArrowLeftRight
 } from 'lucide-react';
 import { pick, formatPrice, calculateDiscountPercent } from '../../utils/i18n';
 import { getWhatsAppLink, shareProductLink } from '../../utils/shareUtils';
@@ -18,7 +18,7 @@ export default function ProductDetailModal({
   setSelectedSize,
   setLightboxImage
 }) {
-  const { darkMode, lang, siteSettings, products, inquiries, setInquiries, syncData } = useStore();
+  const { darkMode, lang, siteSettings, products, inquiries, setInquiries, syncData, compareList, toggleCompare } = useStore();
 
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
@@ -212,6 +212,24 @@ export default function ProductDetailModal({
                       <span>{lang === "ka" ? "გაზიარება" : "Share"}</span>
                     </>
                   )}
+                </button>
+
+                {/* Compare Button */}
+                <button
+                  type="button"
+                  onClick={() => toggleCompare(selectedProduct.id)}
+                  className={`px-4 py-2 rounded-full border text-xs font-medium flex items-center gap-2 transition-all ${
+                    compareList?.includes(selectedProduct.id)
+                      ? "bg-amber-500 text-black border-amber-500 font-semibold shadow-md shadow-amber-500/20"
+                      : "bg-stone-500/10 border-stone-500/25 hover:border-amber-500/50"
+                  }`}
+                >
+                  <ArrowLeftRight className="w-4 h-4" />
+                  <span>
+                    {compareList?.includes(selectedProduct.id)
+                      ? (lang === "ka" ? "შედარებაშია ✓" : "In Compare ✓")
+                      : (lang === "ka" ? "შედარება" : "Compare")}
+                  </span>
                 </button>
               </div>
 

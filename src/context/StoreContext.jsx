@@ -11,6 +11,7 @@ const KEYS = {
   favs: "aurelia_favs_v2",
   inquiries: "aurelia_inquiries_v2",
   articles: "aurelia_articles_v1",
+  compare: "aurelia_compare_v1",
 };
 
 export const sortNewestFirst = (list) => {
@@ -61,6 +62,8 @@ export function StoreProvider({ children }) {
   const [products, setProducts] = useState(() => sortNewestFirst(readCache(KEYS.products) || DEFAULT_PRODUCTS));
   const [articles, setArticles] = useState(() => readCache(KEYS.articles) || DEFAULT_ARTICLES);
   const [favorites, setFavorites] = useState(() => readCache(KEYS.favs) || []);
+  const [compareList, setCompareList] = useState(() => readCache(KEYS.compare) || []);
+  const [showCompareModal, setShowCompareModal] = useState(false);
   const [inquiries, setInquiries] = useState(() => readCache(KEYS.inquiries) || []);
   const [saveMessage, setSaveMessage] = useState("");
 
@@ -355,6 +358,29 @@ export function StoreProvider({ children }) {
     writeCache(KEYS.favs, updated);
   };
 
+  // სამკაულების შედარებაში დამატება/წაშლა (მაქს. 4 ნივთი)
+  const toggleCompare = (id) => {
+    setCompareList((prev) => {
+      let updated;
+      if (prev.includes(id)) {
+        updated = prev.filter((item) => item !== id);
+      } else {
+        if (prev.length >= 4) {
+          updated = [...prev.slice(1), id];
+        } else {
+          updated = [...prev, id];
+        }
+      }
+      writeCache(KEYS.compare, updated);
+      return updated;
+    });
+  };
+
+  const clearCompare = () => {
+    setCompareList([]);
+    writeCache(KEYS.compare, []);
+  };
+
   return (
     <StoreContext.Provider
       value={{
@@ -365,6 +391,8 @@ export function StoreProvider({ children }) {
         products, setProducts,
         articles, setArticles, syncArticles,
         favorites, toggleFavorite,
+        compareList, toggleCompare, clearCompare,
+        showCompareModal, setShowCompareModal,
         inquiries, setInquiries,
         saveMessage,
         syncData,

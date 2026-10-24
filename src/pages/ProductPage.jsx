@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   ArrowLeft, ZoomIn, ChevronLeft, ChevronRight, Heart, RotateCw,
-  Check, Share2, MessageCircle, Send,
+  Check, Share2, MessageCircle, Send, ArrowLeftRight,
   Truck, ShieldCheck, Sparkles, ChevronDown
 } from 'lucide-react';
 import { pick, formatPrice, calculateDiscountPercent } from '../utils/i18n';
@@ -32,6 +32,7 @@ export default function ProductPage({ skuProp }) {
     siteSettings,
     products,
     favorites, toggleFavorite,
+    compareList, toggleCompare,
     inquiries, setInquiries,
     syncData,
     settingsLoaded
@@ -515,6 +516,24 @@ export default function ProductPage({ skuProp }) {
                     </>
                   )}
                 </button>
+
+                {/* Compare Button */}
+                <button
+                  type="button"
+                  onClick={() => toggleCompare(selectedProduct.id)}
+                  className={`px-4 py-2 rounded-full border text-xs font-medium flex items-center gap-2 transition-all ${
+                    compareList?.includes(selectedProduct.id)
+                      ? "bg-amber-500 text-black border-amber-500 font-semibold shadow-md shadow-amber-500/20"
+                      : "bg-stone-500/10 border-stone-500/25 hover:border-amber-500/50"
+                  }`}
+                >
+                  <ArrowLeftRight className="w-4 h-4" />
+                  <span>
+                    {compareList?.includes(selectedProduct.id)
+                      ? (lang === "ka" ? "შედარებაშია ✓" : "In Compare ✓")
+                      : (lang === "ka" ? "შედარება" : "Compare")}
+                  </span>
+                </button>
               </div>
 
               <h1 className="font-serif text-3xl sm:text-4xl mt-2 font-normal">
@@ -832,21 +851,39 @@ export default function ProductPage({ skuProp }) {
                       )}
 
                       {/* Favorite Button */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFavorite(item);
-                        }}
-                        aria-label="რჩეულებში დამატება"
-                        className={`absolute top-2 right-2 sm:top-3 sm:right-3 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md ${
-                          isFav
-                            ? "bg-rose-500 text-white"
-                            : "bg-black/50 text-white/80 hover:text-rose-400 hover:bg-black/70"
-                        }`}
-                      >
-                        <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isFav ? "fill-white" : ""}`} />
-                      </button>
+                      <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10 flex flex-col gap-1.5">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFavorite(item.id || item);
+                          }}
+                          aria-label="რჩეულებში დამატება"
+                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md ${
+                            isFav
+                              ? "bg-rose-500 text-white"
+                              : "bg-black/50 text-white/80 hover:text-rose-400 hover:bg-black/70"
+                          }`}
+                        >
+                          <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isFav ? "fill-white" : ""}`} />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleCompare(item.id || item);
+                          }}
+                          title="შედარება"
+                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md ${
+                            compareList?.includes(item.id || item)
+                              ? "bg-amber-500 text-black shadow-amber-500/30 scale-105"
+                              : "bg-black/50 text-white/80 hover:text-amber-400 hover:bg-black/70"
+                          }`}
+                        >
+                          <ArrowLeftRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </button>
+                      </div>
 
                       {/* Photo strictly bounded to 1:1 square */}
                       <img

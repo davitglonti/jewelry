@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Search, Gem, SlidersHorizontal, Heart, Eye, ArrowUpDown,
-  X, Sparkles, Filter, ChevronRight, Home
+  X, Sparkles, Filter, ChevronRight, Home, ArrowLeftRight
 } from 'lucide-react';
 import { ALL } from '../constants';
 import { pick, formatPrice, calculateDiscountPercent } from '../utils/i18n';
@@ -17,7 +17,8 @@ export default function CatalogPage() {
     lang, setLang,
     siteSettings,
     products,
-    favorites, toggleFavorite
+    favorites, toggleFavorite,
+    compareList, toggleCompare
   } = useStore();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -490,21 +491,45 @@ export default function CatalogPage() {
                         </span>
                       )}
 
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFavorite(product.id);
-                        }}
-                        aria-label={
-                          favorites.includes(product.id)
-                            ? (lang === "ka" ? `${productName} — რჩეულებიდან ამოშლა` : `Remove ${productName} from favorites`)
-                            : (lang === "ka" ? `${productName} — რჩეულებში დამატება` : `Add ${productName} to favorites`)
-                        }
-                        className="absolute top-3 right-3 p-2.5 rounded-full bg-black/60 text-white hover:bg-black transition-all z-10"
-                      >
-                        <Heart className={`w-4 h-4 ${favorites.includes(product.id) ? "fill-amber-500 text-amber-500" : ""}`} />
-                      </button>
+                      <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
+                        {/* Favorite Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFavorite(product.id);
+                          }}
+                          aria-label={
+                            favorites.includes(product.id)
+                              ? (lang === "ka" ? `${productName} — რჩეულებიდან ამოშლა` : `Remove ${productName} from favorites`)
+                              : (lang === "ka" ? `${productName} — რჩეულებში დამატება` : `Add ${productName} to favorites`)
+                          }
+                          className="p-2 sm:p-2.5 rounded-full bg-black/65 text-white hover:bg-black transition-all shadow-md backdrop-blur-sm"
+                        >
+                          <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${favorites.includes(product.id) ? "fill-amber-500 text-amber-500" : ""}`} />
+                        </button>
+
+                        {/* Compare Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleCompare(product.id);
+                          }}
+                          title={
+                            compareList?.includes(product.id)
+                              ? (lang === "ka" ? "შედარებიდან ამოშლა" : "Remove from compare")
+                              : (lang === "ka" ? "შედარებაში დამატება" : "Add to compare")
+                          }
+                          className={`p-2 sm:p-2.5 rounded-full transition-all shadow-md backdrop-blur-sm ${
+                            compareList?.includes(product.id)
+                              ? "bg-amber-500 text-black shadow-amber-500/30 scale-105"
+                              : "bg-black/65 text-white hover:bg-black hover:text-amber-400"
+                          }`}
+                        >
+                          <ArrowLeftRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </button>
+                      </div>
                     </div>
 
                     <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3.5">
