@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   ArrowLeft, X, ZoomIn, ChevronLeft, ChevronRight,
-  Check, Share2, MessageCircle, Send, ArrowLeftRight
+  Check, Share2, MessageCircle, Send, ArrowLeftRight, Ruler
 } from 'lucide-react';
 import { pick, formatPrice, calculateDiscountPercent } from '../../utils/i18n';
 import { getWhatsAppLink, shareProductLink } from '../../utils/shareUtils';
@@ -182,141 +182,190 @@ export default function ProductDetailModal({
             )}
           </div>
 
-          {/* მარჯვენა მხარე: ტექსტები, ფასი, ზომები და ფორმები გასწორებული ფერებით */}
-          <div className="space-y-6">
+          {/* მარჯვენა მხარე: ტექსტები, ფასი, ზომები და ფორმები */}
+          <div className="space-y-5 sm:space-y-6">
             <div>
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-xs text-amber-500 uppercase tracking-widest font-medium">
-                  <span>{selectedProduct.category}</span>
-                  <span>•</span>
-                  <span>{selectedProduct.sku}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    shareProductLink(selectedProduct, lang, () => {
-                      setCopiedLink(true);
-                      setTimeout(() => setCopiedLink(false), 2500);
-                    })
-                  }
-                  className="px-4 py-2 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-black text-xs font-medium flex items-center gap-2 transition-all"
-                >
-                  {copiedLink ? (
-                    <>
-                      <Check className="w-4 h-4" />
-                      <span>{lang === "ka" ? "დაკოპირდა!" : "Copied!"}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Share2 className="w-4 h-4" />
-                      <span>{lang === "ka" ? "გაზიარება" : "Share"}</span>
-                    </>
-                  )}
-                </button>
-
-                {/* Compare Button */}
-                <button
-                  type="button"
-                  onClick={() => toggleCompare(selectedProduct.id)}
-                  className={`px-4 py-2 rounded-full border text-xs font-medium flex items-center gap-2 transition-all ${
-                    compareList?.includes(selectedProduct.id)
-                      ? "bg-amber-500 text-black border-amber-500 font-semibold shadow-md shadow-amber-500/20"
-                      : "bg-stone-500/10 border-stone-500/25 hover:border-amber-500/50"
-                  }`}
-                >
-                  <ArrowLeftRight className="w-4 h-4" />
-                  <span>
-                    {compareList?.includes(selectedProduct.id)
-                      ? (lang === "ka" ? "შედარებაშია ✓" : "In Compare ✓")
-                      : (lang === "ka" ? "შედარება" : "Compare")}
+              {/* Category, SKU & Actions Bar */}
+              <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+                <div className="inline-flex items-center gap-2 min-w-0">
+                  <span className="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/25 font-semibold uppercase tracking-wider text-[11px] truncate">
+                    {selectedProduct.category}
                   </span>
-                </button>
+                  <span className="font-mono text-stone-400 text-xs shrink-0">
+                    #{selectedProduct.sku}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      shareProductLink(selectedProduct, lang, () => {
+                        setCopiedLink(true);
+                        setTimeout(() => setCopiedLink(false), 2500);
+                      })
+                    }
+                    className={`h-8 sm:h-9 px-2.5 sm:px-3.5 rounded-full border text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 ${
+                      copiedLink
+                        ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
+                        : "bg-stone-500/10 border-stone-500/20 text-stone-300 hover:text-amber-400 hover:border-amber-500/40 hover:bg-stone-500/20"
+                    }`}
+                    title={lang === "ka" ? "ბმულის გაზიარება" : "Share link"}
+                  >
+                    {copiedLink ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-[11px] font-semibold">{lang === "ka" ? "დაკოპირდა!" : "Copied!"}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Share2 className="w-3.5 h-3.5 text-amber-500" />
+                        <span className="text-[11px]">{lang === "ka" ? "გაზიარება" : "Share"}</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Compare Button */}
+                  <button
+                    type="button"
+                    onClick={() => toggleCompare(selectedProduct.id)}
+                    className={`h-8 sm:h-9 px-2.5 sm:px-3.5 rounded-full border text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 ${
+                      compareList?.includes(selectedProduct.id)
+                        ? "bg-amber-500 text-black border-amber-500 font-semibold shadow-md shadow-amber-500/20"
+                        : "bg-stone-500/10 border-stone-500/20 text-stone-300 hover:text-amber-400 hover:border-amber-500/40 hover:bg-stone-500/20"
+                    }`}
+                    title={lang === "ka" ? "შედარების სიაში დამატება" : "Compare"}
+                  >
+                    <ArrowLeftRight className={`w-3.5 h-3.5 ${compareList?.includes(selectedProduct.id) ? "text-black" : "text-amber-500"}`} />
+                    <span className="text-[11px]">
+                      {compareList?.includes(selectedProduct.id)
+                        ? (lang === "ka" ? "შედარებაშია ✓" : "In Compare ✓")
+                        : (lang === "ka" ? "შედარება" : "Compare")}
+                    </span>
+                  </button>
+                </div>
               </div>
 
-              <h1 className="font-serif text-3xl sm:text-4xl mt-2 font-normal">
+              <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl mt-3 font-normal leading-tight">
                 {lang === "ka" ? selectedProduct.name : (selectedProduct.nameEn || selectedProduct.name)}
               </h1>
 
-              <div className="flex items-baseline gap-4 mt-3">
-                {selectedProduct.oldPrice && (
-                  <span className="font-serif text-xl line-through opacity-40">
-                    {formatPrice(selectedProduct.oldPrice)}
+              <div className="flex flex-wrap items-center gap-3 mt-3">
+                <div className="flex items-baseline gap-2.5">
+                  <span className="font-serif text-2xl sm:text-3xl text-amber-500 font-semibold">
+                    {formatPrice(selectedProduct.price)}
                   </span>
-                )}
-                <span className="font-serif text-3xl text-amber-500 font-semibold">
-                  {formatPrice(selectedProduct.price)}
-                </span>
+                  {selectedProduct.oldPrice && (
+                    <span className="font-serif text-lg line-through opacity-40">
+                      {formatPrice(selectedProduct.oldPrice)}
+                    </span>
+                  )}
+                </div>
+
                 {(() => {
                   const discountPct = calculateDiscountPercent(selectedProduct.price, selectedProduct.oldPrice);
                   if (!discountPct) return null;
                   return (
-                    <span className="px-3 py-1 rounded-full text-xs font-semibold uppercase bg-red-600 text-white shadow-md shadow-red-950/40 flex items-center gap-1.5">
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase bg-red-600 text-white shadow-sm flex items-center gap-1">
                       <span>{lang === "ka" ? "ფასდაკლება" : "Sale"}</span>
-                      <span className="font-mono font-bold bg-black/30 px-1.5 py-0.5 rounded-full text-[11px]">-{discountPct}%</span>
+                      <span className="font-mono font-bold bg-black/25 px-1 rounded">-{discountPct}%</span>
                     </span>
                   );
                 })()}
-              </div>
 
-              {/* Stock Status Badge */}
-              <div className="mt-3.5">
-                <StockStatusBadge
-                  status={selectedProduct.stockStatus || 'in_stock'}
-                  lang={lang}
-                  showSubtext={true}
-                />
+                <div className="sm:ml-auto">
+                  <StockStatusBadge
+                    status={selectedProduct.stockStatus || 'in_stock'}
+                    lang={lang}
+                    showSubtext={true}
+                  />
+                </div>
               </div>
             </div>
 
-            <p className="text-sm sm:text-base opacity-80 leading-relaxed">
-              {pick(selectedProduct, "description", lang)}
-            </p>
+            {selectedProduct.description && (
+              <p className="text-sm sm:text-base opacity-80 leading-relaxed">
+                {pick(selectedProduct, "description", lang)}
+              </p>
+            )}
 
-            <div className={`grid grid-cols-2 gap-4 p-5 rounded-3xl border text-xs sm:text-sm ${
-              darkMode ? "bg-stone-900/60 border-stone-800" : "bg-white border-stone-200/80 shadow-xs"
-            }`}>
-              <div>
-                <span className="opacity-60 block text-xs">{lang === "ka" ? "მეტალი:" : "Metal:"}</span>
-                <span className="font-medium">{selectedProduct.metal}</span>
-              </div>
-              <div>
-                <span className="opacity-60 block text-xs">{lang === "ka" ? "სინჯი:" : "Karat:"}</span>
-                <span className="font-medium">{selectedProduct.karat}</span>
-              </div>
-              <div>
-                <span className="opacity-60 block text-xs">{lang === "ka" ? "წონა:" : "Weight:"}</span>
-                <span className="font-medium">{selectedProduct.weight}</span>
-              </div>
-              <div>
-                <span className="opacity-60 block text-xs">{lang === "ka" ? "ქვები:" : "Gemstones:"}</span>
-                <span className="font-medium">{selectedProduct.stones}</span>
-              </div>
-            </div>
+            {/* Specifications Cards: Only render valid non-empty specs */}
+            {(() => {
+              const specs = [
+                { label: lang === "ka" ? "მეტალი" : "Metal", value: selectedProduct.metal },
+                { label: lang === "ka" ? "სინჯი" : "Karat", value: selectedProduct.karat },
+                { label: lang === "ka" ? "წონა" : "Weight", value: selectedProduct.weight ? `${selectedProduct.weight} ${lang === "ka" ? "გრ" : "g"}` : null },
+                { label: lang === "ka" ? "ქვები" : "Gemstones", value: selectedProduct.stones },
+              ].filter((s) => s.value && String(s.value).trim());
+
+              if (specs.length === 0) return null;
+
+              return (
+                <div className={`grid ${specs.length > 2 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2"} gap-2.5 p-3 sm:p-4 rounded-2xl border ${
+                  darkMode ? "bg-stone-900/60 border-stone-800" : "bg-white border-stone-200/80 shadow-xs"
+                }`}>
+                  {specs.map((item, i) => (
+                    <div
+                      key={i}
+                      className={`p-2.5 sm:p-3 rounded-xl border transition-all ${
+                        darkMode
+                          ? "bg-stone-800/60 border-stone-700/60"
+                          : "bg-stone-50 border-stone-200/80"
+                      }`}
+                    >
+                      <span className={`block text-[10px] sm:text-[11px] uppercase tracking-wider font-medium mb-0.5 ${
+                        darkMode ? "text-amber-400/90" : "text-amber-600/90"
+                      }`}>
+                        {item.label}
+                      </span>
+                      <span className={`font-semibold text-xs sm:text-sm block truncate ${
+                        darkMode ? "text-stone-100" : "text-stone-900"
+                      }`}>
+                        {item.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
 
             {selectedProduct.sizes && selectedProduct.sizes.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-xs sm:text-sm">
-                  <span className="uppercase tracking-wider opacity-75 font-medium">
-                    {lang === "ka" ? "აირჩიეთ ზომა:" : "Select Size:"}
+                  <span className="uppercase tracking-wider opacity-75 font-medium flex items-center gap-1.5">
+                    <span>{lang === "ka" ? "აირჩიეთ ზომა:" : "Select Size:"}</span>
+                    {selectedSize && (
+                      <span className="font-mono text-amber-500 font-bold text-xs">({selectedSize})</span>
+                    )}
                   </span>
                   <button
                     type="button"
                     onClick={() => setShowRingSizer(true)}
-                    className="inline-flex items-center gap-1.5 text-amber-500 hover:text-amber-400 font-medium transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs text-amber-500 hover:text-amber-400 font-medium transition-colors group cursor-pointer"
                   >
-                    <span className="underline">{lang === "ka" ? "ზომის ონლაინ საზომი" : "Ring Size Guide"}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 font-semibold tracking-wide uppercase">
-                      {lang === "ka" ? "ინტერაქტიული" : "Interactive"}
+                    <Ruler className="w-3.5 h-3.5 text-amber-500/80 group-hover:rotate-12 transition-transform" />
+                    <span className="underline underline-offset-4 decoration-amber-500/40 hover:decoration-amber-400">
+                      {lang === "ka" ? "ზომის ონლაინ საზომი" : "Ring Size Guide"}
                     </span>
                   </button>
                 </div>
-                <div className="flex flex-wrap gap-2.5">
+                <div className="flex flex-wrap gap-2 pt-0.5">
                   {selectedProduct.sizes.map((sz) => (
                     <button
                       key={sz}
                       onClick={() => setSelectedSize(sz)}
-                      className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-medium border transition-all ${
+                      className={`min-w-[44px] h-10 px-3.5 rounded-xl text-xs sm:text-sm font-medium border transition-all flex items-center justify-center ${
                         selectedSize === sz
+                          ? "bg-amber-500 text-black border-amber-500 font-bold shadow-md shadow-amber-500/20 scale-105"
+                          : darkMode
+                          ? "border-stone-800 hover:border-amber-500/50 bg-stone-900/80 text-stone-300"
+                          : "border-stone-200 hover:border-amber-500 bg-white text-stone-800 shadow-xs"
+                      }`}
+                    >
+                      {sz}
+                    </button>
+                  ))}
+                </div>
                           ? "bg-amber-500 text-black border-amber-500 shadow-lg shadow-amber-500/20"
                           : darkMode
                           ? "border-stone-800 hover:border-amber-500/50 bg-stone-900"
