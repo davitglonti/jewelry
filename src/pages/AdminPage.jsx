@@ -293,7 +293,8 @@ export default function AdminPage() {
                         description: "",
                         descriptionEn: "",
                         images: [],
-                        video360: ""
+                        video360: "",
+                        stockStatus: "in_stock"
                       })
                     }
                     className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-500 text-black text-xs font-semibold flex items-center justify-center gap-1.5"
@@ -574,6 +575,82 @@ export default function AdminPage() {
                       )}
                     </div>
 
+                    {/* მარაგის სტატუსი (Stock Availability Status) */}
+                    <div className="space-y-2 pt-3 border-t border-stone-700/40">
+                      <label className="text-[11px] uppercase tracking-wider text-amber-500 font-semibold block">
+                        მარაგის სტატუსი (საიტზე გამოჩენა):
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        {/* 1. მარაგშია */}
+                        <button
+                          type="button"
+                          onClick={() => setEditingProduct({ ...editingProduct, stockStatus: "in_stock" })}
+                          className={`p-3 rounded-2xl border text-left transition-all ${
+                            (editingProduct.stockStatus || "in_stock") === "in_stock"
+                              ? "border-emerald-500 bg-emerald-500/15 shadow-sm shadow-emerald-500/10"
+                              : darkMode ? "border-stone-700 bg-stone-800/40 opacity-70 hover:opacity-100" : "border-stone-200 bg-white opacity-70 hover:opacity-100"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="relative flex h-2.5 w-2.5 shrink-0">
+                              {(editingProduct.stockStatus || "in_stock") === "in_stock" && (
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                              )}
+                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                            </span>
+                            <span className="font-semibold text-xs text-emerald-400">
+                              🟢 მარაგშია
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-stone-300 mt-1 pl-4 leading-snug">
+                            ადგილზეა, მიწოდება 24-48 საათში
+                          </p>
+                        </button>
+
+                        {/* 2. შეკვეთით */}
+                        <button
+                          type="button"
+                          onClick={() => setEditingProduct({ ...editingProduct, stockStatus: "preorder" })}
+                          className={`p-3 rounded-2xl border text-left transition-all ${
+                            editingProduct.stockStatus === "preorder"
+                              ? "border-amber-500 bg-amber-500/15 shadow-sm shadow-amber-500/10"
+                              : darkMode ? "border-stone-700 bg-stone-800/40 opacity-70 hover:opacity-100" : "border-stone-200 bg-white opacity-70 hover:opacity-100"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full bg-amber-400 shrink-0"></span>
+                            <span className="font-semibold text-xs text-amber-400">
+                              🟡 შეკვეთით
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-stone-300 mt-1 pl-4 leading-snug">
+                            3-5 სამუშაო დღე (დამზადება / ჩამოტანა)
+                          </p>
+                        </button>
+
+                        {/* 3. გაყიდულია / ამოიწურა */}
+                        <button
+                          type="button"
+                          onClick={() => setEditingProduct({ ...editingProduct, stockStatus: "sold_out" })}
+                          className={`p-3 rounded-2xl border text-left transition-all ${
+                            editingProduct.stockStatus === "sold_out"
+                              ? "border-stone-400 bg-stone-500/20 shadow-sm"
+                              : darkMode ? "border-stone-700 bg-stone-800/40 opacity-70 hover:opacity-100" : "border-stone-200 bg-white opacity-70 hover:opacity-100"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full bg-stone-400 shrink-0"></span>
+                            <span className="font-semibold text-xs text-stone-300">
+                              ⚪ გაყიდულია / ამოიწურა
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-stone-300 mt-1 pl-4 leading-snug">
+                            რომ კლიენტი ტყუილად არ ელოდოს
+                          </p>
+                        </button>
+                      </div>
+                    </div>
+
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-3">
                       <div className="flex flex-wrap items-center gap-5">
                         {(() => {
@@ -703,6 +780,28 @@ export default function AdminPage() {
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
                               <span className="font-serif font-medium truncate">{p.name}</span>
+                              {(() => {
+                                const st = p.stockStatus || "in_stock";
+                                if (st === "sold_out") {
+                                  return (
+                                    <span className="px-2 py-0.5 rounded-full text-[9px] bg-stone-500/20 text-stone-300 border border-stone-500/30 shrink-0 font-medium">
+                                      ⚪ ამოიწურა
+                                    </span>
+                                  );
+                                }
+                                if (st === "preorder") {
+                                  return (
+                                    <span className="px-2 py-0.5 rounded-full text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0 font-medium">
+                                      🟡 შეკვეთით
+                                    </span>
+                                  );
+                                }
+                                return (
+                                  <span className="px-2 py-0.5 rounded-full text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0 font-medium">
+                                    🟢 მარაგშია
+                                  </span>
+                                );
+                              })()}
                               {isFeatured && (
                                 <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0 font-medium flex items-center gap-1">
                                   <Star className="w-2.5 h-2.5 fill-amber-400" />

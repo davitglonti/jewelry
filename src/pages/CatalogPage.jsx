@@ -472,6 +472,16 @@ export default function CatalogPage() {
                             <span className="font-mono bg-black/35 px-1 py-0.2 rounded text-[10px]">-{discountPct}%</span>
                           </span>
                         ) : null}
+                        {product.stockStatus === 'preorder' && (
+                          <span className="self-start px-2.5 py-1 rounded-full text-[10px] font-semibold bg-amber-950/90 text-amber-300 border border-amber-500/40 backdrop-blur-md shadow-md">
+                            {lang === 'ka' ? '🟡 შეკვეთით' : 'Pre-order'}
+                          </span>
+                        )}
+                        {product.stockStatus === 'sold_out' && (
+                          <span className="self-start px-2.5 py-1 rounded-full text-[10px] font-semibold bg-stone-900/90 text-stone-300 border border-stone-600 backdrop-blur-md shadow-md">
+                            {lang === 'ka' ? '⚪ ამოიწურა' : 'Sold out'}
+                          </span>
+                        )}
                       </div>
 
                       {product.images?.length > 1 && (

@@ -14,6 +14,7 @@ import Footer from '../components/layout/Footer';
 import LightboxModal from '../components/modals/LightboxModal';
 import FavoritesModal from '../components/modals/FavoritesModal';
 import Video360Viewer from '../components/store/Video360Viewer';
+import StockStatusBadge from '../components/store/StockStatusBadge';
 
 export default function ProductPage({ skuProp }) {
   // ვიღებთ პროდუქტის კოდს URL-იდან (მაგ: /product/AUR-102)
@@ -518,6 +519,15 @@ export default function ProductPage({ skuProp }) {
                     </span>
                   );
                 })()}
+              </div>
+
+              {/* Stock Status Badge */}
+              <div className="mt-3.5">
+                <StockStatusBadge
+                  status={selectedProduct.stockStatus || 'in_stock'}
+                  lang={lang}
+                  showSubtext={true}
+                />
               </div>
             </div>
 

@@ -6,6 +6,7 @@ import {
 import { pick, formatPrice, calculateDiscountPercent } from '../../utils/i18n';
 import { getWhatsAppLink, shareProductLink } from '../../utils/shareUtils';
 import { useStore } from '../../context/StoreContext';
+import StockStatusBadge from '../store/StockStatusBadge';
 
 export default function ProductDetailModal({
   selectedProduct,
@@ -235,6 +236,15 @@ export default function ProductDetailModal({
                     </span>
                   );
                 })()}
+              </div>
+
+              {/* Stock Status Badge */}
+              <div className="mt-3.5">
+                <StockStatusBadge
+                  status={selectedProduct.stockStatus || 'in_stock'}
+                  lang={lang}
+                  showSubtext={true}
+                />
               </div>
             </div>
 
