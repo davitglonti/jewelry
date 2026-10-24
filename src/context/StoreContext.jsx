@@ -1,6 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { doc, setDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { DEFAULT_SETTINGS } from '../data/defaultSettings';
 import { DEFAULT_PRODUCTS } from '../data/defaultProducts';
 
@@ -17,7 +15,7 @@ const readCache = (key) => {
   try {
     const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : null;
-  } catch (e) {
+  } catch {
     return null;
   }
 };
@@ -25,7 +23,7 @@ const readCache = (key) => {
 const writeCache = (key, value) => {
   try {
     localStorage.setItem(key, JSON.stringify(value));
-  } catch (e) {}
+  } catch {}
 };
 
 export function StoreProvider({ children }) {
@@ -104,14 +102,16 @@ export function StoreProvider({ children }) {
     };
   }, [siteSettings, products, lang]);
 
-  // Firebase-იდან ჩატვირთვა
+  // Firebase-იდან ჩატვირთვა (სრულად ასინქრონული)
   useEffect(() => {
-    if (!db) return;
-
     // ადმინ პანელში ვიყენებთ real-time onSnapshot-ს
     if (window.location.pathname.startsWith("/admin")) {
       let unsub = () => {};
-      import('firebase/firestore').then(({ onSnapshot, doc }) => {
+      Promise.all([
+        import('../lib/firebase'),
+        import('firebase/firestore')
+      ]).then(([{ db }, { onSnapshot, doc }]) => {
+        if (!db) return;
         unsub = onSnapshot(
           doc(db, "aurelia", "storeData"),
           (docSnap) => {
@@ -136,11 +136,15 @@ export function StoreProvider({ children }) {
       return () => unsub();
     }
 
-    // ჩვეულებრივი მომხმარებლისთვის ვიყენებთ ერთჯერად getDoc-ს, რათა არ დაკიდოს კავშირი
+    // ჩვეულებრივი მომხმარებლისთვის ვიყენებთ ერთჯერად getDoc-ს 4 წამის შემდეგ (რათა პირველადი რენდერი არ დააყოვნოს)
     let isMounted = true;
     const timer = setTimeout(async () => {
       try {
-        const { getDoc, doc } = await import('firebase/firestore');
+        const [{ db }, { getDoc, doc }] = await Promise.all([
+          import('../lib/firebase'),
+          import('firebase/firestore')
+        ]);
+        if (!db || !isMounted) return;
         const docSnap = await getDoc(doc(db, "aurelia", "storeData"));
         if (!isMounted) return;
         if (docSnap.exists()) {
@@ -158,7 +162,7 @@ export function StoreProvider({ children }) {
       } catch (err) {
         console.error("Firebase ჩატვირთვის შეცდომა:", err);
       }
-    }, 150);
+    }, 4000);
 
     return () => {
       isMounted = false;
@@ -172,17 +176,21 @@ export function StoreProvider({ children }) {
     writeCache(KEYS.products, newProducts);
     writeCache(KEYS.inquiries, newInquiries);
 
-    if (db) {
-      try {
+    try {
+      const [{ db }, { doc, setDoc }] = await Promise.all([
+        import('../lib/firebase'),
+        import('firebase/firestore')
+      ]);
+      if (db) {
         await setDoc(doc(db, "aurelia", "storeData"), {
           settings: newSettings,
           products: newProducts,
           inquiries: newInquiries,
           updatedAt: new Date().toISOString(),
         });
-      } catch (e) {
-        console.error("Firebase შენახვის შეცდომა:", e);
       }
+    } catch (e) {
+      console.error("Firebase შენახვის შეცდომა:", e);
     }
     setSaveMessage(lang === "ka" ? "ცვლილებები შენახულია!" : "Changes saved!");
     setTimeout(() => setSaveMessage(""), 2500);

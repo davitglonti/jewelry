@@ -6,7 +6,7 @@
     <title>მატარე — საიუველირო სახლი</title>
     <meta name="description" content="მატარე — ექსკლუზიური ხელნაკეთი საიუველირო ნაკეთობები, უმაღლესი სინჯის ოქრო და სერტიფიცირებული ბრილიანტები." />
 
-    <!-- წინასწარი კავშირი სერვერებთან (მაქსიმუმ 3 რათა Lighthouse-მა არ გააფრთხილოს) -->
+    <!-- წინასწარი კავშირი სერვერებთან -->
     <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -21,11 +21,24 @@
       fetchpriority="high"
     />
 
-    <!-- ოპტიმიზებული შრიფტები -->
+    <!-- ასინქრონული შრიფტები (არ ბლოკავს პირველად რენდერს) -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Noto+Sans+Georgian:wght@400;600;700&family=Noto+Serif+Georgian:wght@400;600;700&display=swap"
+    />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Noto+Sans+Georgian:wght@400;600;700&family=Noto+Serif+Georgian:wght@400;600;700&display=swap"
+      media="print"
+      onload="this.media='all'"
     />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Noto+Sans+Georgian:wght@400;600;700&family=Noto+Serif+Georgian:wght@400;600;700&display=swap"
+      />
+    </noscript>
 
     <style>
       body {
