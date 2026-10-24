@@ -1,0 +1,17 @@
+# მატარე — საიუველირო სახლი (Matare Jewelry House)
+
+> ექსკლუზიური ხელნაკეთი საიუველირო ნაკეთობები უმაღლესი სინჯის ოქროსგან და სერტიფიცირებული ბრილიანტებისგან. Handcrafted fine jewelry in Tbilisi, Georgia.
+
+## ძირითადი გვერდები / Main Pages
+
+- [კოლექცია (Collection)](https://www.matare.store/#catalog): ბეჭდები, ყელსაბამები, საყურეები და სამაჯურები.
+- [ჩვენს შესახებ (About Us)](https://www.matare.store/about): საიუველირო სახლის ისტორია, სტანდარტები და ღირებულებები.
+- [ოსტატობა (Craftsmanship)](https://www.matare.store/#craftsmanship): ქართული საიუველირო ტრადიცია და თანამედროვე ხელოვნება.
+- [კონტაქტი და შოურუმი (Contact)](https://www.matare.store/#contact): შოურუმის მისამართი (რუსთაველის გამზ. #24, თბილისი) და სამუშაო საათები.
+
+## კატეგორიები / Product Categories
+
+- [ბეჭდები (Rings)](https://www.matare.store/#catalog): ბრილიანტის და ოქროს ბეჭდები.
+- [ყელსაბამები (Necklaces)](https://www.matare.store/#catalog): ექსკლუზიური ყელსაბამები და კულონები.
+- [საყურეები (Earrings)](https://www.matare.store/#catalog): ბრილიანტის და ძვირფასი ქვების საყურეები.
+- [სამაჯურები (Bracelets)](https://www.matare.store/#catalog): კლასიკური და ტენისის სამაჯურები.
