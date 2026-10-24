@@ -11,6 +11,7 @@ const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
 const CatalogPage = lazy(() => import('./pages/CatalogPage'));
 const SizeGuidePage = lazy(() => import('./pages/SizeGuidePage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 // მსუბუქი ჩამტვირთავი ეკრანი გვერდებს შორის გადასვლისას
 const PageLoader = () => (
@@ -40,9 +41,11 @@ export default function App() {
     );
   }
 
-  let content = <StorePage />;
+  let content;
 
-  if (currentPath === "/about") {
+  if (currentPath === "" || currentPath === "/") {
+    content = <StorePage />;
+  } else if (currentPath === "/about") {
     content = (
       <Suspense fallback={<PageLoader />}>
         <AboutPage />
@@ -72,10 +75,17 @@ export default function App() {
         <SizeGuidePage />
       </Suspense>
     );
-  } else if (currentPath.startsWith("/product")) {
+  } else if (currentPath === "/product" || currentPath.startsWith("/product/") || currentPath.startsWith("/product?")) {
     content = (
       <Suspense fallback={<PageLoader />}>
         <ProductPage />
+      </Suspense>
+    );
+  } else {
+    // 404: ნებისმიერი არარსებული გვერდი (მაგ: /dadsad)
+    content = (
+      <Suspense fallback={<PageLoader />}>
+        <NotFoundPage />
       </Suspense>
     );
   }
