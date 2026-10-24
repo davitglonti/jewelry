@@ -22,7 +22,7 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
     <section className="relative h-[500px] sm:h-[640px] overflow-hidden flex items-center bg-black">
       <div className="absolute inset-0">
         <img
-          src={getOptimizedImageUrl(slideImage, 1200, 75)}
+          src={getOptimizedImageUrl(slideImage, 1200, 72)}
           srcSet={getUnsplashSrcSet(slideImage)}
           sizes="100vw"
           alt={pick(activeSlide, "title", lang) || "მატარე — საიუველირო კოლექცია"}

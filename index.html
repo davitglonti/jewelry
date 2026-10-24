@@ -65,8 +65,8 @@
     <link
       rel="preload"
       as="image"
-      href="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=75"
-      imagesrcset="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=360&q=70 360w, https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=540&q=70 540w, https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=720&q=75 720w, https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=75 1200w"
+      href="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=72"
+      imagesrcset="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=360&q=65 360w, https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=500&q=68 500w, https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=720&q=70 720w, https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=72 1200w"
       imagesizes="100vw"
       fetchpriority="high"
     />
@@ -96,7 +96,21 @@
     </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div style="min-height: 100vh; background-color: #0c0b0a; color: #f5f0e6; overflow: hidden;">
+        <header style="height: 64px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem; max-width: 1720px; margin: 0 auto;">
+          <div style="font-family: 'Noto Sans Georgian', Georgia, serif; font-size: 1.25rem; letter-spacing: 0.15em; font-weight: 600; color: #fff;">მატარე</div>
+          <div style="font-size: 0.75rem; letter-spacing: 0.2em; color: #f59e0b; text-transform: uppercase;">საიუველირო სახლი</div>
+        </header>
+        <div style="position: relative; height: 500px; display: flex; align-items: center; background-color: #000; overflow: hidden; padding: 0 1.25rem;">
+          <div style="max-width: 36rem; padding-top: 2rem;">
+            <div style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #fcd34d; margin-bottom: 0.75rem;">ახალი კოლექცია 2026</div>
+            <h1 style="font-family: 'Noto Sans Georgian', Georgia, serif; font-size: 1.85rem; font-weight: 400; color: #fff; line-height: 1.2; margin-bottom: 0.75rem;">მარადიული ელეგანტურობის ხელოვნება</h1>
+            <p style="color: #a8a29e; font-size: 0.85rem; line-height: 1.5;">უნიკალური ხელნაკეთი სამკაულები უმაღლესი სინჯის ოქროსა და სერტიფიცირებული ბრილიანტებისგან.</p>
+          </div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
