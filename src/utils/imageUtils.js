@@ -1,6 +1,7 @@
 import { MAX_IMAGE_WIDTH, IMAGE_QUALITY } from '../constants';
 
-export const handleFileUpload = (file, callback) => {
+export const handleFileUpload = (fileOrEvent, callback) => {
+  const file = fileOrEvent?.target?.files ? fileOrEvent.target.files[0] : fileOrEvent;
   if (!file) return;
   const reader = new FileReader();
   reader.onload = (e) => {

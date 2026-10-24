@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { DEFAULT_SETTINGS } from '../data/defaultSettings';
 import { DEFAULT_PRODUCTS } from '../data/defaultProducts';
+import { DEFAULT_ARTICLES } from '../data/defaultArticles';
 
 const StoreContext = createContext();
 
@@ -9,6 +10,7 @@ const KEYS = {
   products: "aurelia_products_v2",
   favs: "aurelia_favs_v2",
   inquiries: "aurelia_inquiries_v2",
+  articles: "aurelia_articles_v1",
 };
 
 export const sortNewestFirst = (list) => {
@@ -18,6 +20,10 @@ export const sortNewestFirst = (list) => {
       if (item.createdAt && typeof item.createdAt === 'number') return item.createdAt;
       if (typeof item.id === 'string' && item.id.startsWith('item-')) {
         const num = parseInt(item.id.replace('item-', ''), 10);
+        if (!isNaN(num) && num > 1000000) return num;
+      }
+      if (typeof item.id === 'string' && item.id.startsWith('art-')) {
+        const num = parseInt(item.id.replace('art-', ''), 10);
         if (!isNaN(num) && num > 1000000) return num;
       }
       return 0;
@@ -53,84 +59,58 @@ export function StoreProvider({ children }) {
     return cached ? { ...DEFAULT_SETTINGS, ...cached } : DEFAULT_SETTINGS;
   });
   const [products, setProducts] = useState(() => sortNewestFirst(readCache(KEYS.products) || DEFAULT_PRODUCTS));
+  const [articles, setArticles] = useState(() => readCache(KEYS.articles) || DEFAULT_ARTICLES);
   const [favorites, setFavorites] = useState(() => readCache(KEYS.favs) || []);
   const [inquiries, setInquiries] = useState(() => readCache(KEYS.inquiries) || []);
   const [saveMessage, setSaveMessage] = useState("");
 
   const [settingsLoaded, setSettingsLoaded] = useState(true);
 
-  // Favicon: იგივე logoUrl, რაც საიტზე ლოგოდ ჩანს
+  // თემის დამახსოვრება
   useEffect(() => {
-    const iconUrl = siteSettings.logoUrl;
-    if (!iconUrl) return;
-
-    let link = document.querySelector("link[rel~='icon']");
-    if (!link) {
-      link = document.createElement("link");
-      link.rel = "icon";
-      document.head.appendChild(link);
+    const savedTheme = localStorage.getItem("aurelia_theme");
+    if (savedTheme) {
+      setDarkMode(savedTheme === "dark");
     }
+  }, []);
 
-    const match = iconUrl.match(/^data:(image\/[a-zA-Z+.-]+);/);
-    if (match) link.type = match[1];
-    else link.removeAttribute("type");
-
-    link.href = iconUrl;
-  }, [siteSettings.logoUrl]);
-
-  // გვერდის სათაური მისამართის მიხედვით (/product/:sku მხარდაჭერით)
   useEffect(() => {
-    const updateTitle = () => {
-      const brand = siteSettings.brandName || "მატარე";
-      const en = lang === "en";
-      const path = window.location.pathname;
+    localStorage.setItem("aurelia_theme", darkMode ? "dark" : "light");
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
 
-      if (path.startsWith("/admin")) {
-        document.title = `${en ? "Admin Panel" : "ადმინ პანელი"} — ${brand}`;
-      } else if (path.startsWith("/about")) {
-        document.title = `${en ? "About Us" : "ჩვენს შესახებ"} — ${brand}`;
-      } else if (path.startsWith("/product/")) {
-        const rawCode = path.replace("/product/", "").replace(/\/+$/, "");
-        const code = decodeURIComponent(rawCode);
-        const product = code
-          ? products.find((p) =>
-              [p.sku, p.id].some(
-                (v) => v?.toString().toLowerCase() === code.toLowerCase()
-              )
-            )
-          : null;
-
-        if (product) {
-          const name = en && product.nameEn ? product.nameEn : product.name;
-          document.title = `${name} — ${brand}`;
-        } else {
-          document.title = siteSettings.browserTitle || `${brand} — საიუველირო სახლი`;
-        }
-      } else {
-        document.title = siteSettings.browserTitle || `${brand} — საიუველირო სახლი`;
-      }
-    };
-
-    updateTitle();
-    window.addEventListener("urlchange", updateTitle);
-    window.addEventListener("popstate", updateTitle);
-    return () => {
-      window.removeEventListener("urlchange", updateTitle);
-      window.removeEventListener("popstate", updateTitle);
-    };
-  }, [siteSettings, products, lang]);
-
-  // Firebase-იდან ჩატვირთვა
+  // ენის დამახსოვრება
   useEffect(() => {
-    // 1. ადმინ პანელში ვიყენებთ real-time onSnapshot-ს (პარამეტრებზეც და პროდუქტების კოლექციაზეც)
-    if (window.location.pathname.startsWith("/admin")) {
+    const savedLang = localStorage.getItem("aurelia_lang");
+    if (savedLang) {
+      setLang(savedLang);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("aurelia_lang", lang);
+    document.documentElement.lang = lang;
+  }, [lang]);
+
+  // 🚀 Firebase მონაცემების ჩატვირთვა
+  useEffect(() => {
+    const isAdmin = window.location.pathname.startsWith("/admin");
+
+    // 1. თუ მომხმარებელი არის ადმინ პანელში, ჩავტვირთოთ რეალურ დროში (onSnapshot)
+    if (isAdmin) {
       let unsubSettings = () => {};
       let unsubProducts = () => {};
-      Promise.all([
-        import('../lib/firebase'),
-        import('firebase/firestore')
-      ]).then(([{ db }, { onSnapshot, doc, collection }]) => {
+      let unsubArticles = () => {};
+
+      import('../lib/firebase').then(async ({ db }) => {
         if (!db) return;
+        const { doc, onSnapshot, collection } = await import('firebase/firestore');
+
+        // პარამეტრების რეალურ დროში მოსმენა
         unsubSettings = onSnapshot(
           doc(db, "aurelia", "storeData"),
           (docSnap) => {
@@ -146,6 +126,7 @@ export function StoreProvider({ children }) {
           (error) => console.error("Firebase storeData შეცდომა:", error)
         );
 
+        // პროდუქტების რეალურ დროში მოსმენა
         unsubProducts = onSnapshot(
           collection(db, "products"),
           (colSnap) => {
@@ -158,15 +139,29 @@ export function StoreProvider({ children }) {
           },
           (error) => console.error("Firebase products შეცდომა:", error)
         );
+
+        // სტატიების რეალურ დროში მოსმენა
+        unsubArticles = onSnapshot(
+          collection(db, "articles"),
+          (colSnap) => {
+            if (!colSnap.empty) {
+              const list = colSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+              setArticles(list);
+              writeCache(KEYS.articles, list);
+            }
+          },
+          (error) => console.error("Firebase articles შეცდომა:", error)
+        );
       });
 
       return () => {
         unsubSettings();
         unsubProducts();
+        unsubArticles();
       };
     }
 
-    // 2. ჩვეულებრივი მომხმარებლისთვის ვიყენებთ ასინქრონულ ჩატვირთვას (რათა გვერდის გახსნა არ დააყოვნოს)
+    // 2. ჩვეულებრივი მომხმარებლისთვის ვიყენებთ ასინქრონულ ჩატვირთვას
     let isMounted = true;
     const timer = setTimeout(async () => {
       try {
@@ -176,9 +171,10 @@ export function StoreProvider({ children }) {
         ]);
         if (!db || !isMounted) return;
 
-        const [docSnap, colSnap] = await Promise.all([
+        const [docSnap, colSnap, artSnap] = await Promise.all([
           getDoc(doc(db, "aurelia", "storeData")),
-          getDocs(collection(db, "products"))
+          getDocs(collection(db, "products")),
+          getDocs(collection(db, "articles")).catch(() => ({ empty: true }))
         ]);
         if (!isMounted) return;
 
@@ -200,6 +196,12 @@ export function StoreProvider({ children }) {
           const sorted = sortNewestFirst(docSnap.data().products);
           setProducts(sorted);
           writeCache(KEYS.products, sorted);
+        }
+
+        if (!artSnap.empty) {
+          const artList = artSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+          setArticles(artList);
+          writeCache(KEYS.articles, artList);
         }
       } catch (err) {
         console.error("Firebase ჩატვირთვის შეცდომა:", err);
@@ -258,14 +260,61 @@ export function StoreProvider({ children }) {
             await Promise.all(deletePromises);
           }
         } catch (delErr) {
-          console.warn("წაშლილი დოკუმენტების გასუფთავების შეცდომა:", delErr);
+          console.warn("წაშლილი პროდუქტების გასუფთავების შეცდომა:", delErr);
         }
-      }
 
-      setSaveMessage(lang === "ka" ? "ცვლილებები შენახულია!" : "Changes saved!");
-    } catch (e) {
-      console.error("Firebase შენახვის შეცდომა:", e);
-      setSaveMessage(lang === "ka" ? "შეცდომა შენახვისას! სცადეთ ხელახლა." : "Save error! Please try again.");
+        setSaveMessage("ყველა ცვლილება წარმატებით შეინახა!");
+      } else {
+        setSaveMessage("შენახულია ლოკალურად (ოფლაინ)");
+      }
+    } catch (err) {
+      console.error("Firebase შენახვის შეცდომა:", err);
+      setSaveMessage("შეცდომა: " + (err.message || "ვერ შეინახა ბაზაში"));
+    }
+
+    setTimeout(() => setSaveMessage(""), 3000);
+  };
+
+  // სტატიების შენახვა
+  const syncArticles = async (newArticles) => {
+    setArticles(newArticles);
+    writeCache(KEYS.articles, newArticles);
+
+    try {
+      const [{ db }, { doc, setDoc, deleteDoc, getDocs, collection }] = await Promise.all([
+        import('../lib/firebase'),
+        import('firebase/firestore')
+      ]);
+
+      if (db) {
+        const savePromises = newArticles.map((art) => {
+          return setDoc(doc(db, "articles", art.id || ("art-" + Date.now())), art);
+        });
+        await Promise.all(savePromises);
+
+        try {
+          const existingDocs = await getDocs(collection(db, "articles"));
+          const currentIds = new Set(newArticles.map((a) => a.id));
+          const deletePromises = [];
+          existingDocs.forEach((d) => {
+            if (!currentIds.has(d.id)) {
+              deletePromises.push(deleteDoc(doc(db, "articles", d.id)));
+            }
+          });
+          if (deletePromises.length > 0) {
+            await Promise.all(deletePromises);
+          }
+        } catch (delErr) {
+          console.warn("სტატიების გასუფთავების შეცდომა:", delErr);
+        }
+
+        setSaveMessage("სტატიები წარმატებით შეინახა!");
+      } else {
+        setSaveMessage("შენახულია ლოკალურად (ოფლაინ)");
+      }
+    } catch (err) {
+      console.error("სტატიების შენახვის შეცდომა:", err);
+      setSaveMessage("შეცდომა: " + (err.message || "ვერ შეინახა სტატიები"));
     }
 
     setTimeout(() => setSaveMessage(""), 3000);
@@ -288,6 +337,7 @@ export function StoreProvider({ children }) {
         siteSettings, setSiteSettings,
         settingsLoaded,
         products, setProducts,
+        articles, setArticles, syncArticles,
         favorites, toggleFavorite,
         inquiries, setInquiries,
         saveMessage,

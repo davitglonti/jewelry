@@ -6,7 +6,7 @@ export default function Footer({ darkMode, lang, siteSettings }) {
   return (
     <footer id="contact" className={`pt-16 pb-12 border-t ${darkMode ? "bg-[#090807] border-stone-800" : "bg-stone-100 border-stone-200"}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 pb-12 border-b border-stone-500/15">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 pb-12 border-b border-stone-500/15">
           <div className="space-y-3">
             <div className="font-serif text-2xl tracking-[0.2em] font-semibold">
               {siteSettings.brandName}
@@ -41,7 +41,35 @@ export default function Footer({ darkMode, lang, siteSettings }) {
           </div>
 
           <div className="space-y-3 text-sm">
-            <h4 className="font-serif text-lg text-amber-500 uppercase tracking-wider">
+            <h4 className="font-serif text-base text-amber-500 uppercase tracking-wider">
+              {lang === "ka" ? "ნავიგაცია" : "Navigation"}
+            </h4>
+            <ul className="space-y-2 text-xs opacity-80">
+              <li>
+                <a href="/" className="hover:text-amber-500 transition-colors">
+                  {lang === "ka" ? "მთავარი" : "Home"}
+                </a>
+              </li>
+              <li>
+                <a href="/catalog" className="hover:text-amber-500 transition-colors">
+                  {lang === "ka" ? "კოლექცია" : "Collection"}
+                </a>
+              </li>
+              <li>
+                <a href="/about" className="hover:text-amber-500 transition-colors">
+                  {lang === "ka" ? "ჩვენ შესახებ" : "About Us"}
+                </a>
+              </li>
+              <li>
+                <a href="/blog" className="hover:text-amber-500 transition-colors font-medium text-amber-500/90">
+                  {lang === "ka" ? "ბლოგი / რჩევები" : "Blog / Journal"}
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div className="space-y-3 text-sm">
+            <h4 className="font-serif text-base text-amber-500 uppercase tracking-wider">
               {lang === "ka" ? "შოურუმი და კონტაქტი" : "Showroom & Contact"}
             </h4>
             <p className="flex items-center gap-2.5 opacity-80">
@@ -61,7 +89,7 @@ export default function Footer({ darkMode, lang, siteSettings }) {
           </div>
 
           <div className="space-y-3">
-            <h4 className="font-serif text-lg text-amber-500 uppercase tracking-wider">
+            <h4 className="font-serif text-base text-amber-500 uppercase tracking-wider">
               {lang === "ka" ? "სწრაფი კონსულტაცია" : "Quick Consultation"}
             </h4>
             <p className="text-xs opacity-75">

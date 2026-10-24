@@ -1,10 +1,12 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import StorePage from './pages/StorePage';
 
-// ეს გვერდები მთავარ გვერდზე შესვლისას აღარ დაამძიმებს საიტს
+// ეს გვერდები მთავარ გვერდზე შესვლისას აღარ დაამძიმებს საიტს (Code Splitting)
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
 const ProductPage = lazy(() => import('./pages/ProductPage'));
+const BlogPage = lazy(() => import('./pages/BlogPage'));
+const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
 
 // მსუბუქი ჩამტვირთავი ეკრანი გვერდებს შორის გადასვლისას
 const PageLoader = () => (
@@ -38,6 +40,22 @@ export default function App() {
     return (
       <Suspense fallback={<PageLoader />}>
         <AboutPage />
+      </Suspense>
+    );
+  }
+
+  if (currentPath === "/blog") {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <BlogPage />
+      </Suspense>
+    );
+  }
+
+  if (currentPath.startsWith("/blog/")) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <BlogPostPage />
       </Suspense>
     );
   }

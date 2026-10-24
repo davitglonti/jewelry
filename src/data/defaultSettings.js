@@ -38,6 +38,7 @@ export const DEFAULT_SETTINGS = {
   craftImg1: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=900&q=80",
   craftImg2: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=900&q=80",
   categories: ["ბეჭდები", "ყელსაბამები", "საყურეები", "სამაჯურები"],
+  blogCategories: ["გიდი", "ოქრო", "ბრილიანტი", "მოვლა", "სტილი"],
   metals: ["ყვითელი ოქრო", "თეთრი ოქრო", "ვარდისფერი ოქრო", "პლატინა"],
   phone: "+995 555 00 00 00",
   whatsapp: "995555000000",

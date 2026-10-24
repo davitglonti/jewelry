@@ -50,6 +50,9 @@ export default function Navbar({
             <a href="/#craftsmanship" className="hover:text-amber-500 transition-colors">
               {lang === "ka" ? "ოსტატობა" : "Craftsmanship"}
             </a>
+            <a href="/blog" className="hover:text-amber-500 transition-colors">
+              {lang === "ka" ? "ბლოგი" : "Journal"}
+            </a>
             <a href="/#contact" className="hover:text-amber-500 transition-colors">
               {lang === "ka" ? "შოურუმი" : "Showroom"}
             </a>
@@ -133,6 +136,9 @@ export default function Navbar({
               </a>
               <a href="/#craftsmanship" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
                 {lang === "ka" ? "ოსტატობა" : "Craftsmanship"}
+              </a>
+              <a href="/blog" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
+                {lang === "ka" ? "ბლოგი" : "Journal"}
               </a>
               <a href="/#contact" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
                 {lang === "ka" ? "შოურუმი" : "Showroom"}
