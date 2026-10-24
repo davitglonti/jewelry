@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ArrowLeft, ZoomIn, ChevronLeft, ChevronRight,
   Check, Share2, MessageCircle, Send,
@@ -51,6 +51,8 @@ export default function ProductPage({ skuProp }) {
   const [clientPhone, setClientPhone] = useState("");
   const [inquirySent, setInquirySent] = useState(false);
   const [phoneError, setPhoneError] = useState("");
+  const [activeAssuranceIdx, setActiveAssuranceIdx] = useState(0);
+  const assuranceScrollRef = useRef(null);
 
   // პროდუქტის მოძებნა SKU ან ID-ით
   const selectedProduct = products?.find((p) => {
@@ -592,7 +594,7 @@ export default function ProductPage({ skuProp }) {
         </div>
 
         
-        {/* PRODUCT ASSURANCE CARDS (Full Width 3-Column Banner on Desktop, Horizontal Swipe on Mobile) */}
+        {/* PRODUCT ASSURANCE CARDS (Full Width 3-Column Banner on Desktop, 100% Full-Width Swipe with Dots on Mobile) */}
         <div className="mt-16 pt-12 border-t border-stone-500/15 w-full max-w-[1720px] mx-auto">
           <div className="text-center mb-8 px-4">
             <span className="text-xs uppercase tracking-widest text-amber-500 font-semibold block mb-1">
@@ -605,55 +607,126 @@ export default function ProductPage({ skuProp }) {
             </h3>
           </div>
 
-          {/* Swipeable on Mobile, 3-column Grid on Desktop */}
-          <div className="flex md:grid md:grid-cols-3 gap-4 sm:gap-6 overflow-x-auto md:overflow-x-visible pb-4 md:pb-0 snap-x snap-mandatory scrollbar-none px-4 sm:px-0">
-            {((siteSettings?.productAssurance && siteSettings.productAssurance.length === 3)
-              ? siteSettings.productAssurance
-              : DEFAULT_PRODUCT_ASSURANCE
-            ).map((card, idx) => {
-              const Icon = idx === 0 ? Truck : idx === 1 ? ShieldCheck : Sparkles;
-              const title = lang === "ka" ? card.titleKa : (card.titleEn || card.titleKa);
-              const descRaw = lang === "ka" ? card.descKa : (card.descEn || card.descKa);
-              const lines = (descRaw || "").split("\n").filter(Boolean);
+          <div className="px-4 sm:px-0">
+            {/* Swipeable on Mobile (100% full card width, perfectly framed), 3-column Grid on Desktop */}
+            <div
+              ref={assuranceScrollRef}
+              onScroll={(e) => {
+                const el = e.currentTarget;
+                const scrollLeft = el.scrollLeft;
+                const card = el.querySelector('[data-assurance-card]');
+                if (card) {
+                  const cardWidth = card.offsetWidth + 16;
+                  const newIdx = Math.round(scrollLeft / cardWidth);
+                  setActiveAssuranceIdx(Math.min(Math.max(newIdx, 0), 2));
+                }
+              }}
+              className="flex md:grid md:grid-cols-3 gap-4 sm:gap-6 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 snap-x snap-mandatory scrollbar-none"
+            >
+              {((siteSettings?.productAssurance && siteSettings.productAssurance.length === 3)
+                ? siteSettings.productAssurance
+                : DEFAULT_PRODUCT_ASSURANCE
+              ).map((card, idx) => {
+                const Icon = idx === 0 ? Truck : idx === 1 ? ShieldCheck : Sparkles;
+                const title = lang === "ka" ? card.titleKa : (card.titleEn || card.titleKa);
+                const descRaw = lang === "ka" ? card.descKa : (card.descEn || card.descKa);
+                const lines = (descRaw || "").split("\n").filter(Boolean);
 
-              return (
-                <div
-                  key={card.id || idx}
-                  className={`min-w-[85%] sm:min-w-[70%] md:min-w-0 snap-center p-6 sm:p-7 rounded-3xl border transition-all flex flex-col justify-between shrink-0 md:shrink ${
-                    darkMode
-                      ? "bg-stone-900/60 border-stone-800 hover:border-amber-500/30"
-                      : "bg-white border-stone-200/90 shadow-sm hover:shadow-md"
-                  }`}
-                >
-                  <div>
-                    <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4">
-                      <Icon className="w-6 h-6" />
+                return (
+                  <div
+                    key={card.id || idx}
+                    data-assurance-card
+                    className={`w-full min-w-full md:min-w-0 md:w-auto snap-start p-6 sm:p-7 rounded-3xl border transition-all flex flex-col justify-between shrink-0 md:shrink ${
+                      darkMode
+                        ? "bg-stone-900/60 border-stone-800 hover:border-amber-500/30"
+                        : "bg-white border-stone-200/90 shadow-sm hover:shadow-md"
+                    }`}
+                  >
+                    <div>
+                      <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4">
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      <h4 className="font-serif text-lg font-medium mb-3">
+                        {title}
+                      </h4>
+                      <ul className="space-y-2.5 text-xs opacity-85 leading-relaxed">
+                        {lines.map((line, lIdx) => {
+                          const cleanLine = line.replace(/^[•\s-]+/, "");
+                          return (
+                            <li key={lIdx} className="flex items-start gap-2">
+                              <span className="text-amber-500 mt-0.5 shrink-0">•</span>
+                              <span>{cleanLine}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
                     </div>
-                    <h4 className="font-serif text-lg font-medium mb-3">
-                      {title}
-                    </h4>
-                    <ul className="space-y-2.5 text-xs opacity-85 leading-relaxed">
-                      {lines.map((line, lIdx) => {
-                        const cleanLine = line.replace(/^[•\s-]+/, "");
-                        return (
-                          <li key={lIdx} className="flex items-start gap-2">
-                            <span className="text-amber-500 mt-0.5 shrink-0">•</span>
-                            <span>{cleanLine}</span>
-                          </li>
-                        );
-                      })}
-                    </ul>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
 
-          {/* Mobile Swipe Hint */}
-          <div className="flex md:hidden items-center justify-center gap-1.5 mt-2 opacity-50 text-[11px]">
-            <span>←</span>
-            <span>{lang === "ka" ? "გადაფურცლეთ ბარათები" : "Swipe cards"}</span>
-            <span>→</span>
+            {/* Mobile Navigation Dots & Arrows */}
+            <div className="flex md:hidden items-center justify-between mt-5 px-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (assuranceScrollRef.current) {
+                    const card = assuranceScrollRef.current.querySelector('[data-assurance-card]');
+                    const cardWidth = (card?.offsetWidth || 300) + 16;
+                    const nextIdx = Math.max(activeAssuranceIdx - 1, 0);
+                    assuranceScrollRef.current.scrollTo({ left: nextIdx * cardWidth, behavior: 'smooth' });
+                    setActiveAssuranceIdx(nextIdx);
+                  }
+                }}
+                disabled={activeAssuranceIdx === 0}
+                className="w-9 h-9 rounded-full border border-stone-500/25 flex items-center justify-center disabled:opacity-20 active:scale-95 transition-all text-stone-300 hover:border-amber-500/50"
+                aria-label="წინა ბარათი"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-2">
+                {[0, 1, 2].map((i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      if (assuranceScrollRef.current) {
+                        const card = assuranceScrollRef.current.querySelector('[data-assurance-card]');
+                        const cardWidth = (card?.offsetWidth || 300) + 16;
+                        assuranceScrollRef.current.scrollTo({ left: i * cardWidth, behavior: 'smooth' });
+                        setActiveAssuranceIdx(i);
+                      }
+                    }}
+                    aria-label={`ბარათი ${i + 1}`}
+                    className={`transition-all duration-300 rounded-full ${
+                      activeAssuranceIdx === i
+                        ? "w-7 h-2 bg-amber-500 shadow-sm shadow-amber-500/50"
+                        : "w-2 h-2 bg-stone-500/30 hover:bg-stone-500/60"
+                    }`}
+                  />
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (assuranceScrollRef.current) {
+                    const card = assuranceScrollRef.current.querySelector('[data-assurance-card]');
+                    const cardWidth = (card?.offsetWidth || 300) + 16;
+                    const nextIdx = Math.min(activeAssuranceIdx + 1, 2);
+                    assuranceScrollRef.current.scrollTo({ left: nextIdx * cardWidth, behavior: 'smooth' });
+                    setActiveAssuranceIdx(nextIdx);
+                  }
+                }}
+                disabled={activeAssuranceIdx === 2}
+                className="w-9 h-9 rounded-full border border-stone-500/25 flex items-center justify-center disabled:opacity-20 active:scale-95 transition-all text-stone-300 hover:border-amber-500/50"
+                aria-label="შემდეგი ბარათი"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
 
