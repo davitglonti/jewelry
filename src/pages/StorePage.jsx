@@ -51,31 +51,34 @@ export default function StorePage() {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <HeroCarousel
-        slides={slides}
-        currentSlide={currentSlide}
-        setCurrentSlide={setCurrentSlide}
-        lang={lang}
-      />
+      {/* ძირითადი კონტენტი (Main Landmark - აუცილებელია Screen Readers & Accessibility-სთვის) */}
+      <main id="main-content">
+        <HeroCarousel
+          slides={slides}
+          currentSlide={currentSlide}
+          setCurrentSlide={setCurrentSlide}
+          lang={lang}
+        />
 
-      <CatalogSection openProductModal={openProductModal} />
+        <CatalogSection openProductModal={openProductModal} />
 
-      <CraftsmanshipSection darkMode={darkMode} lang={lang} siteSettings={siteSettings} />
+        <CraftsmanshipSection darkMode={darkMode} lang={lang} siteSettings={siteSettings} />
 
-      {/* მთავარი გვერდის ღირებულებების ბარათები (დამოუკიდებელი) */}
-      <InfoCards
-        badgeKey="homeValuesBadge"
-        badgeKeyEn="homeValuesBadgeEn"
-        titleKey="homeValuesTitle"
-        titleKeyEn="homeValuesTitleEn"
-        itemsKey="homeValues"
-        defaultItems={[
-          { titleKa: "ბუნებრივი ქვები", titleEn: "Natural Gemstones", descKa: "ვიყენებთ მხოლოდ სერტიფიცირებულ ბრილიანტებსა და ნატურალურ ძვირფას ქვებს.", descEn: "We use only certified diamonds and 100% natural precious gemstones." },
-          { titleKa: "უმაღლესი სინჯი", titleEn: "Finest Gold Purity", descKa: "ყველა ნაკეთობა მოწმდება და დადასტურებულია უმაღლესი სინჯით (585° / 750° / 925°).", descEn: "Every piece is hallmarked and verified for authentic karat purity." },
-          { titleKa: "საუკუნოვანი გარანტია", titleEn: "Lifetime Warranty", descKa: "ჩვენს ყველა სამკაულს მოყვება ხარისხის სერტიფიკატი და უფასო წმენდა-განახლების სერვისი.", descEn: "Includes an authenticity certificate and complimentary professional cleaning." },
-          { titleKa: "ინდივიდუალური მიდგომა", titleEn: "Bespoke Service", descKa: "შესაძლებელია ზომის მორგება და ექსკლუზიური მოდელების ინდივიდუალური შეკვეთა.", descEn: "Custom sizing and personalized consultations for your special moments." }
-        ]}
-      />
+        {/* მთავარი გვერდის ღირებულებების ბარათები (დამოუკიდებელი) */}
+        <InfoCards
+          badgeKey="homeValuesBadge"
+          badgeKeyEn="homeValuesBadgeEn"
+          titleKey="homeValuesTitle"
+          titleKeyEn="homeValuesTitleEn"
+          itemsKey="homeValues"
+          defaultItems={[
+            { titleKa: "ბუნებრივი ქვები", titleEn: "Natural Gemstones", descKa: "ვიყენებთ მხოლოდ სერტიფიცირებულ ბრილიანტებსა და ნატურალურ ძვირფას ქვებს.", descEn: "We use only certified diamonds and 100% natural precious gemstones." },
+            { titleKa: "უმაღლესი სინჯი", titleEn: "Finest Gold Purity", descKa: "ყველა ნაკეთობა მოწმდება და დადასტურებულია უმაღლესი სინჯით (585° / 750° / 925°).", descEn: "Every piece is hallmarked and verified for authentic karat purity." },
+            { titleKa: "საუკუნოვანი გარანტია", titleEn: "Lifetime Warranty", descKa: "ჩვენს ყველა სამკაულს მოყვება ხარისხის სერტიფიკატი და უფასო წმენდა-განახლების სერვისი.", descEn: "Includes an authenticity certificate and complimentary professional cleaning." },
+            { titleKa: "ინდივიდუალური მიდგომა", titleEn: "Bespoke Service", descKa: "შესაძლებელია ზომის მორგება და ექსკლუზიური მოდელების ინდივიდუალური შეკვეთა.", descEn: "Custom sizing and personalized consultations for your special moments." }
+          ]}
+        />
+      </main>
 
       <Footer darkMode={darkMode} lang={lang} siteSettings={siteSettings} />
 

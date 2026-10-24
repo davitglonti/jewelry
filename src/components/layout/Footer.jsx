@@ -16,12 +16,24 @@ export default function Footer({ darkMode, lang, siteSettings }) {
             </p>
             <div className="flex items-center gap-3 pt-2">
               {siteSettings.instagram && (
-                <a href={siteSettings.instagram} target="_blank" rel="noreferrer" className="p-2.5 rounded-full bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-black transition-all">
+                <a
+                  href={siteSettings.instagram}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Instagram"
+                  className="p-2.5 rounded-full bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-black transition-all"
+                >
                   <Instagram className="w-4 h-4" />
                 </a>
               )}
               {siteSettings.facebook && (
-                <a href={siteSettings.facebook} target="_blank" rel="noreferrer" className="p-2.5 rounded-full bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-black transition-all">
+                <a
+                  href={siteSettings.facebook}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Facebook"
+                  className="p-2.5 rounded-full bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-black transition-all"
+                >
                   <Facebook className="w-4 h-4" />
                 </a>
               )}
@@ -38,7 +50,9 @@ export default function Footer({ darkMode, lang, siteSettings }) {
             </p>
             <p className="flex items-center gap-2.5 opacity-80">
               <Phone className="w-4 h-4 text-amber-500 shrink-0" />
-              {siteSettings.phone}
+              <a href={`tel:${siteSettings.phone || "+995555000000"}`} className="hover:text-amber-500 transition-colors">
+                {siteSettings.phone}
+              </a>
             </p>
             <p className="flex items-center gap-2.5 opacity-80">
               <Clock className="w-4 h-4 text-amber-500 shrink-0" />
@@ -58,7 +72,8 @@ export default function Footer({ darkMode, lang, siteSettings }) {
                 href={`https://wa.me/${(siteSettings.whatsapp || "").replace(/[^0-9]/g, "")}`}
                 target="_blank"
                 rel="noreferrer"
-                className="px-4 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium flex items-center gap-2 transition-all"
+                aria-label="WhatsApp კონსულტაცია"
+                className="px-4 py-2.5 rounded-full bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold flex items-center gap-2 shadow-md transition-all"
               >
                 <MessageCircle className="w-4 h-4" />
                 WhatsApp
@@ -67,7 +82,8 @@ export default function Footer({ darkMode, lang, siteSettings }) {
                 href={siteSettings.messenger || "https://m.me/"}
                 target="_blank"
                 rel="noreferrer"
-                className="px-4 py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium flex items-center gap-2 transition-all"
+                aria-label="Messenger კონსულტაცია"
+                className="px-4 py-2.5 rounded-full bg-blue-700 hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-2 shadow-md transition-all"
               >
                 <Send className="w-4 h-4" />
                 Messenger

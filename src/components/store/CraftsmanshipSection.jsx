@@ -89,7 +89,7 @@ export default function CraftsmanshipSection({
             src={getOptimizedImageUrl(siteSettings.craftImg1, 600, 75)}
             srcSet={getUnsplashSrcSet(siteSettings.craftImg1)}
             sizes="(max-width: 640px) 50vw, 400px"
-            alt="Craftsmanship 1"
+            alt={lang === "ka" ? "საიუველირო ოსტატობა — ხელნაკეთი პროცესი" : "Jewelry craftsmanship process"}
             loading="lazy"
             decoding="async"
             width="400"
@@ -100,7 +100,7 @@ export default function CraftsmanshipSection({
             src={getOptimizedImageUrl(siteSettings.craftImg2, 600, 75)}
             srcSet={getUnsplashSrcSet(siteSettings.craftImg2)}
             sizes="(max-width: 640px) 50vw, 400px"
-            alt="Craftsmanship 2"
+            alt={lang === "ka" ? "საიუველირო ხელოვნება და დეტალები" : "Jewelry craftsmanship and fine details"}
             loading="lazy"
             decoding="async"
             width="400"

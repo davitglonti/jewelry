@@ -244,19 +244,23 @@ export default function ProductPage({ skuProp }) {
               {selectedProduct.images?.length > 1 && (
                 <>
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       setActiveImageIndex((prev) => (prev - 1 + selectedProduct.images.length) % selectedProduct.images.length);
                     }}
+                    aria-label={lang === "ka" ? "წინა ფოტო" : "Previous photo"}
                     className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 text-white hover:bg-black backdrop-blur-sm transition-all"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       setActiveImageIndex((prev) => (prev + 1) % selectedProduct.images.length);
                     }}
+                    aria-label={lang === "ka" ? "შემდეგი ფოტო" : "Next photo"}
                     className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 text-white hover:bg-black backdrop-blur-sm transition-all"
                   >
                     <ChevronRight className="w-5 h-5" />
@@ -270,12 +274,14 @@ export default function ProductPage({ skuProp }) {
                 {selectedProduct.images.map((imgUrl, idx) => (
                   <button
                     key={idx}
+                    type="button"
                     onClick={() => setActiveImageIndex(idx)}
+                    aria-label={`${lang === "ka" ? "ფოტო" : "Photo"} ${idx + 1}`}
                     className={`w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${
                       activeImageIndex === idx ? "border-amber-500 scale-105 shadow-lg shadow-amber-500/20" : "border-transparent opacity-60 hover:opacity-100"
                     }`}
                   >
-                    <img src={imgUrl} alt="" className="w-full h-full object-cover" />
+                    <img src={imgUrl} alt={`${selectedProduct.name} - ${idx + 1}`} className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
@@ -401,7 +407,7 @@ export default function ProductPage({ skuProp }) {
                         <p className="font-semibold text-amber-500 text-xs">
                           {lang === "ka" ? "სტანდარტული ზომების ცხრილი:" : "Standard Size Reference:"}
                         </p>
-                        <button onClick={() => setShowSizeGuide(false)} className="text-xs opacity-60 hover:opacity-100">
+                        <button type="button" onClick={() => setShowSizeGuide(false)} aria-label="Close size guide" className="text-xs opacity-60 hover:opacity-100">
                           ✕
                         </button>
                       </div>
@@ -424,7 +430,7 @@ export default function ProductPage({ skuProp }) {
                   href={getWhatsAppLink(selectedProduct, siteSettings, lang, selectedSize)}
                   target="_blank"
                   rel="noreferrer"
-                  className="py-3.5 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-600/20 transition-all"
+                  className="py-3.5 px-5 rounded-2xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-700/20 transition-all"
                 >
                   <MessageCircle className="w-5 h-5" />
                   {lang === "ka" ? "WhatsApp-ში მიწერა" : "Ask on WhatsApp"}
@@ -433,7 +439,7 @@ export default function ProductPage({ skuProp }) {
                   href={siteSettings.messenger || "https://m.me/"}
                   target="_blank"
                   rel="noreferrer"
-                  className="py-3.5 px-5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2.5 shadow-lg shadow-blue-600/20 transition-all"
+                  className="py-3.5 px-5 rounded-2xl bg-blue-700 hover:bg-blue-600 text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2.5 shadow-lg shadow-blue-700/20 transition-all"
                 >
                   <Send className="w-5 h-5" />
                   {lang === "ka" ? "Messenger-ში მიწერა" : "Ask on Messenger"}
@@ -463,6 +469,7 @@ export default function ProductPage({ skuProp }) {
                         if (phoneError) setPhoneError("");
                       }}
                       placeholder={lang === "ka" ? "თქვენი სახელი" : "Your Name"}
+                      aria-label={lang === "ka" ? "თქვენი სახელი" : "Your Name"}
                       className={`px-4 py-3 rounded-2xl text-xs sm:text-sm border outline-none transition-all ${
                         darkMode ? "bg-stone-900 border-stone-700 text-white focus:border-amber-500" : "bg-stone-50 border-stone-200 text-stone-900 focus:border-amber-500"
                       }`}
@@ -475,6 +482,7 @@ export default function ProductPage({ skuProp }) {
                         if (phoneError) setPhoneError("");
                       }}
                       placeholder={lang === "ka" ? "5XX XX XX XX" : "+995 5XX XX XX XX"}
+                      aria-label={lang === "ka" ? "ტელეფონის ნომერი" : "Phone number"}
                       className={`px-4 py-3 rounded-2xl text-xs sm:text-sm border outline-none transition-all ${
                         phoneError
                           ? "border-red-500 bg-red-500/10 text-red-200"

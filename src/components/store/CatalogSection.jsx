@@ -42,11 +42,12 @@ export default function CatalogSection({ openProductModal }) {
         </div>
 
         <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-amber-500 absolute left-4 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-amber-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            aria-label={lang === "ka" ? "სამკაულის ძიება სახელით ან კოდით" : "Search jewelry by name or SKU"}
             placeholder={lang === "ka" ? "ძიება სახელით ან კოდით (AUR-101)..." : "Search by name or SKU..."}
             className={`w-full pl-11 pr-4 py-3 rounded-full text-sm border outline-none transition-all ${
               darkMode
@@ -67,6 +68,7 @@ export default function CatalogSection({ openProductModal }) {
           {[ALL, ...(siteSettings.categories || [])].map((cat) => (
             <button
               key={cat}
+              type="button"
               onClick={() => setSelectedCategory(cat)}
               className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${
                 selectedCategory === cat
@@ -90,6 +92,7 @@ export default function CatalogSection({ openProductModal }) {
             {[ALL, ...(siteSettings.metals || [])].map((metal) => (
               <button
                 key={metal}
+                type="button"
                 onClick={() => setSelectedMetal(metal)}
                 className={`px-3.5 py-1.5 rounded-full text-xs transition-all border ${
                   selectedMetal === metal
@@ -141,8 +144,9 @@ export default function CatalogSection({ openProductModal }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7">
           {filteredProducts.map((product) => {
             const mainImg = product.images?.[0] || product.image || "https://via.placeholder.com/600";
+            const productName = pick(product, "name", lang);
             return (
-              <div
+              <article
                 key={product.id}
                 className={`group rounded-3xl overflow-hidden border transition-all duration-300 flex flex-col ${
                   darkMode
@@ -155,7 +159,7 @@ export default function CatalogSection({ openProductModal }) {
                     src={getOptimizedImageUrl(mainImg, 380, 68)}
                     srcSet={getProductCardSrcSet(mainImg)}
                     sizes="(max-width: 640px) 360px, (max-width: 1024px) 300px, 280px"
-                    alt={product.name}
+                    alt={productName || "სამკაული"}
                     loading="lazy"
                     decoding="async"
                     width="400"
@@ -181,7 +185,9 @@ export default function CatalogSection({ openProductModal }) {
                     </span>
                   )}
                   <button
+                    type="button"
                     onClick={() => toggleFavorite(product.id)}
+                    aria-label={favorites.includes(product.id) ? (lang === "ka" ? `${productName} — რჩეულებიდან ამოშლა` : `Remove ${productName} from favorites`) : (lang === "ka" ? `${productName} — რჩეულებში დამატება` : `Add ${productName} to favorites`)}
                     className="absolute top-3 right-3 p-2.5 rounded-full bg-black/60 text-white hover:bg-black transition-all"
                   >
                     <Heart className={`w-4 h-4 ${favorites.includes(product.id) ? "fill-amber-500 text-amber-500" : ""}`} />
@@ -198,7 +204,7 @@ export default function CatalogSection({ openProductModal }) {
                       onClick={() => openProductModal(product)}
                       className="font-serif text-xl font-medium cursor-pointer hover:text-amber-500 transition-colors"
                     >
-                      {pick(product, "name", lang)}
+                      {productName}
                     </h3>
                     <p className="text-xs opacity-70 mt-1">
                       {product.metal} • {product.karat}
@@ -217,7 +223,9 @@ export default function CatalogSection({ openProductModal }) {
                       </span>
                     </div>
                     <button
+                      type="button"
                       onClick={() => openProductModal(product)}
+                      aria-label={`${lang === "ka" ? "დეტალურად ნახვა" : "View details"}: ${productName}`}
                       className="px-4 py-2 rounded-full text-xs font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-black transition-all flex items-center gap-1.5"
                     >
                       <Eye className="w-3.5 h-3.5" />
@@ -225,7 +233,7 @@ export default function CatalogSection({ openProductModal }) {
                     </button>
                   </div>
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>
