@@ -15,7 +15,6 @@ export default function StorePage() {
     lang, setLang,
     siteSettings,
     favorites,
-    settingsLoaded
   } = useStore();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -37,15 +36,7 @@ export default function StorePage() {
     window.location.href = `/product/${encodeURIComponent(code)}`;
   };
 
-  if (!settingsLoaded) {
-    return (
-      <div className="min-h-screen w-full bg-[#0c0b0a] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-amber-500 border-t-transparent animate-spin"></div>
-      </div>
-    );
-  }
-
-  const slides = siteSettings.heroSlides?.length > 0 ? siteSettings.heroSlides : DEFAULT_SETTINGS.heroSlides;
+  const slides = siteSettings?.heroSlides?.length > 0 ? siteSettings.heroSlides : DEFAULT_SETTINGS.heroSlides;
 
   return (
     <div className={`min-h-screen w-full overflow-x-hidden transition-colors duration-300 ${darkMode ? "bg-[#0c0b0a] text-[#f5f0e6]" : "bg-[#faf7f2] text-[#1c1917]"}`}>

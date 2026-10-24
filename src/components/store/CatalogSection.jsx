@@ -3,6 +3,7 @@ import { Search, Gem, SlidersHorizontal, Heart, Eye } from 'lucide-react';
 import { ALL } from '../../constants';
 import { pick } from '../../utils/i18n';
 import { useStore } from '../../context/StoreContext';
+import { getOptimizedImageUrl, getUnsplashSrcSet } from '../../utils/imageUtils';
 
 export default function CatalogSection({ openProductModal }) {
   const { darkMode, lang, siteSettings, products, favorites, toggleFavorite } = useStore();
@@ -151,10 +152,14 @@ export default function CatalogSection({ openProductModal }) {
               >
                 <div className="relative aspect-square overflow-hidden bg-stone-900">
                   <img
-                    src={mainImg}
+                    src={getOptimizedImageUrl(mainImg, 450, 75)}
+                    srcSet={getUnsplashSrcSet(mainImg)}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     alt={product.name}
                     loading="lazy"
                     decoding="async"
+                    width="400"
+                    height="400"
                     onClick={() => openProductModal(product)}
                     className="w-full h-full object-cover cursor-pointer group-hover:scale-110 transition-transform duration-700"
                   />

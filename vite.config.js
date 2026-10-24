@@ -7,4 +7,16 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  build: {
+    target: 'esnext',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'firebase-vendor': ['firebase/app', 'firebase/firestore'],
+          'react-vendor': ['react', 'react-dom'],
+          'lucide-vendor': ['lucide-react'],
+        },
+      },
+    },
+  },
 })

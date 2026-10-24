@@ -90,7 +90,7 @@ export default function ProductPage({ skuProp }) {
     window.location.href = `/product/${encodeURIComponent(code)}`;
   };
 
-  if (!settingsLoaded) {
+  if (!settingsLoaded && !selectedProduct) {
     return (
       <div className="min-h-screen w-full bg-[#0c0b0a] flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-amber-500 border-t-transparent animate-spin"></div>
