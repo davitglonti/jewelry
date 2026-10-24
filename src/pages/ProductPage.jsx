@@ -592,18 +592,21 @@ export default function ProductPage({ skuProp }) {
         </div>
 
         
-        {/* PRODUCT ASSURANCE CARDS (Full Width 3-Column Banner) */}
-        <div className="mt-16 pt-12 border-t border-stone-500/15 max-w-7xl mx-auto">
-          <div className="text-center mb-8">
+        {/* PRODUCT ASSURANCE CARDS (Full Width 3-Column Banner on Desktop, Horizontal Swipe on Mobile) */}
+        <div className="mt-16 pt-12 border-t border-stone-500/15 w-full max-w-[1720px] mx-auto">
+          <div className="text-center mb-8 px-4">
             <span className="text-xs uppercase tracking-widest text-amber-500 font-semibold block mb-1">
-              {lang === "ka" ? "AURELIA-ს სტანდარტი და გარანტია" : "AURELIA Standards & Guarantee"}
+              {lang === "ka"
+                ? `${siteSettings?.brandName || "MATARE"}-ს სტანდარტი და გარანტია`
+                : `${siteSettings?.brandName || "MATARE"} Standards & Guarantee`}
             </span>
             <h3 className="font-serif text-xl sm:text-2xl font-normal">
               {lang === "ka" ? "უსაფრთხო შეძენა და უმაღლესი სერვისი" : "Secure Purchase & Exceptional Service"}
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Swipeable on Mobile, 3-column Grid on Desktop */}
+          <div className="flex md:grid md:grid-cols-3 gap-4 sm:gap-6 overflow-x-auto md:overflow-x-visible pb-4 md:pb-0 snap-x snap-mandatory scrollbar-none px-4 sm:px-0">
             {((siteSettings?.productAssurance && siteSettings.productAssurance.length === 3)
               ? siteSettings.productAssurance
               : DEFAULT_PRODUCT_ASSURANCE
@@ -616,30 +619,41 @@ export default function ProductPage({ skuProp }) {
               return (
                 <div
                   key={card.id || idx}
-                  className={`p-6 rounded-3xl border transition-all ${
-                    darkMode ? "bg-stone-900/50 border-stone-800 hover:border-amber-500/30" : "bg-white border-stone-200/90 shadow-xs hover:shadow-md"
+                  className={`min-w-[85%] sm:min-w-[70%] md:min-w-0 snap-center p-6 sm:p-7 rounded-3xl border transition-all flex flex-col justify-between shrink-0 md:shrink ${
+                    darkMode
+                      ? "bg-stone-900/60 border-stone-800 hover:border-amber-500/30"
+                      : "bg-white border-stone-200/90 shadow-sm hover:shadow-md"
                   }`}
                 >
-                  <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4">
-                    <Icon className="w-6 h-6" />
+                  <div>
+                    <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4">
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <h4 className="font-serif text-lg font-medium mb-3">
+                      {title}
+                    </h4>
+                    <ul className="space-y-2.5 text-xs opacity-85 leading-relaxed">
+                      {lines.map((line, lIdx) => {
+                        const cleanLine = line.replace(/^[•\s-]+/, "");
+                        return (
+                          <li key={lIdx} className="flex items-start gap-2">
+                            <span className="text-amber-500 mt-0.5 shrink-0">•</span>
+                            <span>{cleanLine}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </div>
-                  <h4 className="font-serif text-lg font-medium mb-3">
-                    {title}
-                  </h4>
-                  <ul className="space-y-2 text-xs opacity-80 leading-relaxed">
-                    {lines.map((line, lIdx) => {
-                      const cleanLine = line.replace(/^[•\s-]+/, "");
-                      return (
-                        <li key={lIdx} className="flex items-start gap-2">
-                          <span className="text-amber-500 mt-0.5">•</span>
-                          <span>{cleanLine}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
                 </div>
               );
             })}
+          </div>
+
+          {/* Mobile Swipe Hint */}
+          <div className="flex md:hidden items-center justify-center gap-1.5 mt-2 opacity-50 text-[11px]">
+            <span>←</span>
+            <span>{lang === "ka" ? "გადაფურცლეთ ბარათები" : "Swipe cards"}</span>
+            <span>→</span>
           </div>
         </div>
 
