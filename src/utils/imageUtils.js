@@ -21,7 +21,7 @@ export const handleFileUpload = (fileOrEvent, callback) => {
   reader.readAsDataURL(file);
 };
 
-export const sanitizeImageUrl = (url, fallback = "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80") => {
+export const sanitizeImageUrl = (url, fallback = "/brand-logo.jpg") => {
   if (!url || typeof url !== 'string') return fallback;
   if (url.includes('images.unsplash.com/photo--') || url.includes('images.unsplash.com/-1515')) {
     return fallback;

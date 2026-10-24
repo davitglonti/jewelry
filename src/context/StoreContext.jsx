@@ -99,9 +99,9 @@ export function StoreProvider({ children }) {
     document.documentElement.lang = lang;
   }, [lang]);
 
-  // 🌟 საიტის ლოგოდან Favicon-ის დინამიური სინქრონიზაცია (ადმინში შეცვლისას ავტომატურად იცვლება ფავიკონიც)
+  // 🌟 საიტის ლოგოდან / ფავიკონიდან Favicon-ის დინამიური სინქრონიზაცია
   useEffect(() => {
-    const logo = siteSettings?.logoUrl;
+    const icon = (siteSettings?.faviconUrl || siteSettings?.logoUrl || '').trim();
     let favicon = document.querySelector('link[rel="icon"]');
     if (!favicon) {
       favicon = document.createElement('link');
@@ -116,14 +116,14 @@ export function StoreProvider({ children }) {
       document.head.appendChild(appleIcon);
     }
 
-    if (logo && logo.trim()) {
-      favicon.setAttribute('href', logo.trim());
-      appleIcon.setAttribute('href', logo.trim());
+    if (icon) {
+      favicon.setAttribute('href', icon);
+      appleIcon.setAttribute('href', icon);
     } else {
       favicon.setAttribute('href', '/logo.svg');
       appleIcon.setAttribute('href', '/logo.svg');
     }
-  }, [siteSettings?.logoUrl]);
+  }, [siteSettings?.faviconUrl, siteSettings?.logoUrl]);
 
   // 🚀 Firebase მონაცემების ჩატვირთვა
   useEffect(() => {

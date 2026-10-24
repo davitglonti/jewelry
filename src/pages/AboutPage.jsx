@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Award, Shield, Gem, HeartHandshake, ArrowLeft, MapPin, Phone, Clock } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, Clock } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { pick } from '../utils/i18n';
 import InfoCards from '../components/store/InfoCards';

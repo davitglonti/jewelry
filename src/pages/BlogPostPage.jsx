@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Clock, Calendar, Share2, Check, MessageCircle, Send, Sparkles, BookOpen } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, Share2, Check, MessageCircle, Send, Sparkles } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';

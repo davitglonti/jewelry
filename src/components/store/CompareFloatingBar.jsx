@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeftRight, X, Sparkles } from 'lucide-react';
+import { ArrowLeftRight, X } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 
 export default function CompareFloatingBar() {
