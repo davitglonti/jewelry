@@ -5,7 +5,7 @@ import { pick } from '../../utils/i18n';
 export default function Footer({ darkMode, lang, siteSettings }) {
   return (
     <footer id="contact" className={`pt-16 pb-12 border-t ${darkMode ? "bg-[#090807] border-stone-800" : "bg-stone-100 border-stone-200"}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 pb-12 border-b border-stone-500/15">
           <div className="space-y-3">
             <div className="font-serif text-2xl tracking-[0.2em] font-semibold">

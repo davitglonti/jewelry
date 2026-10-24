@@ -21,7 +21,7 @@ export default function Navbar({
       </a>
 
       <header className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-md border-b transition-colors shadow-lg ${darkMode ? "bg-[#0c0b0a]/95 border-amber-500/15" : "bg-white/95 border-stone-200"}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 h-20 flex items-center justify-between">
           <a href="/" className="flex items-center gap-3 group" aria-label={siteSettings.brandName || "მთავარი გვერდი"}>
             {siteSettings.logoUrl ? (
               <img src={siteSettings.logoUrl} alt={siteSettings.brandName} className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border border-amber-500/40" />

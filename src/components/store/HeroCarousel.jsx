@@ -36,7 +36,7 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
         <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/35" />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-12 sm:pt-0">
+      <div className="relative z-10 w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-12 sm:pt-0">
         <div className="max-w-xl space-y-3 sm:space-y-5">
           <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs uppercase tracking-[0.2em] bg-amber-500/20 border border-amber-400/40 text-amber-300">
             <Sparkles className="w-3.5 h-3.5" />

@@ -29,7 +29,7 @@ export default function InfoCards({
 
   return (
     <section className={`py-20 border-b ${darkMode ? "bg-[#0c0b0a] border-stone-800" : "bg-stone-100 border-stone-200"}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 space-y-12">
         <div className="text-center max-w-2xl mx-auto space-y-3">
           <span className="text-xs uppercase tracking-[0.25em] text-amber-500 block">
             {badgeText}

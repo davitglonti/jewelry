@@ -17,7 +17,7 @@ export default function CraftsmanshipSection({
 
   return (
     <section id="craftsmanship" className={`py-20 border-y ${darkMode ? "bg-[#12100e] border-stone-800/70" : "bg-stone-900 text-white border-stone-800"}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         
         {/* ტექსტური მხარე */}
         <div className={`space-y-6 ${reverseLayout ? "lg:order-2" : "lg:order-1"}`}>

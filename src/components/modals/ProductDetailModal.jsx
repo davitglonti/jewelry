@@ -3,7 +3,7 @@ import {
   ArrowLeft, X, ZoomIn, ChevronLeft, ChevronRight,
   Check, Share2, MessageCircle, Send
 } from 'lucide-react';
-import { pick, formatPrice } from '../../utils/i18n';
+import { pick, formatPrice, calculateDiscountPercent } from '../../utils/i18n';
 import { getWhatsAppLink, shareProductLink } from '../../utils/shareUtils';
 import { useStore } from '../../context/StoreContext';
 
@@ -225,11 +225,16 @@ export default function ProductDetailModal({
                 <span className="font-serif text-3xl text-amber-500 font-semibold">
                   {formatPrice(selectedProduct.price)}
                 </span>
-                {selectedProduct.oldPrice && (
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold uppercase bg-red-500/10 text-red-500 border border-red-500/20">
-                    {lang === "ka" ? "ფასდაკლება" : "Sale"}
-                  </span>
-                )}
+                {(() => {
+                  const discountPct = calculateDiscountPercent(selectedProduct.price, selectedProduct.oldPrice);
+                  if (!discountPct) return null;
+                  return (
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold uppercase bg-red-600 text-white shadow-md shadow-red-950/40 flex items-center gap-1.5">
+                      <span>{lang === "ka" ? "ფასდაკლება" : "Sale"}</span>
+                      <span className="font-mono font-bold bg-black/30 px-1.5 py-0.5 rounded-full text-[11px]">-{discountPct}%</span>
+                    </span>
+                  );
+                })()}
               </div>
             </div>
 
