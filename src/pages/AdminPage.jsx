@@ -7,6 +7,7 @@ import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebas
 import { auth } from '../lib/firebaseAuth';
 import { useStore } from '../context/StoreContext';
 import { handleFileUpload } from '../utils/imageUtils';
+import ValueCardsEditor, { DEFAULT_VALUE_CARDS } from '../components/admin/ValueCardsEditor';
 
 export default function AdminPage() {
   const {
@@ -172,7 +173,7 @@ export default function AdminPage() {
                 { id: "categories", label: "2. მეტალები & კატეგორიები" },
                 { id: "carousel", label: "3. ზედა კარუსელი (Hero)" },
                 { id: "brand", label: "4. ლოგო & სათაურები" },
-                { id: "craft", label: "5. ოსტატობის სექცია" },
+                { id: "craft", label: "5. მთავარი გვერდი (ოსტატობა & ბარათები)" },
                 { id: "footer", label: "6. კონტაქტი & ქვედა პანელი" },
                 { id: "inquiries", label: `7. შემოსული მოთხოვნები (${inquiries.length})` },
                 { id: "about", label: "8. ჩვენს შესახებ გვერდი" }
@@ -857,7 +858,7 @@ export default function AdminPage() {
 
             {/* TAB 5: CRAFTSMANSHIP */}
             {adminTab === "craft" && (
-              <div className="space-y-4 max-w-2xl text-xs">
+              <div className="space-y-4 max-w-3xl text-xs">
                 <h4 className="font-serif text-lg text-amber-500">„ხელოვნება, რომელიც თაობებს გადაეცემა“ — ტექსტები და ფოტოები</h4>
                 <input
                   type="text"
@@ -930,6 +931,29 @@ export default function AdminPage() {
                     </label>
                   </div>
                 </div>
+
+                
+                <ValueCardsEditor
+                  darkMode={darkMode}
+                  sectionTitle="მთავარი გვერდის ღირებულებების ბარათები (4 ბარათი)"
+                  sectionSubtitle="ეს ბარათები გამოჩნდება მხოლოდ მთავარ გვერდზე. („ჩვენს შესახებ“ გვერდის ბარათები იმართება მე-8 ტაბიდან)."
+                  badgeKa={siteSettings.homeValuesBadge || siteSettings.aboutValuesBadge || "რატომ გვირჩევენ ჩვენ"}
+                  badgeEn={siteSettings.homeValuesBadgeEn || "Why Choose Us"}
+                  onBadgeKaChange={(val) => setSiteSettings({ ...siteSettings, homeValuesBadge: val })}
+                  onBadgeEnChange={(val) => setSiteSettings({ ...siteSettings, homeValuesBadgeEn: val })}
+                  titleKa={siteSettings.homeValuesTitle || siteSettings.aboutValuesTitle || "ჩვენი სტანდარტი და ღირებულებები"}
+                  titleEn={siteSettings.homeValuesTitleEn || "Our Standards & Values"}
+                  onTitleKaChange={(val) => setSiteSettings({ ...siteSettings, homeValuesTitle: val })}
+                  onTitleEnChange={(val) => setSiteSettings({ ...siteSettings, homeValuesTitleEn: val })}
+                  cards={siteSettings.homeValues?.length === 4 ? siteSettings.homeValues : (siteSettings.aboutValues?.length === 4 ? siteSettings.aboutValues : DEFAULT_VALUE_CARDS)}
+                  onCardChange={(idx, field, val) => {
+                    const base = siteSettings.homeValues?.length === 4
+                      ? [...siteSettings.homeValues]
+                      : (siteSettings.aboutValues?.length === 4 ? [...siteSettings.aboutValues] : DEFAULT_VALUE_CARDS.map(c => ({ ...c })));
+                    base[idx] = { ...base[idx], [field]: val };
+                    setSiteSettings({ ...siteSettings, homeValues: base });
+                  }}
+                />
 
                 <button
                   onClick={() => syncData(siteSettings, products)}
@@ -1111,109 +1135,27 @@ export default function AdminPage() {
                   />
                 </div>
 
-                {/* 4 ღირებულების ბარათი (ქართული და ინგლისური ველებით) */}
-                <div className="pt-4 border-t border-stone-500/20 space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input
-                      type="text"
-                      value={siteSettings.aboutValuesBadge || "რატომ გვირჩევენ ჩვენ"}
-                      onChange={(e) => setSiteSettings({ ...siteSettings, aboutValuesBadge: e.target.value })}
-                      placeholder="პატარა წარწერა (რატომ გვირჩევენ ჩვენ)"
-                      className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                    />
-                    <input
-                      type="text"
-                      value={siteSettings.aboutValuesTitle || "ჩვენი სტანდარტი და ღირებულებები"}
-                      onChange={(e) => setSiteSettings({ ...siteSettings, aboutValuesTitle: e.target.value })}
-                      placeholder="სექციის მთავარი სათაური"
-                      className={`p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {(siteSettings.aboutValues?.length === 4
-                      ? siteSettings.aboutValues
-                      : [
-                          { titleKa: "ბუნებრივი ქვები", titleEn: "Natural Gemstones", descKa: "ვიყენებთ მხოლოდ სერტიფიცირებულ ბრილიანტებსა და ნატურალურ ძვირფას ქვებს.", descEn: "We use only certified diamonds and 100% natural precious gemstones." },
-                          { titleKa: "უმაღლესი სინჯი", titleEn: "Finest Gold Purity", descKa: "ყველა ნაკეთობა მოწმდება და დადასტურებულია უმაღლესი სინჯით (585° / 750° / 925°).", descEn: "Every piece is hallmarked and verified for authentic karat purity." },
-                          { titleKa: "საუკუნოვანი გარანტია", titleEn: "Lifetime Warranty", descKa: "ჩვენს ყველა სამკაულს მოყვება ხარისხის სერტიფიკატი და უფასო წმენდა-განახლების სერვისი.", descEn: "Includes an authenticity certificate and complimentary professional cleaning." },
-                          { titleKa: "ინდივიდუალური მიდგომა", titleEn: "Bespoke Service", descKa: "შესაძლებელია ზომის მორგება და ექსკლუზიური მოდელების ინდივიდუალური შეკვეთა.", descEn: "Custom sizing and personalized consultations for your special moments." }
-                        ]
-                    ).map((card, idx) => (
-                      <div key={idx} className="p-4 rounded-2xl border border-stone-500/20 space-y-2">
-                        <span className="text-amber-400 font-semibold block">ღირებულების ბარათი #{idx + 1}</span>
-                        
-                        {/* ქართული ტექსტები */}
-                        <input
-                          type="text"
-                          value={card.titleKa || ""}
-                          onChange={(e) => {
-                            const currentCards = siteSettings.aboutValues?.length === 4 ? [...siteSettings.aboutValues] : [
-                              { titleKa: "ბუნებრივი ქვები", titleEn: "Natural Gemstones", descKa: "ვიყენებთ მხოლოდ სერტიფიცირებულ ბრილიანტებსა და ნატურალურ ძვირფას ქვებს.", descEn: "We use only certified diamonds and 100% natural precious gemstones." },
-                              { titleKa: "უმაღლესი სინჯი", titleEn: "Finest Gold Purity", descKa: "ყველა ნაკეთობა მოწმდება და დადასტურებულია უმაღლესი სინჯით (585° / 750° / 925°).", descEn: "Every piece is hallmarked and verified for authentic karat purity." },
-                              { titleKa: "საუკუნოვანი გარანტია", titleEn: "Lifetime Warranty", descKa: "ჩვენს ყველა სამკაულს მოყვება ხარისხის სერტიფიკატი და უფასო წმენდა-განახლების სერვისი.", descEn: "Includes an authenticity certificate and complimentary professional cleaning." },
-                              { titleKa: "ინდივიდუალური მიდგომა", titleEn: "Bespoke Service", descKa: "შესაძლებელია ზომის მორგება და ექსკლუზიური მოდელების ინდივიდუალური შეკვეთა.", descEn: "Custom sizing and personalized consultations for your special moments." }
-                            ];
-                            currentCards[idx] = { ...currentCards[idx], titleKa: e.target.value };
-                            setSiteSettings({ ...siteSettings, aboutValues: currentCards });
-                          }}
-                          placeholder="სათაური (ქართულად)"
-                          className={`w-full p-2 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                        />
-                        <textarea
-                          rows={2}
-                          value={card.descKa || ""}
-                          onChange={(e) => {
-                            const currentCards = siteSettings.aboutValues?.length === 4 ? [...siteSettings.aboutValues] : [
-                              { titleKa: "ბუნებრივი ქვები", titleEn: "Natural Gemstones", descKa: "ვიყენებთ მხოლოდ სერტიფიცირებულ ბრილიანტებსა და ნატურალურ ძვირფას ქვებს.", descEn: "We use only certified diamonds and 100% natural precious gemstones." },
-                              { titleKa: "უმაღლესი სინჯი", titleEn: "Finest Gold Purity", descKa: "ყველა ნაკეთობა მოწმდება და დადასტურებულია უმაღლესი სინჯით (585° / 750° / 925°).", descEn: "Every piece is hallmarked and verified for authentic karat purity." },
-                              { titleKa: "საუკუნოვანი გარანტია", titleEn: "Lifetime Warranty", descKa: "ჩვენს ყველა სამკაულს მოყვება ხარისხის სერტიფიკატი და უფასო წმენდა-განახლების სერვისი.", descEn: "Includes an authenticity certificate and complimentary professional cleaning." },
-                              { titleKa: "ინდივიდუალური მიდგომა", titleEn: "Bespoke Service", descKa: "შესაძლებელია ზომის მორგება და ექსკლუზიური მოდელების ინდივიდუალური შეკვეთა.", descEn: "Custom sizing and personalized consultations for your special moments." }
-                            ];
-                            currentCards[idx] = { ...currentCards[idx], descKa: e.target.value };
-                            setSiteSettings({ ...siteSettings, aboutValues: currentCards });
-                          }}
-                          placeholder="აღწერა (ქართულად)"
-                          className={`w-full p-2 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                        />
-
-                        {/* ინგლისური ტექსტები */}
-                        <input
-                          type="text"
-                          value={card.titleEn || ""}
-                          onChange={(e) => {
-                            const currentCards = siteSettings.aboutValues?.length === 4 ? [...siteSettings.aboutValues] : [
-                              { titleKa: "ბუნებრივი ქვები", titleEn: "Natural Gemstones", descKa: "ვიყენებთ მხოლოდ სერტიფიცირებულ ბრილიანტებსა და ნატურალურ ძვირფას ქვებს.", descEn: "We use only certified diamonds and 100% natural precious gemstones." },
-                              { titleKa: "უმაღლესი სინჯი", titleEn: "Finest Gold Purity", descKa: "ყველა ნაკეთობა მოწმდება და დადასტურებულია უმაღლესი სინჯით (585° / 750° / 925°).", descEn: "Every piece is hallmarked and verified for authentic karat purity." },
-                              { titleKa: "საუკუნოვანი გარანტია", titleEn: "Lifetime Warranty", descKa: "ჩვენს ყველა სამკაულს მოყვება ხარისხის სერტიფიკატი და უფასო წმენდა-განახლების სერვისი.", descEn: "Includes an authenticity certificate and complimentary professional cleaning." },
-                              { titleKa: "ინდივიდუალური მიდგომა", titleEn: "Bespoke Service", descKa: "შესაძლებელია ზომის მორგება და ექსკლუზიური მოდელების ინდივიდუალური შეკვეთა.", descEn: "Custom sizing and personalized consultations for your special moments." }
-                            ];
-                            currentCards[idx] = { ...currentCards[idx], titleEn: e.target.value };
-                            setSiteSettings({ ...siteSettings, aboutValues: currentCards });
-                          }}
-                          placeholder="Title (English)"
-                          className={`w-full p-2 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                        />
-                        <textarea
-                          rows={2}
-                          value={card.descEn || ""}
-                          onChange={(e) => {
-                            const currentCards = siteSettings.aboutValues?.length === 4 ? [...siteSettings.aboutValues] : [
-                              { titleKa: "ბუნებრივი ქვები", titleEn: "Natural Gemstones", descKa: "ვიყენებთ მხოლოდ სერტიფიცირებულ ბრილიანტებსა და ნატურალურ ძვირფას ქვებს.", descEn: "We use only certified diamonds and 100% natural precious gemstones." },
-                              { titleKa: "უმაღლესი სინჯი", titleEn: "Finest Gold Purity", descKa: "ყველა ნაკეთობა მოწმდება და დადასტურებულია უმაღლესი სინჯით (585° / 750° / 925°).", descEn: "Every piece is hallmarked and verified for authentic karat purity." },
-                              { titleKa: "საუკუნოვანი გარანტია", titleEn: "Lifetime Warranty", descKa: "ჩვენს ყველა სამკაულს მოყვება ხარისხის სერტიფიკატი და უფასო წმენდა-განახლების სერვისი.", descEn: "Includes an authenticity certificate and complimentary professional cleaning." },
-                              { titleKa: "ინდივიდუალური მიდგომა", titleEn: "Bespoke Service", descKa: "შესაძლებელია ზომის მორგება და ექსკლუზიური მოდელების ინდივიდუალური შეკვეთა.", descEn: "Custom sizing and personalized consultations for your special moments." }
-                            ];
-                            currentCards[idx] = { ...currentCards[idx], descEn: e.target.value };
-                            setSiteSettings({ ...siteSettings, aboutValues: currentCards });
-                          }}
-                          placeholder="Description (English)"
-                          className={`w-full p-2 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <ValueCardsEditor
+                  darkMode={darkMode}
+                  sectionTitle="„ჩვენს შესახებ“ გვერდის ღირებულებების ბარათები (4 ბარათი)"
+                  sectionSubtitle="ეს ბარათები გამოჩნდება მხოლოდ „ჩვენს შესახებ“ (/about) გვერდზე. (მთავარი გვერდის ბარათები იმართება მე-5 ტაბიდან)."
+                  badgeKa={siteSettings.aboutValuesBadge || "რატომ გვირჩევენ ჩვენ"}
+                  badgeEn={siteSettings.aboutValuesBadgeEn || "Why Choose Us"}
+                  onBadgeKaChange={(val) => setSiteSettings({ ...siteSettings, aboutValuesBadge: val })}
+                  onBadgeEnChange={(val) => setSiteSettings({ ...siteSettings, aboutValuesBadgeEn: val })}
+                  titleKa={siteSettings.aboutValuesTitle || "ჩვენი სტანდარტი და ღირებულებები"}
+                  titleEn={siteSettings.aboutValuesTitleEn || "Our Standards & Values"}
+                  onTitleKaChange={(val) => setSiteSettings({ ...siteSettings, aboutValuesTitle: val })}
+                  onTitleEnChange={(val) => setSiteSettings({ ...siteSettings, aboutValuesTitleEn: val })}
+                  cards={siteSettings.aboutValues?.length === 4 ? siteSettings.aboutValues : DEFAULT_VALUE_CARDS}
+                  onCardChange={(idx, field, val) => {
+                    const base = siteSettings.aboutValues?.length === 4
+                      ? [...siteSettings.aboutValues]
+                      : DEFAULT_VALUE_CARDS.map(c => ({ ...c }));
+                    base[idx] = { ...base[idx], [field]: val };
+                    setSiteSettings({ ...siteSettings, aboutValues: base });
+                  }}
+                />
 
                 <button
                   onClick={() => syncData(siteSettings, products)}

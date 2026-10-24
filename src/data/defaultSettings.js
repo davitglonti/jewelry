@@ -53,36 +53,72 @@ export const DEFAULT_SETTINGS = {
   copyright: "© 2026 AURELIA Jewelry House. ყველა უფლება დაცულია.",
 
   aboutHeroTitle: "ჩვენი ისტორია და მემკვიდრეობა",
-aboutHeroTitleEn: "Our Story & Heritage",
-aboutHeroSubtitle: "მრავალსაუკუნოვანი ქართული საიუველირო ტრადიცია და თანამედროვე ელეგანტურობა.",
-aboutHeroSubtitleEn: "Centuries of Georgian jewelry craftsmanship combined with modern elegance.",
-aboutExtraText: "ჩვენს სახელოსნოში თითოეული ქვა და მეტალი გადის უმკაცრეს შერჩევას...",
-aboutValuesBadge: "რატომ გვირჩევენ ჩვენ",
-aboutValuesTitle: "ჩვენი სტანდარტი და ღირებულებები",
-aboutValues: [
-  {
-    titleKa: "ბუნებრივი ქვები",
-    titleEn: "Natural Gemstones",
-    descKa: "ვიყენებთ მხოლოდ სერტიფიცირებულ ბრილიანტებსა და ნატურალურ ძვირფას ქვებს.",
-    descEn: "We use only certified diamonds and 100% natural precious gemstones."
-  },
-  {
-    titleKa: "უმაღლესი სინჯი",
-    titleEn: "Finest Gold Purity",
-    descKa: "ყველა ნაკეთობა მოწმდება და დადასტურებულია უმაღლესი სინჯით (585° / 750° / 925°).",
-    descEn: "Every piece is hallmarked and verified for authentic karat purity."
-  },
-  {
-    titleKa: "საუკუნოვანი გარანტია",
-    titleEn: "Lifetime Warranty",
-    descKa: "ჩვენს ყველა სამკაულს მოყვება ხარისხის სერტიფიკატი და უფასო წმენდა-განახლების სერვისი.",
-    descEn: "Includes an authenticity certificate and complimentary professional cleaning."
-  },
-  {
-    titleKa: "ინდივიდუალური მიდგომა",
-    titleEn: "Bespoke Service",
-    descKa: "შესაძლებელია ზომის მორგება და ექსკლუზიური მოდელების ინდივიდუალური შეკვეთა.",
-    descEn: "Custom sizing and personalized consultations for your special moments."
-  }
-]
+  aboutHeroTitleEn: "Our Story & Heritage",
+  aboutHeroSubtitle: "მრავალსაუკუნოვანი ქართული საიუველირო ტრადიცია და თანამედროვე ელეგანტურობა.",
+  aboutHeroSubtitleEn: "Centuries of Georgian jewelry craftsmanship combined with modern elegance.",
+  aboutExtraText: "ჩვენს სახელოსნოში თითოეული ქვა და მეტალი გადის უმკაცრეს შერჩევას...",
+
+  // ჩვენს შესახებ გვერდის ღირებულებების ბარათები
+  aboutValuesBadge: "რატომ გვირჩევენ ჩვენ",
+  aboutValuesBadgeEn: "Why Choose Us",
+  aboutValuesTitle: "ჩვენი სტანდარტი და ღირებულებები",
+  aboutValuesTitleEn: "Our Standards & Values",
+  aboutValues: [
+    {
+      titleKa: "ბუნებრივი ქვები",
+      titleEn: "Natural Gemstones",
+      descKa: "ვიყენებთ მხოლოდ სერტიფიცირებულ ბრილიანტებსა და ნატურალურ ძვირფას ქვებს.",
+      descEn: "We use only certified diamonds and 100% natural precious gemstones."
+    },
+    {
+      titleKa: "უმაღლესი სინჯი",
+      titleEn: "Finest Gold Purity",
+      descKa: "ყველა ნაკეთობა მოწმდება და დადასტურებულია უმაღლესი სინჯით (585° / 750° / 925°).",
+      descEn: "Every piece is hallmarked and verified for authentic karat purity."
+    },
+    {
+      titleKa: "საუკუნოვანი გარანტია",
+      titleEn: "Lifetime Warranty",
+      descKa: "ჩვენს ყველა სამკაულს მოყვება ხარისხის სერტიფიკატი და უფასო წმენდა-განახლების სერვისი.",
+      descEn: "Includes an authenticity certificate and complimentary professional cleaning."
+    },
+    {
+      titleKa: "ინდივიდუალური მიდგომა",
+      titleEn: "Bespoke Service",
+      descKa: "შესაძლებელია ზომის მორგება და ექსკლუზიური მოდელების ინდივიდუალური შეკვეთა.",
+      descEn: "Custom sizing and personalized consultations for your special moments."
+    }
+  ],
+
+  // მთავარი გვერდის ღირებულებების ბარათები (დამოუკიდებელი)
+  homeValuesBadge: "რატომ გვირჩევენ ჩვენ",
+  homeValuesBadgeEn: "Why Choose Us",
+  homeValuesTitle: "ჩვენი სტანდარტი და ღირებულებები",
+  homeValuesTitleEn: "Our Standards & Values",
+  homeValues: [
+    {
+      titleKa: "ბუნებრივი ქვები",
+      titleEn: "Natural Gemstones",
+      descKa: "ვიყენებთ მხოლოდ სერტიფიცირებულ ბრილიანტებსა და ნატურალურ ძვირფას ქვებს.",
+      descEn: "We use only certified diamonds and 100% natural precious gemstones."
+    },
+    {
+      titleKa: "უმაღლესი სინჯი",
+      titleEn: "Finest Gold Purity",
+      descKa: "ყველა ნაკეთობა მოწმდება და დადასტურებულია უმაღლესი სინჯით (585° / 750° / 925°).",
+      descEn: "Every piece is hallmarked and verified for authentic karat purity."
+    },
+    {
+      titleKa: "საუკუნოვანი გარანტია",
+      titleEn: "Lifetime Warranty",
+      descKa: "ჩვენს ყველა სამკაულს მოყვება ხარისხის სერტიფიკატი და უფასო წმენდა-განახლების სერვისი.",
+      descEn: "Includes an authenticity certificate and complimentary professional cleaning."
+    },
+    {
+      titleKa: "ინდივიდუალური მიდგომა",
+      titleEn: "Bespoke Service",
+      descKa: "შესაძლებელია ზომის მორგება და ექსკლუზიური მოდელების ინდივიდუალური შეკვეთა.",
+      descEn: "Custom sizing and personalized consultations for your special moments."
+    }
+  ]
 };

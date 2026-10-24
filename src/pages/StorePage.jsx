@@ -62,10 +62,13 @@ export default function StorePage() {
 
       <CraftsmanshipSection darkMode={darkMode} lang={lang} siteSettings={siteSettings} />
 
+      {/* მთავარი გვერდის ღირებულებების ბარათები (დამოუკიდებელი) */}
       <InfoCards
-        badgeKey="aboutValuesBadge"
-        titleKey="aboutValuesTitle"
-        itemsKey="aboutValues"
+        badgeKey="homeValuesBadge"
+        badgeKeyEn="homeValuesBadgeEn"
+        titleKey="homeValuesTitle"
+        titleKeyEn="homeValuesTitleEn"
+        itemsKey="homeValues"
         defaultItems={[
           { titleKa: "ბუნებრივი ქვები", titleEn: "Natural Gemstones", descKa: "ვიყენებთ მხოლოდ სერტიფიცირებულ ბრილიანტებსა და ნატურალურ ძვირფას ქვებს.", descEn: "We use only certified diamonds and 100% natural precious gemstones." },
           { titleKa: "უმაღლესი სინჯი", titleEn: "Finest Gold Purity", descKa: "ყველა ნაკეთობა მოწმდება და დადასტურებულია უმაღლესი სინჯით (585° / 750° / 925°).", descEn: "Every piece is hallmarked and verified for authentic karat purity." },

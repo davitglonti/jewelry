@@ -4,15 +4,28 @@ import { useStore } from '../../context/StoreContext';
 
 const ICONS = [Gem, Award, Shield, HeartHandshake];
 
-export default function InfoCards({ badgeKey, titleKey, itemsKey, defaultItems }) {
+export default function InfoCards({
+  badgeKey,
+  badgeKeyEn,
+  titleKey,
+  titleKeyEn,
+  itemsKey,
+  defaultItems
+}) {
   const { darkMode, lang, siteSettings } = useStore();
 
-  // უსაფრთხოების შემოწმება: თუ siteSettings[itemsKey] არის მასივი და აქვს 4 ელემენტი, ავიღოთ ის, თუ არა - defaultItems
   const rawItems = siteSettings[itemsKey];
-  const currentItems = Array.isArray(rawItems) && rawItems.length > 0 ? rawItems : defaultItems;
+  const currentItems = Array.isArray(rawItems) && rawItems.length > 0
+    ? rawItems
+    : (Array.isArray(siteSettings.aboutValues) && siteSettings.aboutValues.length > 0 ? siteSettings.aboutValues : defaultItems);
 
-  const badgeText = siteSettings[badgeKey] || "რატომ გვირჩევენ ჩვენ";
-  const titleText = siteSettings[titleKey] || "ჩვენი სტანდარტი და ღირებულებები";
+  const badgeText = lang === "en"
+    ? (siteSettings[badgeKeyEn] || siteSettings[badgeKey] || "Why Choose Us")
+    : (siteSettings[badgeKey] || "რატომ გვირჩევენ ჩვენ");
+
+  const titleText = lang === "en"
+    ? (siteSettings[titleKeyEn] || siteSettings[titleKey] || "Our Standards & Values")
+    : (siteSettings[titleKey] || "ჩვენი სტანდარტი და ღირებულებები");
 
   return (
     <section className={`py-20 border-b ${darkMode ? "bg-[#0c0b0a] border-stone-800" : "bg-stone-100 border-stone-200"}`}>

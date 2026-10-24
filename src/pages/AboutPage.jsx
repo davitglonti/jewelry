@@ -48,7 +48,6 @@ export default function AboutPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showFavoritesModal, setShowFavoritesModal] = useState(false);
 
-  const valuesList = siteSettings.aboutValues?.length === 4 ? siteSettings.aboutValues : DEFAULT_VALUES;
 
   return (
     <div className={`min-h-screen w-full overflow-x-hidden transition-colors duration-300 ${darkMode ? "bg-[#0c0b0a] text-[#f5f0e6]" : "bg-[#faf7f2] text-[#1c1917]"}`}>
@@ -99,7 +98,9 @@ export default function AboutPage() {
       {/* ჩვენი ღირებულებები (4 ბარათი) */}
       <InfoCards
         badgeKey="aboutValuesBadge"
+        badgeKeyEn="aboutValuesBadgeEn"
         titleKey="aboutValuesTitle"
+        titleKeyEn="aboutValuesTitleEn"
         itemsKey="aboutValues"
         defaultItems={[
             { titleKa: "ბუნებრივი ქვები", titleEn: "Natural Gemstones", descKa: "ვიყენებთ მხოლოდ სერტიფიცირებულ ბრილიანტებსა და ნატურალურ ძვირფას ქვებს.", descEn: "We use only certified diamonds and 100% natural precious gemstones." },
