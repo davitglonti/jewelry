@@ -102,17 +102,18 @@ export function StoreProvider({ children }) {
     };
   }, [siteSettings, products, lang]);
 
-  // Firebase-იდან ჩატვირთვა (სრულად ასინქრონული)
+  // Firebase-იდან ჩატვირთვა
   useEffect(() => {
-    // ადმინ პანელში ვიყენებთ real-time onSnapshot-ს
+    // 1. ადმინ პანელში ვიყენებთ real-time onSnapshot-ს (პარამეტრებზეც და პროდუქტების კოლექციაზეც)
     if (window.location.pathname.startsWith("/admin")) {
-      let unsub = () => {};
+      let unsubSettings = () => {};
+      let unsubProducts = () => {};
       Promise.all([
         import('../lib/firebase'),
         import('firebase/firestore')
-      ]).then(([{ db }, { onSnapshot, doc }]) => {
+      ]).then(([{ db }, { onSnapshot, doc, collection }]) => {
         if (!db) return;
-        unsub = onSnapshot(
+        unsubSettings = onSnapshot(
           doc(db, "aurelia", "storeData"),
           (docSnap) => {
             if (docSnap.exists()) {
@@ -121,48 +122,68 @@ export function StoreProvider({ children }) {
                 setSiteSettings({ ...DEFAULT_SETTINGS, ...data.settings });
                 writeCache(KEYS.settings, data.settings);
               }
-              if (data.products) {
-                setProducts(data.products);
-                writeCache(KEYS.products, data.products);
-              }
               if (data.inquiries) setInquiries(data.inquiries);
             }
           },
-          (error) => {
-            console.error("Firebase ჩატვირთვის შეცდომა:", error);
-          }
+          (error) => console.error("Firebase storeData შეცდომა:", error)
+        );
+
+        unsubProducts = onSnapshot(
+          collection(db, "products"),
+          (colSnap) => {
+            if (!colSnap.empty) {
+              const list = colSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+              setProducts(list);
+              writeCache(KEYS.products, list);
+            }
+          },
+          (error) => console.error("Firebase products შეცდომა:", error)
         );
       });
-      return () => unsub();
+
+      return () => {
+        unsubSettings();
+        unsubProducts();
+      };
     }
 
-    // ჩვეულებრივი მომხმარებლისთვის ვიყენებთ ერთჯერად getDoc-ს 4 წამის შემდეგ (რათა პირველადი რენდერი არ დააყოვნოს)
+    // 2. ჩვეულებრივი მომხმარებლისთვის ვიყენებთ ასინქრონულ ჩატვირთვას (რათა გვერდის გახსნა არ დააყოვნოს)
     let isMounted = true;
     const timer = setTimeout(async () => {
       try {
-        const [{ db }, { getDoc, doc }] = await Promise.all([
+        const [{ db }, { getDoc, getDocs, doc, collection }] = await Promise.all([
           import('../lib/firebase'),
           import('firebase/firestore')
         ]);
         if (!db || !isMounted) return;
-        const docSnap = await getDoc(doc(db, "aurelia", "storeData"));
+
+        const [docSnap, colSnap] = await Promise.all([
+          getDoc(doc(db, "aurelia", "storeData")),
+          getDocs(collection(db, "products"))
+        ]);
         if (!isMounted) return;
+
         if (docSnap.exists()) {
           const data = docSnap.data();
           if (data.settings) {
             setSiteSettings({ ...DEFAULT_SETTINGS, ...data.settings });
             writeCache(KEYS.settings, data.settings);
           }
-          if (data.products) {
-            setProducts(data.products);
-            writeCache(KEYS.products, data.products);
-          }
           if (data.inquiries) setInquiries(data.inquiries);
+        }
+
+        if (!colSnap.empty) {
+          const list = colSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+          setProducts(list);
+          writeCache(KEYS.products, list);
+        } else if (docSnap.exists() && docSnap.data()?.products?.length > 0) {
+          setProducts(docSnap.data().products);
+          writeCache(KEYS.products, docSnap.data().products);
         }
       } catch (err) {
         console.error("Firebase ჩატვირთვის შეცდომა:", err);
       }
-    }, 4000);
+    }, 1200);
 
     return () => {
       isMounted = false;
@@ -177,23 +198,51 @@ export function StoreProvider({ children }) {
     writeCache(KEYS.inquiries, newInquiries);
 
     try {
-      const [{ db }, { doc, setDoc }] = await Promise.all([
+      const [{ db }, { doc, setDoc, deleteDoc, getDocs, collection }] = await Promise.all([
         import('../lib/firebase'),
         import('firebase/firestore')
       ]);
+
       if (db) {
+        // 1. პარამეტრების და მოთხოვნების შენახვა
         await setDoc(doc(db, "aurelia", "storeData"), {
           settings: newSettings,
-          products: newProducts,
           inquiries: newInquiries,
           updatedAt: new Date().toISOString(),
         });
+
+        // 2. თითოეული პროდუქტის შენახვა ცალკე დოკუმენტად products კოლექციაში
+        const savePromises = newProducts.map((p) => {
+          const cleanProduct = { ...p };
+          return setDoc(doc(db, "products", p.id), cleanProduct);
+        });
+        await Promise.all(savePromises);
+
+        // 3. თუ რომელიმე პროდუქტი წაიშალა სიიდან, წავშალოთ Firestore-იდანაც
+        try {
+          const existingDocs = await getDocs(collection(db, "products"));
+          const currentIds = new Set(newProducts.map((p) => p.id));
+          const deletePromises = [];
+          existingDocs.forEach((d) => {
+            if (!currentIds.has(d.id)) {
+              deletePromises.push(deleteDoc(doc(db, "products", d.id)));
+            }
+          });
+          if (deletePromises.length > 0) {
+            await Promise.all(deletePromises);
+          }
+        } catch (delErr) {
+          console.warn("წაშლილი დოკუმენტების გასუფთავების შეცდომა:", delErr);
+        }
       }
+
+      setSaveMessage(lang === "ka" ? "ცვლილებები შენახულია!" : "Changes saved!");
     } catch (e) {
       console.error("Firebase შენახვის შეცდომა:", e);
+      setSaveMessage(lang === "ka" ? "შეცდომა შენახვისას! სცადეთ ხელახლა." : "Save error! Please try again.");
     }
-    setSaveMessage(lang === "ka" ? "ცვლილებები შენახულია!" : "Changes saved!");
-    setTimeout(() => setSaveMessage(""), 2500);
+
+    setTimeout(() => setSaveMessage(""), 3000);
   };
 
   // ფავორიტებში დამატება/წაშლა
