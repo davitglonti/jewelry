@@ -119,11 +119,23 @@ export default function ProductPage({ skuProp }) {
     const oldDesc = metaDesc?.getAttribute("content");
     if (metaDesc) metaDesc.setAttribute("content", prodDesc);
 
-    // 2. OpenGraph (სოციალურ ქსელებში გაზიარებისთვის)
+    // 2. OpenGraph & Twitter Cards (სოციალურ ქსელებში გაზიარებისთვის)
     const ogTitle = document.querySelector('meta[property="og:title"]');
     const ogDesc = document.querySelector('meta[property="og:description"]');
     const ogImage = document.querySelector('meta[property="og:image"]');
     const ogUrl = document.querySelector('meta[property="og:url"]');
+    const twTitle = document.querySelector('meta[name="twitter:title"]');
+    const twDesc = document.querySelector('meta[name="twitter:description"]');
+    const twImage = document.querySelector('meta[name="twitter:image"]');
+
+    let imageSrcLink = document.querySelector('link[rel="image_src"]');
+    if (!imageSrcLink) {
+      imageSrcLink = document.createElement('link');
+      imageSrcLink.setAttribute('rel', 'image_src');
+      document.head.appendChild(imageSrcLink);
+    }
+
+
 
     const prevOg = {
       title: ogTitle?.getAttribute("content"),
@@ -136,6 +148,10 @@ export default function ProductPage({ skuProp }) {
     if (ogDesc) ogDesc.setAttribute("content", prodDesc);
     if (ogImage && mainImage) ogImage.setAttribute("content", mainImage);
     if (ogUrl) ogUrl.setAttribute("content", productUrl);
+    if (twTitle) twTitle.setAttribute("content", `${prodName} — ${brand}`);
+    if (twDesc) twDesc.setAttribute("content", prodDesc);
+    if (twImage && mainImage) twImage.setAttribute("content", mainImage);
+    if (imageSrcLink && mainImage) imageSrcLink.setAttribute("href", mainImage);
 
     // 3. Google Schema.org Product JSON-LD (Rich Snippets & ფასის გამოჩენა ძიებაში)
     const schemaData = {
@@ -177,6 +193,9 @@ export default function ProductPage({ skuProp }) {
       if (ogDesc && prevOg.desc) ogDesc.setAttribute("content", prevOg.desc);
       if (ogImage && prevOg.image) ogImage.setAttribute("content", prevOg.image);
       if (ogUrl && prevOg.url) ogUrl.setAttribute("content", prevOg.url);
+      if (twImage && prevOg.image) twImage.setAttribute("content", prevOg.image);
+      if (imageSrcLink && prevOg.image) imageSrcLink.setAttribute("href", prevOg.image);
+
       const existingScript = document.getElementById("product-schema-ld");
       if (existingScript) existingScript.remove();
     };

@@ -96,6 +96,32 @@ export function StoreProvider({ children }) {
     document.documentElement.lang = lang;
   }, [lang]);
 
+  // 🌟 საიტის ლოგოდან Favicon-ის დინამიური სინქრონიზაცია (ადმინში შეცვლისას ავტომატურად იცვლება ფავიკონიც)
+  useEffect(() => {
+    const logo = siteSettings?.logoUrl;
+    let favicon = document.querySelector('link[rel="icon"]');
+    if (!favicon) {
+      favicon = document.createElement('link');
+      favicon.setAttribute('rel', 'icon');
+      document.head.appendChild(favicon);
+    }
+
+    let appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+    if (!appleIcon) {
+      appleIcon = document.createElement('link');
+      appleIcon.setAttribute('rel', 'apple-touch-icon');
+      document.head.appendChild(appleIcon);
+    }
+
+    if (logo && logo.trim()) {
+      favicon.setAttribute('href', logo.trim());
+      appleIcon.setAttribute('href', logo.trim());
+    } else {
+      favicon.setAttribute('href', '/logo.svg');
+      appleIcon.setAttribute('href', '/logo.svg');
+    }
+  }, [siteSettings?.logoUrl]);
+
   // 🚀 Firebase მონაცემების ჩატვირთვა
   useEffect(() => {
     const isAdmin = window.location.pathname.startsWith("/admin");
