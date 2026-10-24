@@ -3,15 +3,20 @@ import { Instagram, Facebook, MapPin, Phone, Clock, MessageCircle, Send } from '
 import { pick } from '../../utils/i18n';
 
 export default function Footer({ darkMode, lang, siteSettings }) {
+  const isDark = darkMode !== false;
+  const textColor = isDark ? "text-stone-300" : "text-stone-700";
+  const subtextColor = isDark ? "text-stone-400" : "text-stone-600";
+  const linkHover = isDark ? "hover:text-amber-400" : "hover:text-amber-600";
+
   return (
-    <footer id="contact" className={`pt-16 pb-12 border-t ${darkMode ? "bg-[#090807] border-stone-800" : "bg-stone-100 border-stone-200"}`}>
+    <footer id="contact" className={`pt-16 pb-12 border-t ${isDark ? "bg-[#090807] text-[#f5f0e6] border-stone-800" : "bg-stone-100 text-stone-900 border-stone-200"}`}>
       <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 pb-12 border-b border-stone-500/15">
           <div className="space-y-3">
             <div className="font-serif text-2xl tracking-[0.2em] font-semibold">
               {siteSettings.brandName}
             </div>
-            <p className="text-sm opacity-75 leading-relaxed">
+            <p className={`text-sm leading-relaxed ${textColor}`}>
               {lang === "ka" ? siteSettings.footerDesc : (siteSettings.footerDescEn || siteSettings.footerDesc)}
             </p>
             <div className="flex items-center gap-3 pt-2">
@@ -21,7 +26,7 @@ export default function Footer({ darkMode, lang, siteSettings }) {
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Instagram"
-                  className="p-2.5 rounded-full bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-black transition-all"
+                  className="p-2.5 rounded-full bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-black transition-all"
                 >
                   <Instagram className="w-4 h-4" />
                 </a>
@@ -32,7 +37,7 @@ export default function Footer({ darkMode, lang, siteSettings }) {
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Facebook"
-                  className="p-2.5 rounded-full bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-black transition-all"
+                  className="p-2.5 rounded-full bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-black transition-all"
                 >
                   <Facebook className="w-4 h-4" />
                 </a>
@@ -41,40 +46,40 @@ export default function Footer({ darkMode, lang, siteSettings }) {
           </div>
 
           <div className="space-y-3 text-sm">
-            <h4 className="font-serif text-base text-amber-500 uppercase tracking-wider">
+            <h4 className="font-serif text-base text-amber-400 uppercase tracking-wider">
               {lang === "ka" ? "ნავიგაცია" : "Navigation"}
             </h4>
-            <ul className="space-y-2 text-xs opacity-80">
+            <ul className={`space-y-2 text-xs ${textColor}`}>
               <li>
-                <a href="/" className="hover:text-amber-500 transition-colors">
+                <a href="/" className={`${linkHover} transition-colors`}>
                   {lang === "ka" ? "მთავარი" : "Home"}
                 </a>
               </li>
               <li>
-                <a href="/catalog" className="hover:text-amber-500 transition-colors">
+                <a href="/catalog" className={`${linkHover} transition-colors`}>
                   {lang === "ka" ? "კოლექცია" : "Collection"}
                 </a>
               </li>
               <li>
-                <a href="/about" className="hover:text-amber-500 transition-colors">
+                <a href="/about" className={`${linkHover} transition-colors`}>
                   {lang === "ka" ? "ჩვენ შესახებ" : "About Us"}
                 </a>
               </li>
               <li>
-                <a href="/blog" className="hover:text-amber-500 transition-colors font-medium text-amber-500/90">
+                <a href="/blog" className={`transition-colors font-medium ${isDark ? "text-amber-400 hover:text-amber-300" : "text-amber-700 hover:text-amber-800"}`}>
                   {lang === "ka" ? "ბლოგი / რჩევები" : "Blog / Journal"}
                 </a>
               </li>
               <li>
-                <a href="/size-guide" className="hover:text-amber-500 transition-colors flex items-center gap-1.5 text-amber-500/90 font-medium">
+                <a href="/size-guide" className={`transition-colors flex items-center gap-1.5 font-medium ${isDark ? "text-amber-400 hover:text-amber-300" : "text-amber-700 hover:text-amber-800"}`}>
                   <span>{lang === "ka" ? "ზომის გზამკვლევი" : "Size Guide"}</span>
-                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-500/15 border border-amber-500/30 uppercase font-semibold">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/50 uppercase font-semibold">
                     {lang === "ka" ? "საზომი" : "Guide"}
                   </span>
                 </a>
               </li>
               <li>
-                <a href="/#faq" className="hover:text-amber-500 transition-colors">
+                <a href="/#faq" className={`${linkHover} transition-colors`}>
                   {lang === "ka" ? "კითხვა-პასუხი (FAQ)" : "FAQ"}
                 </a>
               </li>
@@ -82,30 +87,30 @@ export default function Footer({ darkMode, lang, siteSettings }) {
           </div>
 
           <div className="space-y-3 text-sm">
-            <h4 className="font-serif text-base text-amber-500 uppercase tracking-wider">
+            <h4 className="font-serif text-base text-amber-400 uppercase tracking-wider">
               {lang === "ka" ? "შოურუმი და კონტაქტი" : "Showroom & Contact"}
             </h4>
-            <p className="flex items-center gap-2.5 opacity-80">
-              <MapPin className="w-4 h-4 text-amber-500 shrink-0" />
+            <p className={`flex items-center gap-2.5 ${textColor}`}>
+              <MapPin className="w-4 h-4 text-amber-400 shrink-0" />
               {pick(siteSettings, "address", lang)}
             </p>
-            <p className="flex items-center gap-2.5 opacity-80">
-              <Phone className="w-4 h-4 text-amber-500 shrink-0" />
-              <a href={`tel:${siteSettings.phone || "+995555000000"}`} className="hover:text-amber-500 transition-colors">
+            <p className={`flex items-center gap-2.5 ${textColor}`}>
+              <Phone className="w-4 h-4 text-amber-400 shrink-0" />
+              <a href={`tel:${siteSettings.phone || "+995555000000"}`} className={`${linkHover} transition-colors`}>
                 {siteSettings.phone}
               </a>
             </p>
-            <p className="flex items-center gap-2.5 opacity-80">
-              <Clock className="w-4 h-4 text-amber-500 shrink-0" />
+            <p className={`flex items-center gap-2.5 ${textColor}`}>
+              <Clock className="w-4 h-4 text-amber-400 shrink-0" />
               {lang === "ka" ? siteSettings.hours : (siteSettings.hoursEn || siteSettings.hours)}
             </p>
           </div>
 
           <div className="space-y-3">
-            <h4 className="font-serif text-base text-amber-500 uppercase tracking-wider">
+            <h4 className="font-serif text-base text-amber-400 uppercase tracking-wider">
               {lang === "ka" ? "სწრაფი კონსულტაცია" : "Quick Consultation"}
             </h4>
-            <p className="text-xs opacity-75">
+            <p className={`text-xs ${textColor}`}>
               {lang === "ka" ? "მოგვწერეთ პირდაპირ WhatsApp-ში ან Messenger-ში:" : "Message us directly via WhatsApp or Messenger:"}
             </p>
             <div className="flex flex-wrap gap-3 pt-1">
@@ -133,7 +138,7 @@ export default function Footer({ darkMode, lang, siteSettings }) {
           </div>
         </div>
 
-        <div className="pt-8 text-center text-xs opacity-60">
+        <div className={`pt-8 text-center text-xs ${subtextColor}`}>
           {siteSettings.copyright}
         </div>
       </div>
