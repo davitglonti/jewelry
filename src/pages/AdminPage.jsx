@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Shield, Sun, Moon, ArrowLeft, Lock, Plus, Upload,
   Link as LinkIcon, X, Edit3, Trash2, BookOpen, ExternalLink, Tag,
-  HelpCircle, Truck, ShieldCheck, Sparkles, Star, AlertCircle
+  HelpCircle, Truck, ShieldCheck, Sparkles, Star, AlertCircle, RotateCw
 } from 'lucide-react';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../lib/firebaseAuth';
@@ -292,7 +292,8 @@ export default function AdminPage() {
                         sizes: ["16.5", "17.0", "17.5"],
                         description: "",
                         descriptionEn: "",
-                        images: []
+                        images: [],
+                        video360: ""
                       })
                     }
                     className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-500 text-black text-xs font-semibold flex items-center justify-center gap-1.5"
@@ -523,6 +524,54 @@ export default function AdminPage() {
                           </div>
                         ))}
                       </div>
+                    </div>
+
+                    {/* 360° Video Scrubbing Section */}
+                    <div className="space-y-2 pt-3 border-t border-stone-700/40">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] uppercase tracking-wider text-amber-500 font-semibold flex items-center gap-1.5">
+                          <RotateCw className="w-3.5 h-3.5" />
+                          360° მბრუნავი ვიდეო (Interactive 360° View)
+                        </label>
+                        {editingProduct.video360 && (
+                          <button
+                            type="button"
+                            onClick={() => setEditingProduct({ ...editingProduct, video360: "" })}
+                            className="text-[11px] text-red-400 hover:text-red-300 flex items-center gap-1 font-medium transition-colors"
+                          >
+                            <Trash2 className="w-3 h-3" /> ვიდეოს წაშლა
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-stone-400">
+                        სამკაულის 360 გრადუსით დასატრიალებლად მიუთითეთ წრიული ვიდეოს პირდაპირი ბმული (MP4 / WebM). მყიდველი თითის ან მაუსის გადასმით დაატრიალებს ნივთს.
+                      </p>
+                      <div className="flex flex-col sm:flex-row items-center gap-2">
+                        <input
+                          type="url"
+                          placeholder="360° ვიდეოს პირდაპირი ლინკი (მაგ: https://.../video.mp4)"
+                          value={editingProduct.video360 || ""}
+                          onChange={(e) => setEditingProduct({ ...editingProduct, video360: e.target.value })}
+                          className={`w-full p-2.5 rounded-xl border text-xs ${
+                            darkMode ? "bg-stone-800 border-stone-700 text-white" : "bg-white border-stone-300 text-stone-900"
+                          }`}
+                        />
+                      </div>
+                      {editingProduct.video360 && (
+                        <div className="relative inline-flex flex-col gap-1 mt-2 p-2.5 rounded-xl border border-amber-500/30 bg-black/40">
+                          <div className="text-[10px] text-amber-400 font-medium flex items-center gap-1">
+                            <Sparkles className="w-3 h-3" /> ვიდეოს წინასწარი გადახედვა:
+                          </div>
+                          <video
+                            src={editingProduct.video360}
+                            className="w-40 h-28 object-contain rounded-lg bg-black/60"
+                            muted
+                            loop
+                            autoPlay
+                            playsInline
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-3">

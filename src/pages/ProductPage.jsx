@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  ArrowLeft, ZoomIn, ChevronLeft, ChevronRight, Heart,
+  ArrowLeft, ZoomIn, ChevronLeft, ChevronRight, Heart, RotateCw,
   Check, Share2, MessageCircle, Send,
   Truck, ShieldCheck, Sparkles, ChevronDown
 } from 'lucide-react';
@@ -13,6 +13,7 @@ import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import LightboxModal from '../components/modals/LightboxModal';
 import FavoritesModal from '../components/modals/FavoritesModal';
+import Video360Viewer from '../components/store/Video360Viewer';
 
 export default function ProductPage({ skuProp }) {
   // ვიღებთ პროდუქტის კოდს URL-იდან (მაგ: /product/AUR-102)
@@ -40,6 +41,7 @@ export default function ProductPage({ skuProp }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
   const [lightboxImage, setLightboxImage] = useState(null);
+  const [mediaViewMode, setMediaViewMode] = useState("photo"); // "photo" | "360"
 
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
@@ -76,11 +78,19 @@ export default function ProductPage({ skuProp }) {
     return (pSku && pSku === target) || (pId && pId === target);
   });
 
+  // 360° Video URL - either directly on product or demo fallback for testing
+  const active360Url = selectedProduct?.video360 || (
+    (selectedProduct?.sku === "AUR-101" || selectedProduct?.sku === "AUR-198")
+      ? "https://cloudinary-res.cloudinary.com/video/upload/w_600,c_fill,q_auto/dpr_auto/360_demo.mp4"
+      : null
+  );
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setActiveImageIndex(0);
     setInquirySent(false);
     setPhoneError("");
+    setMediaViewMode("photo");
     if (selectedProduct?.sizes?.length > 0) {
       setSelectedSize(selectedProduct.sizes[0]);
     } else {
@@ -301,73 +311,148 @@ export default function ProductPage({ skuProp }) {
       <main className="w-full max-w-none px-3 sm:px-5 lg:px-6 py-6 sm:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 xl:gap-12 items-start">
           
-          {/* მარცხენა მხარე: ფოტოების სივრცე უცვლელი პროპორციებით */}
+          {/* მარცხენა მხარე: ფოტოების სივრცე და 360° ინტერაქტიული ხედი */}
           <div className="space-y-4">
-            <div
-              className={`relative w-full h-[calc(100vh-155px)] max-h-[700px] min-h-[350px] rounded-3xl overflow-hidden border flex items-center justify-center cursor-zoom-in group ${
-                darkMode ? "bg-[#141210] border-stone-800" : "bg-white border-stone-200/80 shadow-sm"
-              }`}
-              onMouseEnter={() => setIsZoomed(true)}
-              onMouseLeave={() => setIsZoomed(false)}
-              onMouseMove={handleMouseMoveZoom}
-              onClick={() => setLightboxImage(selectedProduct.images?.[activeImageIndex] || selectedProduct.images?.[0])}
-            >
-              <img
-                src={selectedProduct.images?.[activeImageIndex] || selectedProduct.images?.[0]}
-                alt={selectedProduct.name}
-                className="w-full h-full object-contain transition-transform duration-200 p-4"
-                style={
-                  isZoomed
-                    ? {
-                        transformOrigin: `${zoomPos.x}\%${zoomPos.y}%`,
-                        transform: "scale(2.35)"
-                      }
-                    : {}
-                }
-              />
-              <div className="absolute bottom-4 right-4 px-3.5 py-2 rounded-full bg-black/70 text-white text-xs flex items-center gap-2 pointer-events-none backdrop-blur-sm">
-                <ZoomIn className="w-4 h-4 text-amber-400" />
-                {lang === "ka" ? "მაუსით მიახლოება / გადიდება" : "Hover to Zoom / Click Fullscreen"}
+            {/* View Mode Toggle Pill (Photos vs 360°) */}
+            {active360Url && (
+              <div className="flex items-center gap-2 mb-2">
+                <button
+                  type="button"
+                  onClick={() => setMediaViewMode("photo")}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 ${
+                    mediaViewMode === "photo"
+                      ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
+                      : "bg-stone-800/80 hover:bg-stone-800 text-stone-300 border border-stone-700/60"
+                  }`}
+                >
+                  <span>📷 {lang === "ka" ? "ფოტოები" : "Photos"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMediaViewMode("360")}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 ${
+                    mediaViewMode === "360"
+                      ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
+                      : "bg-stone-800/80 hover:bg-stone-800 text-amber-400 border border-amber-500/30"
+                  }`}
+                >
+                  <RotateCw className={`w-3.5 h-3.5 ${mediaViewMode === "360" ? "animate-spin" : ""}`} />
+                  <span>360° {lang === "ka" ? "ხედი" : "View"}</span>
+                </button>
               </div>
+            )}
 
-              {selectedProduct.images?.length > 1 && (
-                <>
+            {/* Media Viewer: 360° Video Scrubber OR Photo Viewer */}
+            {mediaViewMode === "360" && active360Url ? (
+              <Video360Viewer
+                videoUrl={active360Url}
+                productName={selectedProduct?.name}
+                darkMode={darkMode}
+                lang={lang}
+                onExit={() => setMediaViewMode("photo")}
+              />
+            ) : (
+              <div
+                className={`relative w-full h-[calc(100vh-155px)] max-h-[700px] min-h-[350px] rounded-3xl overflow-hidden border flex items-center justify-center cursor-zoom-in group ${
+                  darkMode ? "bg-[#141210] border-stone-800" : "bg-white border-stone-200/80 shadow-sm"
+                }`}
+                onMouseEnter={() => setIsZoomed(true)}
+                onMouseLeave={() => setIsZoomed(false)}
+                onMouseMove={handleMouseMoveZoom}
+                onClick={() => setLightboxImage(selectedProduct.images?.[activeImageIndex] || selectedProduct.images?.[0])}
+              >
+                <img
+                  src={selectedProduct.images?.[activeImageIndex] || selectedProduct.images?.[0]}
+                  alt={selectedProduct.name}
+                  className="w-full h-full object-contain transition-transform duration-200 p-4"
+                  style={
+                    isZoomed
+                      ? {
+                          transformOrigin: `${zoomPos.x}%${zoomPos.y}%`,
+                          transform: "scale(2.35)"
+                        }
+                      : {}
+                  }
+                />
+
+                {/* 360° Floating Shortcut Badge on Photo */}
+                {active360Url && (
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setActiveImageIndex((prev) => (prev - 1 + selectedProduct.images.length) % selectedProduct.images.length);
+                      setMediaViewMode("360");
                     }}
-                    aria-label={lang === "ka" ? "წინა ფოტო" : "Previous photo"}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 text-white hover:bg-black backdrop-blur-sm transition-all"
+                    className="absolute top-4 left-4 z-10 px-3.5 py-1.5 rounded-full bg-black/60 hover:bg-amber-500 hover:text-black border border-amber-500/40 text-amber-400 text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md transition-all shadow-lg hover:scale-105 active:scale-95"
                   >
-                    <ChevronLeft className="w-5 h-5" />
+                    <RotateCw className="w-3.5 h-3.5" />
+                    <span>360° ხედი</span>
                   </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveImageIndex((prev) => (prev + 1) % selectedProduct.images.length);
-                    }}
-                    aria-label={lang === "ka" ? "შემდეგი ფოტო" : "Next photo"}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 text-white hover:bg-black backdrop-blur-sm transition-all"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </>
-              )}
-            </div>
+                )}
 
-            {selectedProduct.images?.length > 1 && (
+                <div className="absolute bottom-4 right-4 px-3.5 py-2 rounded-full bg-black/70 text-white text-xs flex items-center gap-2 pointer-events-none backdrop-blur-sm">
+                  <ZoomIn className="w-4 h-4 text-amber-400" />
+                  {lang === "ka" ? "მაუსით მიახლოება / გადიდება" : "Hover to Zoom / Click Fullscreen"}
+                </div>
+
+                {selectedProduct.images?.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveImageIndex((prev) => (prev - 1 + selectedProduct.images.length) % selectedProduct.images.length);
+                      }}
+                      aria-label={lang === "ka" ? "წინა ფოტო" : "Previous photo"}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 text-white hover:bg-black backdrop-blur-sm transition-all"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveImageIndex((prev) => (prev + 1) % selectedProduct.images.length);
+                      }}
+                      aria-label={lang === "ka" ? "შემდეგი ფოტო" : "Next photo"}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 text-white hover:bg-black backdrop-blur-sm transition-all"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Thumbnails Row */}
+            {((selectedProduct.images?.length > 1) || active360Url) && (
               <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                {selectedProduct.images.map((imgUrl, idx) => (
+                {active360Url && (
+                  <button
+                    type="button"
+                    onClick={() => setMediaViewMode("360")}
+                    aria-label="360° ხედი"
+                    className={`w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all relative flex flex-col items-center justify-center ${
+                      mediaViewMode === "360"
+                        ? "border-amber-500 bg-amber-500/20 text-amber-400 scale-105 shadow-lg shadow-amber-500/20"
+                        : "border-stone-700/80 bg-black/60 text-stone-300 hover:text-amber-400 hover:border-amber-500/50 opacity-80 hover:opacity-100"
+                    }`}
+                  >
+                    <RotateCw className="w-5 h-5" />
+                    <span className="text-[10px] font-bold mt-0.5 tracking-wider">360°</span>
+                  </button>
+                )}
+                {selectedProduct.images?.map((imgUrl, idx) => (
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => setActiveImageIndex(idx)}
+                    onClick={() => {
+                      setMediaViewMode("photo");
+                      setActiveImageIndex(idx);
+                    }}
                     aria-label={`${lang === "ka" ? "ფოტო" : "Photo"} ${idx + 1}`}
                     className={`w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${
-                      activeImageIndex === idx ? "border-amber-500 scale-105 shadow-lg shadow-amber-500/20" : "border-transparent opacity-60 hover:opacity-100"
+                      mediaViewMode === "photo" && activeImageIndex === idx ? "border-amber-500 scale-105 shadow-lg shadow-amber-500/20" : "border-transparent opacity-60 hover:opacity-100"
                     }`}
                   >
                     <img src={imgUrl} alt={`${selectedProduct.name} - ${idx + 1}`} className="w-full h-full object-cover" />

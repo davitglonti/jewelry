@@ -11,6 +11,7 @@ export const DEFAULT_PRODUCTS = [
     stones: "ბრილიანტი 0.65 ct (VS1/F)",
     price: "4,800 ₾",
     oldPrice: "5,400 ₾",
+    video360: "https://cloudinary-res.cloudinary.com/video/upload/w_600,c_fill,q_auto/dpr_auto/360_demo.mp4",
     exclusive: true,
     showOnHome: true,
     sizes: ["16.0", "16.5", "17.0", "17.5", "18.0"],
