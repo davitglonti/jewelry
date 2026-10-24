@@ -505,6 +505,25 @@ export default function ProductPage({ skuProp }) {
                 </div>
 
                 <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                  {/* Favorite Button */}
+                  <button
+                    type="button"
+                    onClick={() => toggleFavorite(selectedProduct.id)}
+                    className={`h-8 sm:h-9 px-2.5 sm:px-3 rounded-full border text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 ${
+                      favorites?.includes(selectedProduct.id)
+                        ? "bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/20 font-semibold"
+                        : "bg-stone-500/10 border-stone-500/20 text-stone-300 hover:text-rose-400 hover:border-rose-500/40 hover:bg-stone-500/20"
+                    }`}
+                    title={favorites?.includes(selectedProduct.id) ? (lang === "ka" ? "რჩეულებშია" : "In Favorites") : (lang === "ka" ? "რჩეულებში დამატება" : "Add to favorites")}
+                  >
+                    <Heart className={`w-3.5 h-3.5 ${favorites?.includes(selectedProduct.id) ? "fill-white text-white" : ""}`} />
+                    <span className="text-[11px] hidden xs:inline">
+                      {favorites?.includes(selectedProduct.id)
+                        ? (lang === "ka" ? "რჩეულია" : "Saved")
+                        : (lang === "ka" ? "რჩეული" : "Favorite")}
+                    </span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={() =>
@@ -870,7 +889,7 @@ export default function ProductPage({ skuProp }) {
                 const discount = calculateDiscountPercent(item.originalPrice, item.price);
                 const isHovered = hoveredRelatedId === item.id;
                 const displayImg = isHovered && item.images?.[1] ? item.images[1] : (item.images?.[0] || item.image);
-                const isFav = favorites?.some((f) => f.id === item.id);
+                const isFav = favorites?.includes(item.id) || (item.sku && favorites?.includes(item.sku));
 
                 return (
                   <article
@@ -894,33 +913,33 @@ export default function ProductPage({ skuProp }) {
                         </span>
                       )}
 
-                      {/* Favorite Button */}
-                      <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10 flex flex-col gap-1.5">
+                      {/* Action Buttons: Favorite & Compare Side-by-Side */}
+                      <div className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 z-10 flex items-center gap-1">
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            toggleFavorite(item.id || item);
+                            toggleFavorite(item.id);
                           }}
                           aria-label="რჩეულებში დამატება"
                           className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md ${
                             isFav
-                              ? "bg-rose-500 text-white"
+                              ? "bg-rose-500 text-white shadow-rose-500/30"
                               : "bg-black/50 text-white/80 hover:text-rose-400 hover:bg-black/70"
                           }`}
                         >
-                          <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isFav ? "fill-white" : ""}`} />
+                          <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isFav ? "fill-white text-white" : ""}`} />
                         </button>
 
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            toggleCompare(item.id || item);
+                            toggleCompare(item.id);
                           }}
                           title="შედარება"
                           className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md ${
-                            compareList?.includes(item.id || item)
+                            compareList?.includes(item.id)
                               ? "bg-amber-500 text-black shadow-amber-500/30 scale-105"
                               : "bg-black/50 text-white/80 hover:text-amber-400 hover:bg-black/70"
                           }`}

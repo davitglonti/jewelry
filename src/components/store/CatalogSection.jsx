@@ -152,7 +152,7 @@ export default function CatalogSection({ openProductModal }) {
                 </div>
 
                 {/* Card Details */}
-                <div className="p-2.5 sm:p-4 flex-1 flex flex-col justify-between space-y-2">
+                <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2">
                   <div>
                     <div className="flex items-center justify-between text-[10px] opacity-60 mb-1 gap-1">
                       <span className="truncate uppercase tracking-wider text-[9px] font-medium">{product.category || "სამკაული"}</span>
@@ -166,40 +166,24 @@ export default function CatalogSection({ openProductModal }) {
                     </h3>
                   </div>
 
-                  {/* Price & Details Space */}
-                  <div className="pt-2 border-t border-stone-500/15 space-y-1.5">
-                    <div className="flex items-baseline justify-between gap-1">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="font-serif text-xs sm:text-base text-amber-500 font-bold leading-tight whitespace-nowrap">
-                          {formatPrice(product.price)}
-                        </span>
-                        {discountPct ? (
-                          <span className="text-[10px] sm:text-[11px] line-through text-stone-500 font-normal leading-none whitespace-nowrap">
-                            {formatPrice(product.oldPrice)}
-                          </span>
-                        ) : null}
-                      </div>
-
+                  {/* Clean Luxury Price Row */}
+                  <div className="pt-2.5 border-t border-stone-500/15 flex items-baseline justify-between gap-1.5">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-serif text-sm sm:text-lg text-amber-500 font-bold leading-tight whitespace-nowrap">
+                        {formatPrice(product.price)}
+                      </span>
                       {discountPct ? (
-                        <span className="text-[9px] font-bold text-red-500 font-mono">
-                          -{discountPct}%
+                        <span className="text-[10px] sm:text-xs line-through text-stone-500 font-normal leading-none whitespace-nowrap">
+                          {formatPrice(product.oldPrice)}
                         </span>
                       ) : null}
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openProductModal(product);
-                      }}
-                      aria-label={`${lang === "ka" ? "დეტალურად ნახვა" : "View details"}: ${productName}`}
-                      className="w-full py-1.5 px-2 rounded-xl bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-black border border-amber-500/30 transition-all duration-300 flex items-center justify-center gap-1.5 text-[10px] sm:text-xs font-semibold tracking-wider uppercase group/btn shadow-xs active:scale-95"
-                    >
-                      <Eye className="w-3.5 h-3.5 text-amber-400 group-hover/btn:text-black transition-colors" />
-                      <span>{lang === "ka" ? "დეტალურად" : "Details"}</span>
-                      <ArrowRight className="w-3 h-3 text-amber-400 group-hover/btn:text-black group-hover/btn:translate-x-0.5 transition-all" />
-                    </button>
+                    {discountPct ? (
+                      <span className="text-[9px] sm:text-[10px] font-bold text-red-400 font-mono">
+                        -{discountPct}%
+                      </span>
+                    ) : null}
                   </div>
                 </div>
               </article>
