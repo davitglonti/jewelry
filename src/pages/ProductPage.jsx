@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  ArrowLeft, ZoomIn, ChevronLeft, ChevronRight,
+  ArrowLeft, ZoomIn, ChevronLeft, ChevronRight, Heart,
   Check, Share2, MessageCircle, Send,
   Truck, ShieldCheck, Sparkles, ChevronDown
 } from 'lucide-react';
@@ -28,7 +28,7 @@ export default function ProductPage({ skuProp }) {
     lang, setLang,
     siteSettings,
     products,
-    favorites,
+    favorites, toggleFavorite,
     inquiries, setInquiries,
     syncData,
     settingsLoaded
@@ -53,6 +53,20 @@ export default function ProductPage({ skuProp }) {
   const [phoneError, setPhoneError] = useState("");
   const [activeAssuranceIdx, setActiveAssuranceIdx] = useState(0);
   const assuranceScrollRef = useRef(null);
+  const relatedScrollRef = useRef(null);
+  const [hoveredRelatedId, setHoveredRelatedId] = useState(null);
+
+  const scrollRelated = (direction) => {
+    if (relatedScrollRef.current) {
+      const container = relatedScrollRef.current;
+      const card = container.querySelector('[data-related-card]');
+      const scrollAmount = card ? (card.offsetWidth + 12) * 2 : container.offsetWidth;
+      container.scrollBy({
+        left: direction * scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   // პროდუქტის მოძებნა SKU ან ID-ით
   const selectedProduct = products?.find((p) => {
@@ -730,37 +744,100 @@ export default function ProductPage({ skuProp }) {
           </div>
         </div>
 
-        {/* მსგავსი პროდუქტების სექცია */}
+        {/* მსგავსი პროდუქტების სექცია (Luxury Clean Header with Visual Peek Affordance) */}
         {relatedProducts.length > 0 && (
-          <div className="mt-20 pt-12 border-t border-stone-500/20 max-w-7xl mx-auto">
-            <h3 className="font-serif text-2xl sm:text-3xl mb-8">
-              {lang === "ka" ? "მსგავსი მოდელები" : "Similar Pieces"}
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => goToProduct(item.sku || item.id)}
-                  className={`group cursor-pointer rounded-3xl overflow-hidden border transition-all ${
-                    darkMode ? "bg-[#141210] border-stone-800 hover:border-amber-500/40" : "bg-white border-stone-200 shadow-xs hover:shadow-md"
-                  }`}
-                >
-                  <div className="aspect-square overflow-hidden bg-stone-900/20">
-                    <img
-                      src={item.images?.[0]}
-                      alt={item.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <div className="p-4 space-y-1">
-                    <div className="text-[11px] text-amber-500 uppercase tracking-wider">{item.sku}</div>
-                    <h4 className="font-serif text-lg truncate">
-                      {lang === "ka" ? item.name : (item.nameEn || item.name)}
-                    </h4>
-                    <div className="font-serif text-amber-500 font-semibold">{formatPrice(item.price)}</div>
-                  </div>
-                </div>
-              ))}
+          <div className="mt-20 pt-12 border-t border-stone-500/20 w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Clean Luxury Header (No redundant text or clunky buttons) */}
+            <div className="mb-6 sm:mb-8 pb-4 border-b border-stone-500/15">
+              <span className="text-xs uppercase tracking-[0.25em] text-amber-500 font-medium block mb-1.5">
+                {lang === "ka" ? "კოლექცია" : "Collection"}
+              </span>
+              <h3 className="font-serif text-2xl sm:text-3xl font-normal">
+                {lang === "ka" ? "მსგავსი მოდელები" : "Similar Pieces"}
+              </h3>
+            </div>
+
+            {/* Swipeable Shelf with Peek on Mobile, 4-Column Grid on Desktop */}
+            <div
+              ref={relatedScrollRef}
+              className="-mx-4 px-4 sm:mx-0 sm:px-0 flex lg:grid lg:grid-cols-4 gap-3 sm:gap-5 xl:gap-6 overflow-x-auto lg:overflow-x-visible pb-4 lg:pb-0 snap-x snap-mandatory scrollbar-none"
+            >
+              {relatedProducts.map((item) => {
+                const discount = calculateDiscountPercent(item.originalPrice, item.price);
+                const isHovered = hoveredRelatedId === item.id;
+                const displayImg = isHovered && item.images?.[1] ? item.images[1] : (item.images?.[0] || item.image);
+                const isFav = favorites?.some((f) => f.id === item.id);
+
+                return (
+                  <article
+                    key={item.id}
+                    data-related-card
+                    onClick={() => goToProduct(item.sku || item.id)}
+                    onMouseEnter={() => setHoveredRelatedId(item.id)}
+                    onMouseLeave={() => setHoveredRelatedId(null)}
+                    className={`group cursor-pointer rounded-2xl sm:rounded-3xl overflow-hidden border transition-all duration-300 flex flex-col justify-between shrink-0 lg:shrink w-[40vw] min-w-[40vw] sm:w-[220px] sm:min-w-[220px] lg:w-auto lg:min-w-0 snap-start ${
+                      darkMode
+                        ? "bg-[#141210] border-stone-800/80 hover:border-amber-500/50 shadow-md hover:shadow-xl hover:shadow-amber-500/5"
+                        : "bg-white border-stone-200/90 hover:border-amber-500 shadow-xs hover:shadow-lg"
+                    }`}
+                  >
+                    {/* Strictly Square 1:1 Image Container */}
+                    <div className="relative w-full pt-[100%] overflow-hidden bg-stone-900/40">
+                      {/* Discount Badge */}
+                      {discount && (
+                        <span className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10 text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-rose-500 text-white shadow-md">
+                          -{discount}%
+                        </span>
+                      )}
+
+                      {/* Favorite Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(item);
+                        }}
+                        aria-label="რჩეულებში დამატება"
+                        className={`absolute top-2 right-2 sm:top-3 sm:right-3 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md ${
+                          isFav
+                            ? "bg-rose-500 text-white"
+                            : "bg-black/50 text-white/80 hover:text-rose-400 hover:bg-black/70"
+                        }`}
+                      >
+                        <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isFav ? "fill-white" : ""}`} />
+                      </button>
+
+                      {/* Photo strictly bounded to 1:1 square */}
+                      <img
+                        src={displayImg}
+                        alt={item.name}
+                        loading="lazy"
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                      />
+                    </div>
+
+                    {/* Product Details */}
+                    <div className="p-3 sm:p-4 space-y-1 sm:space-y-1.5">
+                      <div className="text-[10px] sm:text-[11px] text-amber-500 uppercase tracking-widest font-mono font-medium">
+                        {item.sku}
+                      </div>
+                      <h4 className="font-serif text-xs sm:text-base font-normal truncate group-hover:text-amber-500 transition-colors">
+                        {lang === "ka" ? item.name : (item.nameEn || item.name)}
+                      </h4>
+                      <div className="flex items-baseline gap-1.5 sm:gap-2 pt-0.5">
+                        <span className="font-serif text-amber-500 font-semibold text-xs sm:text-base">
+                          {formatPrice(item.price)}
+                        </span>
+                        {item.originalPrice && Number(item.originalPrice) > Number(item.price) && (
+                          <span className="text-[10px] sm:text-xs line-through opacity-40">
+                            {formatPrice(item.originalPrice)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </div>
         )}
