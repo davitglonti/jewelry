@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {
   Shield, Sun, Moon, ArrowLeft, Lock, Plus, Upload,
-  Link as LinkIcon, X, Edit3, Trash2, BookOpen, ExternalLink, Tag
+  Link as LinkIcon, X, Edit3, Trash2, BookOpen, ExternalLink, Tag,
+  HelpCircle, Truck, ShieldCheck, Sparkles
 } from 'lucide-react';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../lib/firebaseAuth';
 import { useStore } from '../context/StoreContext';
 import { handleFileUpload } from '../utils/imageUtils';
 import ValueCardsEditor, { DEFAULT_VALUE_CARDS } from '../components/admin/ValueCardsEditor';
+import { DEFAULT_FAQ_ITEMS, DEFAULT_PRODUCT_ASSURANCE } from '../data/defaultSettings';
 
 export default function AdminPage() {
   const {
@@ -34,6 +36,7 @@ export default function AdminPage() {
   const [newCategoryInput, setNewCategoryInput] = useState("");
   const [newMetalInput, setNewMetalInput] = useState("");
   const [newBlogCategoryInput, setNewBlogCategoryInput] = useState("");
+  const [editingFaq, setEditingFaq] = useState(null);
   const currentBlogCategories = siteSettings.blogCategories && siteSettings.blogCategories.length > 0
     ? siteSettings.blogCategories
     : ["გიდი", "ოქრო", "ბრილიანტი", "მოვლა", "სტილი"];
@@ -184,7 +187,8 @@ export default function AdminPage() {
                 { id: "footer", label: "6. კონტაქტი & ქვედა პანელი" },
                 { id: "inquiries", label: `7. შემოსული მოთხოვნები (${inquiries.length})` },
                 { id: "about", label: "8. ჩვენს შესახებ გვერდი" },
-                { id: "blog", label: `9. ბლოგის მართვა (${(articles || []).length})` }
+                { id: "blog", label: `9. ბლოგის მართვა (${(articles || []).length})` },
+                { id: "faq", label: "10. FAQ & გარანტიები" }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -1674,6 +1678,305 @@ export default function AdminPage() {
                 </div>
               </div>
             )}
+
+
+            {/* TAB 10: FAQ & PRODUCT ASSURANCE MANAGEMENT */}
+            {adminTab === "faq" && (() => {
+              const currentFaqList = siteSettings.faqItems && siteSettings.faqItems.length > 0
+                ? siteSettings.faqItems
+                : DEFAULT_FAQ_ITEMS;
+
+              const currentAssurance = siteSettings.productAssurance && siteSettings.productAssurance.length === 3
+                ? siteSettings.productAssurance
+                : DEFAULT_PRODUCT_ASSURANCE;
+
+              return (
+                <div className="space-y-10">
+                  {/* SECTION 1: FAQ MANAGEMENT */}
+                  <div className="space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-500/20">
+                      <div>
+                        <h3 className="font-serif text-xl flex items-center gap-2">
+                          <HelpCircle className="w-5 h-5 text-amber-500" />
+                          ხშირად დასმული კითხვები (FAQ) ({currentFaqList.length})
+                        </h3>
+                        <p className="text-xs opacity-70 mt-1">
+                          ეს კითხვა-პასუხები გამოდის მთავარი გვერდის ბოლოში და გადაეცემა Google-ს საძიებო შედეგებში Rich Snippets-ისთვის.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditingFaq({
+                            id: "faq-" + Date.now(),
+                            questionKa: "",
+                            questionEn: "",
+                            answerKa: "",
+                            answerEn: ""
+                          })
+                        }
+                        className="px-4 py-2 rounded-xl bg-amber-500 text-black text-xs font-semibold flex items-center gap-1.5 hover:brightness-110 transition-all shrink-0"
+                      >
+                        <Plus className="w-4 h-4" />
+                        ახალი კითხვის დამატება
+                      </button>
+                    </div>
+
+                    {/* MODAL / FORM FOR FAQ ITEM */}
+                    {editingFaq && (
+                      <div className={`p-5 sm:p-6 rounded-2xl border space-y-4 ${
+                        darkMode ? "bg-stone-900/95 border-amber-500/40" : "bg-stone-50 border-amber-500"
+                      }`}>
+                        <div className="flex items-center justify-between border-b pb-3 border-stone-500/20">
+                          <h4 className="font-serif text-base text-amber-500 flex items-center gap-2">
+                            <Edit3 className="w-4 h-4" />
+                            {currentFaqList.some((f) => f.id === editingFaq.id)
+                              ? "კითხვის რედაქტირება"
+                              : "ახალი კითხვის დამატება"}
+                          </h4>
+                          <button
+                            type="button"
+                            onClick={() => setEditingFaq(null)}
+                            className="p-1 rounded-lg hover:bg-stone-800 transition-colors"
+                          >
+                            <X className="w-5 h-5 opacity-70" />
+                          </button>
+                        </div>
+
+                        <div className="space-y-3 text-xs">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <label className="font-semibold block text-amber-500">კითხვა (ქართულად) *</label>
+                              <input
+                                type="text"
+                                value={editingFaq.questionKa || ""}
+                                onChange={(e) => setEditingFaq({ ...editingFaq, questionKa: e.target.value })}
+                                placeholder="მაგ: როგორ შევარჩიო ბეჭდის ზომა სწორად?"
+                                className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="font-semibold block text-amber-500">Question (English)</label>
+                              <input
+                                type="text"
+                                value={editingFaq.questionEn || ""}
+                                onChange={(e) => setEditingFaq({ ...editingFaq, questionEn: e.target.value })}
+                                placeholder="e.g. How do I choose the right ring size?"
+                                className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <label className="font-semibold block">პასუხი (ქართულად) *</label>
+                              <textarea
+                                rows={4}
+                                value={editingFaq.answerKa || ""}
+                                onChange={(e) => setEditingFaq({ ...editingFaq, answerKa: e.target.value })}
+                                placeholder="დაწერეთ ამომწურავი პასუხი ქართულად..."
+                                className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="font-semibold block">Answer (English)</label>
+                              <textarea
+                                rows={4}
+                                value={editingFaq.answerEn || ""}
+                                onChange={(e) => setEditingFaq({ ...editingFaq, answerEn: e.target.value })}
+                                placeholder="Write the answer in English..."
+                                className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-white border-stone-300"}`}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-end gap-3 pt-3 border-t border-stone-500/20">
+                            <button
+                              type="button"
+                              onClick={() => setEditingFaq(null)}
+                              className="px-4 py-2 rounded-xl border border-stone-600 hover:bg-stone-800 transition-colors"
+                            >
+                              გაუქმება
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!editingFaq.questionKa?.trim() || !editingFaq.answerKa?.trim()) {
+                                  alert("გთხოვთ შეიყვანოთ კითხვა და პასუხი ქართულად!");
+                                  return;
+                                }
+                                const exists = currentFaqList.some((f) => f.id === editingFaq.id);
+                                const updated = exists
+                                  ? currentFaqList.map((f) => (f.id === editingFaq.id ? editingFaq : f))
+                                  : [...currentFaqList, editingFaq];
+                                const newSettings = { ...siteSettings, faqItems: updated };
+                                setSiteSettings(newSettings);
+                                syncData(newSettings, products);
+                                setEditingFaq(null);
+                              }}
+                              className="px-5 py-2 rounded-xl bg-amber-500 text-black font-semibold hover:brightness-110 transition-all"
+                            >
+                              კითხვის შენახვა
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* FAQ ITEMS LIST */}
+                    <div className="space-y-3">
+                      {currentFaqList.map((item, idx) => (
+                        <div
+                          key={item.id || idx}
+                          className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+                            darkMode ? "bg-stone-900/60 border-stone-800" : "bg-white border-stone-200 shadow-xs"
+                          }`}
+                        >
+                          <div className="space-y-1 flex-1 min-w-0">
+                            <div className="font-serif text-sm font-semibold flex items-center gap-2">
+                              <span className="text-amber-500 font-mono text-xs">#{idx + 1}</span>
+                              <span>{item.questionKa}</span>
+                            </div>
+                            {item.questionEn && (
+                              <p className="text-[11px] opacity-60 italic">{item.questionEn}</p>
+                            )}
+                            <p className="text-xs opacity-75 line-clamp-2 pt-1">{item.answerKa}</p>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                            <button
+                              type="button"
+                              onClick={() => setEditingFaq({ ...item })}
+                              className="px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs flex items-center gap-1 transition-colors"
+                            >
+                              <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                              რედაქტირება
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (currentFaqList.length <= 1) {
+                                  alert("მინიმუმ ერთი კითხვა უნდა დარჩეს!");
+                                  return;
+                                }
+                                if (window.confirm(`ნამდვილად გსურთ კითხვის „${item.questionKa}“ წაშლა?`)) {
+                                  const updated = currentFaqList.filter((f) => f.id !== item.id);
+                                  const newSettings = { ...siteSettings, faqItems: updated };
+                                  setSiteSettings(newSettings);
+                                  syncData(newSettings, products);
+                                }
+                              }}
+                              className="p-1.5 rounded-lg bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white transition-colors"
+                              title="წაშლა"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* SECTION 2: PRODUCT ASSURANCE CARDS */}
+                  <div className="space-y-6 pt-6 border-t border-stone-500/20">
+                    <div>
+                      <h3 className="font-serif text-xl flex items-center gap-2">
+                        <Truck className="w-5 h-5 text-amber-500" />
+                        პროდუქტის გვერდის 3 გარანტიის ბარათი
+                      </h3>
+                      <p className="text-xs opacity-70 mt-1">
+                        ეს 3 ბარათი ჩნდება თითოეული სამკაულის გვერდზე, ფოტოსა და ღილაკების ქვემოთ (მიწოდება, სერტიფიკატი, უვადო მოვლა).
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {currentAssurance.map((card, idx) => {
+                        const Icon = idx === 0 ? Truck : idx === 1 ? ShieldCheck : Sparkles;
+                        return (
+                          <div
+                            key={card.id || idx}
+                            className={`p-5 rounded-2xl border space-y-4 ${
+                              darkMode ? "bg-stone-900/50 border-stone-800" : "bg-white border-stone-200 shadow-xs"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 text-amber-500 font-serif font-medium pb-2 border-b border-stone-500/15">
+                              <Icon className="w-5 h-5 shrink-0" />
+                              <span>ბარათი #{idx + 1}</span>
+                            </div>
+
+                            <div className="space-y-3 text-xs">
+                              <div className="space-y-1">
+                                <label className="font-semibold block">სათაური (ქართულად):</label>
+                                <input
+                                  type="text"
+                                  value={card.titleKa || ""}
+                                  onChange={(e) => {
+                                    const next = [...currentAssurance];
+                                    next[idx] = { ...next[idx], titleKa: e.target.value };
+                                    setSiteSettings({ ...siteSettings, productAssurance: next });
+                                  }}
+                                  className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                                />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="font-semibold block">Title (English):</label>
+                                <input
+                                  type="text"
+                                  value={card.titleEn || ""}
+                                  onChange={(e) => {
+                                    const next = [...currentAssurance];
+                                    next[idx] = { ...next[idx], titleEn: e.target.value };
+                                    setSiteSettings({ ...siteSettings, productAssurance: next });
+                                  }}
+                                  className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-800 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                                />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="font-semibold block">პუნქტები (ქართულად, თითო ახალ ხაზზე):</label>
+                                <textarea
+                                  rows={5}
+                                  value={card.descKa || ""}
+                                  onChange={(e) => {
+                                    const next = [...currentAssurance];
+                                    next[idx] = { ...next[idx], descKa: e.target.value };
+                                    setSiteSettings({ ...siteSettings, productAssurance: next });
+                                  }}
+                                  className={`w-full p-2.5 rounded-xl border font-mono text-[11px] ${darkMode ? "bg-stone-800 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                                />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="font-semibold block">Points (English, one per line):</label>
+                                <textarea
+                                  rows={5}
+                                  value={card.descEn || ""}
+                                  onChange={(e) => {
+                                    const next = [...currentAssurance];
+                                    next[idx] = { ...next[idx], descEn: e.target.value };
+                                    setSiteSettings({ ...siteSettings, productAssurance: next });
+                                  }}
+                                  className={`w-full p-2.5 rounded-xl border font-mono text-[11px] ${darkMode ? "bg-stone-800 border-stone-700" : "bg-stone-50 border-stone-300"}`}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => syncData(siteSettings, products)}
+                      className="px-6 py-3 rounded-xl bg-amber-500 text-black font-semibold text-xs sm:text-sm hover:brightness-110 transition-all shadow-md"
+                    >
+                      გარანტიების შენახვა
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
 
           </div>
         )}

@@ -65,6 +65,11 @@ export default function Footer({ darkMode, lang, siteSettings }) {
                   {lang === "ka" ? "ბლოგი / რჩევები" : "Blog / Journal"}
                 </a>
               </li>
+              <li>
+                <a href="/#faq" className="hover:text-amber-500 transition-colors">
+                  {lang === "ka" ? "კითხვა-პასუხი (FAQ)" : "FAQ"}
+                </a>
+              </li>
             </ul>
           </div>
 

@@ -1,3 +1,73 @@
+
+export const DEFAULT_FAQ_ITEMS = [
+  {
+    id: "faq-1",
+    questionKa: "როგორ შევარჩიო ბეჭდის ზომა სწორად?",
+    questionEn: "How do I choose the right ring size?",
+    answerKa: "თითის ზომის დადგენა შეგიძლიათ სახლის პირობებში — გაზომეთ არსებული ბეჭდის შიდა დიამეტრი მილიმეტრებში სახაზავით (მაგ: 17 მმ = ზომა 17.0). ასევე, შეგიძლიათ ისარგებლოთ ჩვენი ბლოგის ზომის შერჩევის დეტალური გზამკვლევით ან მობრძანდეთ ჩვენს შოურუმში. შეძენილ ყველა ბეჭედზე მოქმედებს ზომის უფასო მორგების სერვისი.",
+    answerEn: "You can determine your ring size at home by measuring the inside diameter of an existing ring in millimeters (e.g. 17 mm = size 17.0). You can also follow our blog guide or visit our showroom. Complimentary resizing is included with all ring purchases."
+  },
+  {
+    id: "faq-2",
+    questionKa: "მოყვება თუ არა სამკაულებს ხარისხის სერტიფიკატი?",
+    questionEn: "Do your jewelry pieces come with an authenticity certificate?",
+    answerKa: "დიახ, ჩვენს ყველა ნაკეთობაზე გაიცემა ოფიციალური საიუველირო პასპორტი და სერტიფიკატი. დოკუმენტში დაფიქსირებულია ოქროს ზუსტი სინჯი (585° 14K / 750° 18K), ნივთის წონა და ძვირფასი ქვების (ბრილიანტის) საერთაშორისო 4C მახასიათებლები (კარატი, ფერი, სისუფთავე და ჭრა).",
+    answerEn: "Yes, every piece comes with an official jewelry certificate. It verifies the precise gold purity (14K / 18K), piece weight, and international 4C specifications for diamonds (carat weight, color, clarity, and cut)."
+  },
+  {
+    id: "faq-3",
+    questionKa: "შესაძლებელია თუ არა ინდივიდუალური (ექსკლუზიური) დიზაინის შეკვეთა?",
+    questionEn: "Can I place a bespoke / custom jewelry order?",
+    answerKa: "რა თქმა უნდა! ჩვენი საიუველირო სახელოსნო მზად არის დაამზადოს ექსკლუზიური მოდელი თქვენი ესკიზით, ფოტოთი ან უნიკალური იდეით. ჩვენი ოსტატები დაგეხმარებიან ქვებისა და მეტალის შერჩევაში, მოამზადებენ 3D მოდელს და შექმნიან განუმეორებელ სამკაულს.",
+    answerEn: "Absolutely! Our atelier specializes in bespoke commissions from your sketches, photos, or concepts. We provide 3D modeling and guide you through stone and precious metal selection for a one-of-a-kind creation."
+  },
+  {
+    id: "faq-4",
+    questionKa: "როგორ ხდება მიწოდება და რა ვადებში?",
+    questionEn: "How does delivery work and what are the timelines?",
+    answerKa: "თბილისის მასშტაბით მოქმედებს 24-საათიანი დაზღვეული საკურიერო მიწოდება პირდაპირ თქვენს კართან. რეგიონებში ამანათი ბარდება 2-3 სამუშაო დღეში. ასევე შეგიძლიათ ისარგებლოთ შოურუმიდან თვითგატანის სერვისით.",
+    answerEn: "We provide 24-hour insured express courier delivery in Tbilisi. Deliveries across Georgia take 2-3 business days. Showroom pickup is also available during business hours."
+  },
+  {
+    id: "faq-5",
+    questionKa: "გადახდის რა მეთოდები მოქმედებს და გაქვთ თუ არა განვადება?",
+    questionEn: "What payment methods do you accept, and are installments available?",
+    answerKa: "ვიღებთ ყველა ტიპის საბანკო ბარათს (Visa, Mastercard), საბანკო გადარიცხვას, ასევე მოქმედებს 0%-იანი ონლაინ განვადება წამყვან ქართულ ბანკებში (საქართველოს ბანკი, თიბისი). შოურუმში შესაძლებელია როგორც ნაღდი, ისე უნაღდო ანგარიშსწორება.",
+    answerEn: "We accept Visa, Mastercard, direct bank transfers, and offer 0% online installment plans with major banks. Cash and card payments are also accepted at our showroom."
+  },
+  {
+    id: "faq-6",
+    questionKa: "როგორია ოქროსა და ბრილიანტის მოვლის გარანტია?",
+    questionEn: "What is your warranty and maintenance policy?",
+    answerKa: "ჩვენს ყველა ნაკეთობას მოყვება უვადო სერვისული მხარდაჭერა. თქვენ ნებისმიერ დროს შეგიძლიათ მოგვმართოთ სამკაულის უფასო ულტრაბგერითი წმენდისთვის, პროფესიონალური გაპრიალებისთვის და ქვების სიმყარის პერიოდული შემოწმებისთვის.",
+    answerEn: "All our jewelry includes lifetime service support. You are always welcome to bring your piece for complimentary ultrasonic cleaning, polishing, and stone setting inspections."
+  }
+];
+
+export const DEFAULT_PRODUCT_ASSURANCE = [
+  {
+    id: "delivery",
+    titleKa: "მიწოდება და გადაცვლა",
+    titleEn: "Delivery & Exchange",
+    descKa: "• თბილისში: 24-საათიანი დაზღვეული საკურიერო მიწოდება.\n• რეგიონებში: 2-3 სამუშაო დღეში საქართველოს მასშტაბით.\n• შოურუმი: რუსთაველის #24 (ყოველდღე 11:00 - 20:00).\n• გადაცვლა/მორგება: ზომის უფასო მორგება შეძენიდან 3 დღეში.",
+    descEn: "• Tbilisi: 24-hour insured express courier delivery.\n• Regions: 2-3 business days across Georgia.\n• Showroom: 24 Rustaveli Ave (Daily 11:00 - 20:00).\n• Exchange/Resizing: Complimentary resizing within 3 days."
+  },
+  {
+    id: "cert",
+    titleKa: "სერტიფიკატი და სინჯი",
+    titleEn: "Certificate & Authenticity",
+    descKa: "• საიუველირო პასპორტი: მოყვება ოფიციალური ხარისხის სერტიფიკატი.\n• სინჯის სიზუსტე: უმაღლესი სინჯის ოქრო (585° 14K / 750° 18K).\n• ბუნებრივი ქვები: 100% ნატურალური ბრილიანტები და ქვები.\n• 4C სტანდარტი: საერთაშორისო გემოლოგიური შეფასება.",
+    descEn: "• Official Passport: Accompanied by AURELIA authenticity certificate.\n• Hallmark Guarantee: Verified gold purity (585° / 750°).\n• Natural Stones: 100% natural certified diamonds & gems.\n• 4C Standard: International gemological standards."
+  },
+  {
+    id: "care",
+    titleKa: "უვადო მოვლა და გარანტია",
+    titleEn: "Lifetime Care & Guarantee",
+    descKa: "• უფასო წმენდა: ყოველწლიური ულტრაბგერითი წმენდა და გაპრიალება.\n• ზომის მორგება: ბეჭდის პირველი ზომის მორგება სრულიად უფასოა.\n• ქვების შემოწმება: ფიქსაციის კონტროლი და გამაგრება ნებისმიერ დროს.\n• საავტორო გარანტია: ოსტატის უვადო მხარდაჭერა ნაკეთობაზე.",
+    descEn: "• Complimentary Spa: Annual ultrasonic cleaning and polishing.\n• Free Resizing: First ring size adjustment is 100% free.\n• Prong Inspection: Setting check and tightening anytime.\n• Artisan Warranty: Lifetime artisan support on each creation."
+  }
+];
+
 export const DEFAULT_SETTINGS = {
   brandName: "AURELIA",
   brandSubtitle: "საიუველირო სახლი • 1998",
@@ -96,6 +166,8 @@ export const DEFAULT_SETTINGS = {
   homeValuesBadgeEn: "Why Choose Us",
   homeValuesTitle: "ჩვენი სტანდარტი და ღირებულებები",
   homeValuesTitleEn: "Our Standards & Values",
+  faqItems: DEFAULT_FAQ_ITEMS,
+  productAssurance: DEFAULT_PRODUCT_ASSURANCE,
   homeValues: [
     {
       titleKa: "ბუნებრივი ქვები",

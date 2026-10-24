@@ -7,6 +7,7 @@ import Footer from '../components/layout/Footer';
 import HeroCarousel from '../components/store/HeroCarousel';
 import CatalogSection from '../components/store/CatalogSection';
 import CraftsmanshipSection from '../components/store/CraftsmanshipSection';
+import FaqSection from '../components/store/FaqSection';
 import FavoritesModal from '../components/modals/FavoritesModal';
 
 export default function StorePage() {
@@ -78,6 +79,9 @@ export default function StorePage() {
             { titleKa: "ინდივიდუალური მიდგომა", titleEn: "Bespoke Service", descKa: "შესაძლებელია ზომის მორგება და ექსკლუზიური მოდელების ინდივიდუალური შეკვეთა.", descEn: "Custom sizing and personalized consultations for your special moments." }
           ]}
         />
+
+        {/* FAQ - ხშირად დასმული კითხვები & Google FAQPage Schema */}
+        <FaqSection darkMode={darkMode} lang={lang} siteSettings={siteSettings} />
       </main>
 
       <Footer darkMode={darkMode} lang={lang} siteSettings={siteSettings} />

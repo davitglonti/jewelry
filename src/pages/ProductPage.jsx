@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
   ArrowLeft, ZoomIn, ChevronLeft, ChevronRight,
-  Check, Share2, MessageCircle, Send
+  Check, Share2, MessageCircle, Send,
+  Truck, ShieldCheck, Sparkles, ChevronDown
 } from 'lucide-react';
 import { pick } from '../utils/i18n';
 import { getWhatsAppLink, shareProductLink } from '../utils/shareUtils';
 import { useStore } from '../context/StoreContext';
+import { DEFAULT_PRODUCT_ASSURANCE } from '../data/defaultSettings';
 
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
@@ -44,6 +46,7 @@ export default function ProductPage({ skuProp }) {
   const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
+
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
   const [inquirySent, setInquirySent] = useState(false);
@@ -69,16 +72,86 @@ export default function ProductPage({ skuProp }) {
     }
   }, [currentSku, selectedProduct]);
 
-  // ბრაუზერის ტაბის სათაურის შეცვლა
+  // ბრაუზერის ტაბის სათაურის, OpenGraph-ისა და Product Schema JSON-LD-ის დინამიური განახლება (SEO)
   useEffect(() => {
-    if (selectedProduct) {
-      const brand = siteSettings.brandName || "AURELIA";
-      const prodName = lang === "ka" ? selectedProduct.name : (selectedProduct.nameEn || selectedProduct.name);
-      document.title = `${prodName} —${brand}`;
+    if (!selectedProduct) return;
+
+    const brand = siteSettings.brandName || "AURELIA";
+    const prodName = lang === "ka" ? selectedProduct.name : (selectedProduct.nameEn || selectedProduct.name);
+    const prodDesc = lang === "ka"
+      ? (selectedProduct.description || `${prodName} — ექსკლუზიური ხელნაკეთი საიუველირო ნაკეთობა. სინჯი: ${selectedProduct.karat || "750°"}.`)
+      : (selectedProduct.descriptionEn || `${prodName} — handcrafted fine jewelry by ${brand}.`);
+
+    const numericPrice = (selectedProduct.price || "").toString().replace(/[^0-9.]/g, "") || "0";
+    const productUrl = `https://www.matare.store/product/${encodeURIComponent(selectedProduct.sku || selectedProduct.id)}`;
+    const mainImage = (selectedProduct.images && selectedProduct.images[0]) || "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80";
+
+    // 1. სათაური & Meta Description
+    document.title = `${prodName} — ${brand}`;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    const oldDesc = metaDesc?.getAttribute("content");
+    if (metaDesc) metaDesc.setAttribute("content", prodDesc);
+
+    // 2. OpenGraph (სოციალურ ქსელებში გაზიარებისთვის)
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    const ogImage = document.querySelector('meta[property="og:image"]');
+    const ogUrl = document.querySelector('meta[property="og:url"]');
+
+    const prevOg = {
+      title: ogTitle?.getAttribute("content"),
+      desc: ogDesc?.getAttribute("content"),
+      image: ogImage?.getAttribute("content"),
+      url: ogUrl?.getAttribute("content")
+    };
+
+    if (ogTitle) ogTitle.setAttribute("content", `${prodName} — ${brand}`);
+    if (ogDesc) ogDesc.setAttribute("content", prodDesc);
+    if (ogImage && mainImage) ogImage.setAttribute("content", mainImage);
+    if (ogUrl) ogUrl.setAttribute("content", productUrl);
+
+    // 3. Google Schema.org Product JSON-LD (Rich Snippets & ფასის გამოჩენა ძიებაში)
+    const schemaData = {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": prodName,
+      "image": (selectedProduct.images && selectedProduct.images.length > 0) ? selectedProduct.images : [mainImage],
+      "description": prodDesc,
+      "sku": selectedProduct.sku || selectedProduct.id,
+      "brand": {
+        "@type": "Brand",
+        "name": brand
+      },
+      "category": selectedProduct.category || "სამკაულები",
+      "offers": {
+        "@type": "Offer",
+        "url": productUrl,
+        "priceCurrency": "GEL",
+        "price": numericPrice,
+        "priceValidUntil": "2027-12-31",
+        "availability": "https://schema.org/InStock",
+        "itemCondition": "https://schema.org/NewCondition"
+      }
+    };
+
+    let scriptTag = document.getElementById("product-schema-ld");
+    if (!scriptTag) {
+      scriptTag = document.createElement("script");
+      scriptTag.id = "product-schema-ld";
+      scriptTag.type = "application/ld+json";
+      document.head.appendChild(scriptTag);
     }
+    scriptTag.textContent = JSON.stringify(schemaData);
+
     return () => {
-      const brand = siteSettings.brandName || "AURELIA";
       document.title = `${brand} — საიუველირო სახლი`;
+      if (metaDesc && oldDesc) metaDesc.setAttribute("content", oldDesc);
+      if (ogTitle && prevOg.title) ogTitle.setAttribute("content", prevOg.title);
+      if (ogDesc && prevOg.desc) ogDesc.setAttribute("content", prevOg.desc);
+      if (ogImage && prevOg.image) ogImage.setAttribute("content", prevOg.image);
+      if (ogUrl && prevOg.url) ogUrl.setAttribute("content", prevOg.url);
+      const existingScript = document.getElementById("product-schema-ld");
+      if (existingScript) existingScript.remove();
     };
   }, [selectedProduct, lang, siteSettings.brandName]);
 
@@ -447,6 +520,7 @@ export default function ProductPage({ skuProp }) {
               </div>
             </div>
 
+
             <form onSubmit={handleSendInquiry} noValidate className={`space-y-3.5 p-6 rounded-3xl border ${
               darkMode ? "bg-stone-900/40 border-stone-800" : "bg-white border-stone-200/80 shadow-sm"
             }`}>
@@ -510,6 +584,58 @@ export default function ProductPage({ skuProp }) {
             </form>
           </div>
 
+        </div>
+
+        
+        {/* PRODUCT ASSURANCE CARDS (Full Width 3-Column Banner) */}
+        <div className="mt-16 pt-12 border-t border-stone-500/15 max-w-7xl mx-auto">
+          <div className="text-center mb-8">
+            <span className="text-xs uppercase tracking-widest text-amber-500 font-semibold block mb-1">
+              {lang === "ka" ? "AURELIA-ს სტანდარტი და გარანტია" : "AURELIA Standards & Guarantee"}
+            </span>
+            <h3 className="font-serif text-xl sm:text-2xl font-normal">
+              {lang === "ka" ? "უსაფრთხო შეძენა და უმაღლესი სერვისი" : "Secure Purchase & Exceptional Service"}
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {((siteSettings?.productAssurance && siteSettings.productAssurance.length === 3)
+              ? siteSettings.productAssurance
+              : DEFAULT_PRODUCT_ASSURANCE
+            ).map((card, idx) => {
+              const Icon = idx === 0 ? Truck : idx === 1 ? ShieldCheck : Sparkles;
+              const title = lang === "ka" ? card.titleKa : (card.titleEn || card.titleKa);
+              const descRaw = lang === "ka" ? card.descKa : (card.descEn || card.descKa);
+              const lines = (descRaw || "").split("\n").filter(Boolean);
+
+              return (
+                <div
+                  key={card.id || idx}
+                  className={`p-6 rounded-3xl border transition-all ${
+                    darkMode ? "bg-stone-900/50 border-stone-800 hover:border-amber-500/30" : "bg-white border-stone-200/90 shadow-xs hover:shadow-md"
+                  }`}
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4">
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <h4 className="font-serif text-lg font-medium mb-3">
+                    {title}
+                  </h4>
+                  <ul className="space-y-2 text-xs opacity-80 leading-relaxed">
+                    {lines.map((line, lIdx) => {
+                      const cleanLine = line.replace(/^[•\s-]+/, "");
+                      return (
+                        <li key={lIdx} className="flex items-start gap-2">
+                          <span className="text-amber-500 mt-0.5">•</span>
+                          <span>{cleanLine}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* მსგავსი პროდუქტების სექცია */}
