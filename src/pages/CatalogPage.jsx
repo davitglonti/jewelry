@@ -460,14 +460,14 @@ export default function CatalogPage() {
                       )}
 
                       {/* Badges */}
-                      <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10 pointer-events-none">
+                      <div className="absolute top-3 left-3 flex flex-col items-start gap-1.5 z-10 pointer-events-none">
                         {product.exclusive && (
-                          <span className="px-3 py-1 rounded-full text-[10px] uppercase tracking-widest bg-black/80 text-amber-400 border border-amber-500/40 backdrop-blur-md">
+                          <span className="self-start px-3 py-1 rounded-full text-[10px] uppercase tracking-widest bg-black/80 text-amber-400 border border-amber-500/40 backdrop-blur-md">
                             {lang === "ka" ? "ექსკლუზივი" : "Exclusive"}
                           </span>
                         )}
                         {discountPct ? (
-                          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-600 text-white backdrop-blur-md shadow-md shadow-red-950/40 flex items-center gap-1">
+                          <span className="self-start px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-600 text-white backdrop-blur-md shadow-md shadow-red-950/40 flex items-center gap-1">
                             <span>{lang === "ka" ? "ფასდაკლება" : "Sale"}</span>
                             <span className="font-mono bg-black/35 px-1 py-0.2 rounded text-[10px]">-{discountPct}%</span>
                           </span>
