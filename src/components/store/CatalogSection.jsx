@@ -38,13 +38,13 @@ export default function CatalogSection({ openProductModal }) {
         </a>
       </div>
 
-      {/* Grid of showcase pieces */}
+      {/* Grid of showcase pieces (Horizontal Luxury Shelf: 2 visible + 3rd peek on mobile, 5-column grid on desktop) */}
       {showcaseProducts.length === 0 ? (
         <div className="text-center py-20 opacity-60">
           <p className="text-lg">{lang === "ka" ? "სამკაულები მალე დაემატება." : "Jewelry pieces coming soon."}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5 xl:gap-5">
+        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex xl:grid xl:grid-cols-5 gap-3 sm:gap-4 xl:gap-5 overflow-x-auto xl:overflow-x-visible pb-4 xl:pb-0 snap-x snap-mandatory scrollbar-none">
           {showcaseProducts.map((product) => {
             const mainImg = product.images?.[0] || product.image || "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80";
             const secondaryImg = product.images?.[1] || null;
@@ -54,18 +54,20 @@ export default function CatalogSection({ openProductModal }) {
             return (
               <article
                 key={product.id}
-                className={`group rounded-2xl sm:rounded-3xl overflow-hidden border transition-all duration-300 flex flex-col ${
+                onClick={() => openProductModal(product)}
+                className={`group cursor-pointer rounded-2xl sm:rounded-3xl overflow-hidden border transition-all duration-300 flex flex-col justify-between shrink-0 xl:shrink w-[40vw] min-w-[40vw] sm:w-[220px] sm:min-w-[220px] xl:w-auto xl:min-w-0 snap-start ${
                   darkMode
-                    ? "bg-[#141210] border-stone-800/80 hover:border-amber-500/40"
+                    ? "bg-[#141210] border-stone-800/80 hover:border-amber-500/40 shadow-md hover:shadow-xl hover:shadow-amber-500/5"
                     : "bg-white border-stone-200/90 hover:border-amber-500 shadow-sm hover:shadow-xl"
                 }`}
               >
-                <div className="relative aspect-square overflow-hidden bg-stone-900 cursor-pointer" onClick={() => openProductModal(product)}>
+                {/* Image Container with 1:1 Aspect Ratio */}
+                <div className="relative aspect-square overflow-hidden bg-stone-900">
                   {/* Primary Photo */}
                   <img
                     src={getOptimizedImageUrl(mainImg, 380, 68)}
                     srcSet={getProductCardSrcSet(mainImg)}
-                    sizes="(max-width: 640px) 360px, (max-width: 1024px) 300px, 260px"
+                    sizes="(max-width: 640px) 200px, (max-width: 1024px) 240px, 260px"
                     alt={productName || "სამკაული"}
                     loading="lazy"
                     decoding="async"
@@ -81,7 +83,7 @@ export default function CatalogSection({ openProductModal }) {
                     <img
                       src={getOptimizedImageUrl(secondaryImg, 380, 68)}
                       srcSet={getProductCardSrcSet(secondaryImg)}
-                      sizes="(max-width: 640px) 360px, (max-width: 1024px) 300px, 260px"
+                      sizes="(max-width: 640px) 200px, (max-width: 1024px) 240px, 260px"
                       alt={`${productName || "სამკაული"} - ხედი 2`}
                       loading="lazy"
                       decoding="async"
@@ -92,26 +94,20 @@ export default function CatalogSection({ openProductModal }) {
                   )}
 
                   {/* Badges */}
-                  <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10 pointer-events-none">
+                  <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 flex flex-col gap-1 z-10 pointer-events-none">
                     {product.exclusive && (
-                      <span className="px-3 py-1 rounded-full text-[10px] uppercase tracking-widest bg-black/80 text-amber-400 border border-amber-500/40 backdrop-blur-md">
-                        {lang === "ka" ? "ექსკლუზივი" : "Exclusive"}
+                      <span className="px-2 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] uppercase tracking-widest bg-black/80 text-amber-400 border border-amber-500/40 backdrop-blur-md">
+                        {lang === "ka" ? "ექსკლ." : "Excl."}
                       </span>
                     )}
                     {discountPct ? (
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-600 text-white backdrop-blur-md shadow-md shadow-red-950/40 flex items-center gap-1">
-                        <span>{lang === "ka" ? "ფასდაკლება" : "Sale"}</span>
-                        <span className="font-mono bg-black/35 px-1 py-0.2 rounded text-[10px]">-{discountPct}%</span>
+                      <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-red-600 text-white backdrop-blur-md shadow-md">
+                        -{discountPct}%
                       </span>
                     ) : null}
                   </div>
 
-                  {product.images?.length > 1 && (
-                    <span className="absolute bottom-3 left-3 px-2.5 py-1 rounded-full text-[10px] bg-black/70 text-white backdrop-blur-sm z-10 pointer-events-none">
-                      +{product.images.length} {lang === "ka" ? "ფოტო" : "photos"}
-                    </span>
-                  )}
-
+                  {/* Favorite Button */}
                   <button
                     type="button"
                     onClick={(e) => {
@@ -123,48 +119,51 @@ export default function CatalogSection({ openProductModal }) {
                         ? (lang === "ka" ? `${productName} — რჩეულებიდან ამოშლა` : `Remove ${productName} from favorites`)
                         : (lang === "ka" ? `${productName} — რჩეულებში დამატება` : `Add ${productName} to favorites`)
                     }
-                    className="absolute top-3 right-3 p-2.5 rounded-full bg-black/60 text-white hover:bg-black transition-all z-10"
+                    className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 p-1.5 sm:p-2 rounded-full bg-black/60 text-white hover:bg-black transition-all z-10"
                   >
-                    <Heart className={`w-4 h-4 ${favorites.includes(product.id) ? "fill-amber-500 text-amber-500" : ""}`} />
+                    <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${favorites.includes(product.id) ? "fill-amber-500 text-amber-500" : ""}`} />
                   </button>
                 </div>
 
-                <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3.5">
+                {/* Card Details */}
+                <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2 sm:space-y-3">
                   <div>
-                    <div className="flex items-center justify-between text-[11px] opacity-60 mb-1">
-                      <span>{product.category}</span>
+                    <div className="flex items-center justify-between text-[10px] sm:text-[11px] opacity-60 mb-1">
+                      <span className="truncate max-w-[60%]">{product.category}</span>
                       <span className="font-mono">{product.sku}</span>
                     </div>
                     <h3
-                      onClick={() => openProductModal(product)}
-                      className="font-serif text-lg sm:text-xl font-medium cursor-pointer hover:text-amber-500 transition-colors line-clamp-1"
+                      className="font-serif text-xs sm:text-base font-medium hover:text-amber-500 transition-colors line-clamp-1"
                     >
                       {productName}
                     </h3>
-                    <p className="text-xs opacity-70 mt-1 truncate">
+                    <p className="text-[10px] sm:text-xs opacity-70 truncate hidden sm:block">
                       {product.metal} • {product.karat}
                     </p>
                   </div>
 
-                  <div className="pt-3 border-t border-stone-500/15 flex items-center justify-between gap-2">
+                  <div className="pt-2 border-t border-stone-500/15 flex items-center justify-between gap-1">
                     <div className="flex flex-col">
                       {discountPct ? (
-                        <span className="text-[11px] line-through opacity-50 font-normal">
+                        <span className="text-[10px] sm:text-[11px] line-through opacity-50 font-normal">
                           {formatPrice(product.oldPrice)}
                         </span>
                       ) : null}
-                      <span className="font-serif text-lg sm:text-xl text-amber-500 font-semibold leading-tight">
+                      <span className="font-serif text-sm sm:text-lg text-amber-500 font-semibold leading-tight">
                         {formatPrice(product.price)}
                       </span>
                     </div>
                     <button
                       type="button"
-                      onClick={() => openProductModal(product)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openProductModal(product);
+                      }}
                       aria-label={`${lang === "ka" ? "დეტალურად ნახვა" : "View details"}: ${productName}`}
-                      className="px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-xs font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-black transition-all flex items-center gap-1.5 shrink-0"
+                      className="hidden sm:flex px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-black transition-all items-center gap-1 shrink-0"
                     >
                       <Eye className="w-3.5 h-3.5" />
-                      <span>{lang === "ka" ? "დეტალურად" : "Details"}</span>
+                      <span>{lang === "ka" ? "დეტალ." : "Details"}</span>
                     </button>
                   </div>
                 </div>
