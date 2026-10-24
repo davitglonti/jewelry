@@ -96,8 +96,8 @@ export default function CatalogSection({ openProductModal }) {
                   {/* Badges */}
                   <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 flex flex-col gap-1 z-10 pointer-events-none">
                     {product.exclusive && (
-                      <span className="px-2 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] uppercase tracking-widest bg-black/80 text-amber-400 border border-amber-500/40 backdrop-blur-md">
-                        {lang === "ka" ? "ექსკლ." : "Excl."}
+                      <span className="px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] uppercase tracking-widest bg-black/80 text-amber-400 border border-amber-500/40 backdrop-blur-md">
+                        {lang === "ka" ? "ექსკლუზივი" : "Exclusive"}
                       </span>
                     )}
                     {discountPct ? (
