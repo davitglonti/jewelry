@@ -3,7 +3,8 @@ import {
   Shield, Sun, Moon, ArrowLeft, Lock, Plus, Upload,
   Link as LinkIcon, X, Edit3, Trash2, BookOpen, ExternalLink, Tag,
   HelpCircle, Truck, ShieldCheck, Sparkles, Star, AlertCircle, RotateCw,
-  Search, Filter
+  Search, Filter, Cloud, Database, Phone, Globe, Image as ImageIcon,
+  Sliders, FileText, Save, LogOut, CheckCircle2
 } from 'lucide-react';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../lib/firebaseAuth';
@@ -27,9 +28,12 @@ export default function AdminPage() {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [adminEmail, setAdminEmail] = useState("");
+  const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [adminTab, setAdminTab] = useState("catalog");
+  const [homeSubTab, setHomeSubTab] = useState("carousel");
+  const [siteSubTab, setSiteSubTab] = useState("contacts");
   const [catalogSearchQuery, setCatalogSearchQuery] = useState("");
   const [catalogSelectedCategory, setCatalogSelectedCategory] = useState("all");
 
@@ -85,6 +89,9 @@ export default function AdminPage() {
     }
     const unsub = onAuthStateChanged(auth, (user) => {
       setIsAdminAuthenticated(!!user);
+      if (user && user.email) {
+        setCurrentUserEmail(user.email);
+      }
       setAuthChecked(true);
     });
     return () => unsub();
@@ -121,61 +128,76 @@ export default function AdminPage() {
         </div>
       )}
       <header
-        className={`sticky top-0 z-40 w-full min-w-0 px-3 sm:px-8 py-3 sm:py-4 border-b backdrop-blur-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${
-          darkMode ? "bg-[#121110]/95 border-stone-800" : "bg-white/95 border-stone-200"
+        className={`sticky top-0 z-40 w-full min-w-0 px-4 sm:px-8 py-3.5 border-b backdrop-blur-md flex items-center justify-between gap-3 ${
+          darkMode ? "bg-[#0c0b0a]/95 border-stone-800/80" : "bg-white/95 border-stone-200"
         }`}
       >
-        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto min-w-0">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-full bg-amber-500/15 text-amber-500 flex items-center justify-center">
-            <Shield className="w-5 h-5" />
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-500 flex items-center justify-center font-bold font-serif text-sm">
+            M
           </div>
-
-          <div className="min-w-0 flex-1">
-            <h1 className="font-serif text-base sm:text-2xl font-semibold leading-tight break-words">
-              {siteSettings.brandName} — {lang === "ka" ? "ადმინ პანელი" : "Admin Panel"}
-            </h1>
-            <span className="text-xs opacity-60">matare.store/admin</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-serif tracking-widest text-base sm:text-lg font-bold uppercase text-white">
+              {siteSettings.brandName || "MATARE"}
+            </span>
+            <span className="text-xs font-mono text-stone-500">/admin</span>
           </div>
 
           {saveMessage && (
-            <span className="hidden sm:inline-block ml-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-medium">
+            <span className="hidden md:inline-flex items-center gap-1.5 ml-3 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-medium animate-fadeIn">
+              <CheckCircle2 className="w-3.5 h-3.5" />
               {saveMessage}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto sm:shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* User Auth Email Pill */}
+          {isAdminAuthenticated && (
+            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono bg-stone-900 border border-stone-800 text-stone-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>{currentUserEmail || adminEmail || "datiglonti@gmail.com"}</span>
+            </div>
+          )}
+
+          {/* Theme Switcher */}
           <button
             type="button"
             onClick={() => setDarkMode(!darkMode)}
-            className={`p-2.5 shrink-0 rounded-full border transition-all ${
-              darkMode ? "border-stone-800 bg-stone-900 text-amber-400" : "border-stone-200 bg-stone-100 text-stone-700"
+            className={`p-2 rounded-xl border transition-all ${
+              darkMode ? "border-stone-800 bg-[#141210] text-amber-400 hover:bg-stone-800" : "border-stone-200 bg-stone-100 text-stone-700 hover:bg-stone-200"
             }`}
+            title="თემის შეცვლა"
           >
             {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
 
+          {/* Go to Website */}
           <a
             href="/"
-            className="flex-1 sm:flex-none min-w-0 px-2.5 sm:px-4 py-2.5 rounded-full bg-stone-800 hover:bg-stone-700 text-white text-xs font-medium flex items-center justify-center gap-1.5 text-center transition-all"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 sm:px-4 py-2 rounded-xl border border-stone-800 bg-[#141210] hover:bg-stone-800 text-stone-200 text-xs font-medium flex items-center gap-1.5 transition-all"
           >
-            <ArrowLeft className="w-4 h-4 shrink-0" />
-            <span>{lang === "ka" ? "საიტზე გადასვლა" : "Back to Store"}</span>
+            <span>{lang === "ka" ? "საიტზე გადასვლა" : "View Store"}</span>
+            <ExternalLink className="w-3.5 h-3.5 text-stone-400" />
           </a>
 
+          {/* Logout */}
           {isAdminAuthenticated && (
             <button
               type="button"
               onClick={() => signOut(auth)}
-              className="shrink-0 px-3 sm:px-4 py-2.5 rounded-full border border-stone-600 text-xs font-medium hover:bg-stone-800 hover:text-white transition-all"
+              className="px-3 sm:px-4 py-2 rounded-xl border border-stone-800 bg-[#141210] hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-400 text-stone-300 text-xs font-medium flex items-center gap-1.5 transition-all"
             >
-              {lang === "ka" ? "გასვლა" : "Logout"}
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{lang === "ka" ? "გასვლა" : "Logout"}</span>
             </button>
           )}
         </div>
       </header>
 
-      <main className="w-full min-w-0 max-w-6xl mx-auto p-3 sm:p-8">
+      <main className="w-full min-w-0 max-w-[1720px] mx-auto p-3 sm:p-6 lg:p-8 space-y-5">
         {!authChecked ? (
           <div className="text-center py-20 opacity-60 text-sm">იტვირთება...</div>
         ) : !isAdminAuthenticated ? (
@@ -237,35 +259,169 @@ export default function AdminPage() {
             </form>
           </div>
         ) : (
-          <div className={`p-6 rounded-3xl border space-y-6 ${darkMode ? "bg-[#121110] border-stone-800" : "bg-white border-stone-200 shadow-sm"}`}>
-            <div className="flex flex-wrap gap-2 pb-4 border-b border-stone-500/20">
-              {[
-                { id: "catalog", label: "1. კატალოგის მართვა" },
-                { id: "categories", label: "2. მეტალები & კატეგორიები" },
-                { id: "carousel", label: "3. ზედა კარუსელი (Hero)" },
-                { id: "brand", label: "4. ლოგო & სათაურები" },
-                { id: "craft", label: "5. მთავარი გვერდი (ოსტატობა & ბარათები)" },
-                { id: "footer", label: "6. კონტაქტი & ქვედა პანელი" },
-                { id: "inquiries", label: `7. შემოსული მოთხოვნები (${inquiries.length})` },
-                { id: "about", label: "8. ჩვენს შესახებ გვერდი" },
-                { id: "blog", label: `9. ბლოგის მართვა (${(articles || []).length})` },
-                { id: "faq", label: "10. FAQ & გარანტიები" }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setAdminTab(tab.id)}
-                  className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
-                    adminTab === tab.id
-                      ? "bg-amber-500 text-black"
-                      : darkMode
-                      ? "bg-stone-900 text-stone-300 hover:bg-stone-800"
-                      : "bg-stone-100 text-stone-700 hover:bg-stone-200"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+          <div className="space-y-5">
+            {/* Google Cloud Firestore Status Banner */}
+            <div className={`p-4 sm:p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${darkMode ? "border-stone-800 bg-[#121110]" : "border-stone-200 bg-white shadow-sm"}`}>
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                  <Cloud className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-sm">Google Cloud Firestore:</span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      აქტიურია (ცოცხალი სინქრონიზაცია)
+                    </span>
+                  </div>
+                  <p className="text-xs text-stone-400 mt-0.5">
+                    პროდუქცია, კატალოგი და მოთხოვნები რეალურ დროში ინახება თქვენს Firebase Cloud ბაზაში.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => syncData(siteSettings, products, inquiries)}
+                className="px-4 py-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-black text-xs font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0"
+              >
+                <Database className="w-4 h-4" />
+                <span>კატალოგის Firebase-ში ატვირთვა</span>
+              </button>
             </div>
+
+            {/* 1st Level: Master Tabs Navigation */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {[
+                { id: "catalog", label: `პროდუქცია (${products.length})` },
+                { id: "categories", label: `კატეგორიები & მეტალები (${(siteSettings.categories || []).length})` },
+                { id: "home", label: "მთავარი გვერდი 🌟" },
+                { id: "blog", label: `ბლოგი & სიახლეები (${(articles || []).length})` },
+                { id: "inquiries", label: `შემოსული მოთხოვნები (${inquiries.length})` },
+                { id: "site", label: "საიტის პარამეტრები" }
+              ].map((tab) => {
+                const isSelected =
+                  adminTab === tab.id ||
+                  (tab.id === "home" && ["carousel", "craft"].includes(adminTab)) ||
+                  (tab.id === "site" && ["site", "branding", "contacts", "about", "faq", "footer", "brand"].includes(adminTab));
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setAdminTab(tab.id)}
+                    className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs font-medium transition-all whitespace-nowrap ${
+                      isSelected
+                        ? "bg-amber-500 text-black font-semibold shadow-md shadow-amber-500/10"
+                        : darkMode
+                        ? "bg-[#141210] hover:bg-[#1c1a17] text-stone-300 border border-stone-800"
+                        : "bg-white hover:bg-stone-100 text-stone-700 border border-stone-200 shadow-xs"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* 2nd Level: Home Page Sub-Tabs (Hero vs Craftsmanship) */}
+            {(adminTab === "home" || ["carousel", "craft"].includes(adminTab)) && (
+              <div
+                className={`p-1.5 rounded-2xl border flex flex-wrap items-center justify-between gap-1.5 ${
+                  darkMode ? "bg-[#141210] border-stone-800" : "bg-white border-stone-200 shadow-xs"
+                }`}
+              >
+                <div className="flex flex-wrap items-center gap-1">
+                  {[
+                    { id: "carousel", label: "ზედა კარუსელი (Hero)", icon: Sparkles },
+                    { id: "craft", label: "ოსტატობა & ბარათები", icon: Sliders }
+                  ].map((sub) => {
+                    const Icon = sub.icon;
+                    const isSubActive =
+                      homeSubTab === sub.id ||
+                      adminTab === sub.id;
+                    return (
+                      <button
+                        key={sub.id}
+                        type="button"
+                        onClick={() => {
+                          setAdminTab("home");
+                          setHomeSubTab(sub.id);
+                        }}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-medium flex items-center gap-2 transition-all ${
+                          isSubActive
+                            ? "bg-amber-500 text-black font-semibold shadow-sm"
+                            : "text-stone-300 hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        <span>{sub.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 2nd Level: Site Management Sub-Tabs (Contacts, Branding, About, FAQ) */}
+            {(adminTab === "site" ||
+              ["branding", "contacts", "about", "faq", "footer", "brand"].includes(adminTab)) && (
+              <div
+                className={`p-1.5 rounded-2xl border flex flex-wrap items-center justify-between gap-1.5 ${
+                  darkMode ? "bg-[#141210] border-stone-800" : "bg-white border-stone-200 shadow-xs"
+                }`}
+              >
+                <div className="flex flex-wrap items-center gap-1">
+                  {[
+                    { id: "contacts", label: "საკონტაქტო მონაცემები", icon: Phone },
+                    { id: "branding", label: "ბრენდინგი & ლოგო", icon: ImageIcon },
+                    { id: "about", label: "ჩვენს შესახებ", icon: FileText },
+                    { id: "faq", label: "FAQ & გარანტიები", icon: HelpCircle }
+                  ].map((sub) => {
+                    const Icon = sub.icon;
+                    const isSubActive =
+                      siteSubTab === sub.id ||
+                      adminTab === sub.id ||
+                      (sub.id === "contacts" && adminTab === "footer") ||
+                      (sub.id === "branding" && adminTab === "brand");
+                    return (
+                      <button
+                        key={sub.id}
+                        type="button"
+                        onClick={() => {
+                          setAdminTab("site");
+                          setSiteSubTab(sub.id);
+                        }}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-medium flex items-center gap-2 transition-all ${
+                          isSubActive
+                            ? "bg-amber-500 text-black font-semibold shadow-sm"
+                            : "text-stone-300 hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        <span>{sub.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm("დარწმუნებული ხართ? საიტის პარამეტრები დაბრუნდება საწყის მნიშვნელობებზე.")) {
+                      setSiteSettings(DEFAULT_SETTINGS);
+                      syncData(DEFAULT_SETTINGS, products);
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-xl text-xs text-stone-400 hover:text-red-400 hover:bg-red-500/10 transition-all flex items-center gap-1.5 ml-auto"
+                >
+                  <RotateCw className="w-3.5 h-3.5" />
+                  <span>საწყისზე დაბრუნება</span>
+                </button>
+              </div>
+            )}
+
+            {/* Active Content Card */}
+            <div className={`p-6 rounded-3xl border space-y-6 ${darkMode ? "bg-[#121110] border-stone-800" : "bg-white border-stone-200 shadow-sm"}`}>
 
             {/* TAB 1: CATALOG */}
             {adminTab === "catalog" && (
@@ -1118,8 +1274,8 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* TAB 3: CAROUSEL */}
-            {adminTab === "carousel" && (
+            {/* HOME SUBTAB: CAROUSEL */}
+            {((adminTab === "home" && homeSubTab === "carousel") || adminTab === "carousel") && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="font-serif text-lg text-amber-500">ზედა კარუსელის სლაიდები</h4>
@@ -1321,71 +1477,134 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* TAB 4: BRAND */}
-            {adminTab === "brand" && (
-              <div className="space-y-4 max-w-xl text-xs">
-                <h4 className="font-serif text-lg text-amber-500">ბრენდის სახელი, სათაური და ლოგო</h4>
-                <div className="space-y-3">
-                  <div>
-                    <label className="opacity-70 block mb-1">ბრენდის სახელი (საიტზე შიგნით):</label>
-                    <input
-                      type="text"
-                      value={siteSettings.brandName || ""}
-                      onChange={(e) => setSiteSettings({ ...siteSettings, brandName: e.target.value })}
-                      placeholder="მაგ: AURELIA"
-                      className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                    />
+            {/* SUBTAB: BRANDING */}
+            {((adminTab === "site" && siteSubTab === "branding") || adminTab === "brand" || adminTab === "branding") && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* მარცხენა ბარათი: ლოგო & ფავიკონი */}
+                  <div
+                    className={`p-6 rounded-2xl border space-y-4 ${
+                      darkMode ? "bg-[#141210] border-stone-800" : "bg-white border-stone-200 shadow-sm"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3 pb-3 border-b border-stone-800/80">
+                      <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+                        <ImageIcon className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-sm text-stone-100">ლოგო & ფავიკონი</h4>
+                        <p className="text-xs text-stone-400 mt-0.5">
+                          ეს ლოგო ისახება საიტის ჰედერში, ფუტერში და ბრაუზერის ჩანართში (Favicon).
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3.5 text-xs">
+                      <div>
+                        <label className="block mb-1.5 font-medium text-stone-300">ლოგოს სურათის ბმული (URL):</label>
+                        <input
+                          type="text"
+                          value={siteSettings.logoUrl || ""}
+                          onChange={(e) => setSiteSettings({ ...siteSettings, logoUrl: e.target.value })}
+                          placeholder="https://... ან ატვირთეთ ქვემოდან"
+                          className={`w-full px-4 py-2.5 rounded-xl border outline-none transition-colors ${
+                            darkMode
+                              ? "bg-[#1c1a17] border-stone-800 focus:border-amber-500 text-stone-200"
+                              : "bg-stone-50 border-stone-300 focus:border-amber-500"
+                          }`}
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-4 pt-1">
+                        <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-black transition-all cursor-pointer font-medium active:scale-95">
+                          <Upload className="w-4 h-4" />
+                          <span>ლოგოს ატვირთვა კომპიუტერიდან</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) =>
+                              handleFileUpload(e.target.files?.[0], (b64) =>
+                                setSiteSettings({ ...siteSettings, logoUrl: b64 })
+                              )
+                            }
+                          />
+                        </label>
+
+                        {siteSettings.logoUrl && (
+                          <div className="w-12 h-12 rounded-xl border border-stone-700 bg-black/40 p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                            <img src={siteSettings.logoUrl} alt="Logo preview" className="max-w-full max-h-full object-contain" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="opacity-70 block mb-1">ბრაუზერის სათაური (Tab-ში რაც წერია):</label>
-                    <input
-                      type="text"
-                      value={siteSettings.browserTitle || ""}
-                      onChange={(e) => setSiteSettings({ ...siteSettings, browserTitle: e.target.value })}
-                      placeholder="მაგ: AURELIA — საიუველირო სახლი"
-                      className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                    />
-                  </div>
+                  {/* მარჯვენა ბარათი: ბრენდის სათაურები */}
+                  <div
+                    className={`p-6 rounded-2xl border space-y-4 ${
+                      darkMode ? "bg-[#141210] border-stone-800" : "bg-white border-stone-200 shadow-sm"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3 pb-3 border-b border-stone-800/80">
+                      <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+                        <Tag className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-sm text-stone-100">ბრენდის იდენტობა</h4>
+                        <p className="text-xs text-stone-400 mt-0.5">
+                          ბრენდის სახელი, ბრაუზერის სათაური და საძიებო სისტემების მეტა-მონაცემები.
+                        </p>
+                      </div>
+                    </div>
 
-                  <div>
-                    <label className="opacity-70 block mb-1">ლოგო (ჩანს საიტზე და ბრაუზერის ტაბში Favicon-ად):</label>
-                    <input
-                      type="text"
-                      value={siteSettings.logoUrl || ""}
-                      onChange={(e) => setSiteSettings({ ...siteSettings, logoUrl: e.target.value })}
-                      placeholder="https://... ან ატვირთეთ ქვემოდან"
-                      className={`w-full p-3 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                    />
-                  </div>
+                    <div className="space-y-3.5 text-xs">
+                      <div>
+                        <label className="block mb-1.5 font-medium text-stone-300">ბრენდის სახელი (საიტზე შიგნით):</label>
+                        <input
+                          type="text"
+                          value={siteSettings.brandName || ""}
+                          onChange={(e) => setSiteSettings({ ...siteSettings, brandName: e.target.value })}
+                          placeholder="მაგ: AURELIA / მატარე"
+                          className={`w-full px-4 py-2.5 rounded-xl border outline-none transition-colors ${
+                            darkMode
+                              ? "bg-[#1c1a17] border-stone-800 focus:border-amber-500 text-stone-200"
+                              : "bg-stone-50 border-stone-300 focus:border-amber-500"
+                          }`}
+                        />
+                      </div>
 
-                  <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/20 text-amber-400 cursor-pointer">
-                    <Upload className="w-4 h-4" />
-                    ლოგოს ატვირთვა კომპიუტერიდან
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) =>
-                        handleFileUpload(e.target.files?.[0], (b64) =>
-                          setSiteSettings({ ...siteSettings, logoUrl: b64 })
-                        )
-                      }
-                    />
-                  </label>
+                      <div>
+                        <label className="block mb-1.5 font-medium text-stone-300">ბრაუზერის სათაური (Tab-ში რაც წერია):</label>
+                        <input
+                          type="text"
+                          value={siteSettings.browserTitle || ""}
+                          onChange={(e) => setSiteSettings({ ...siteSettings, browserTitle: e.target.value })}
+                          placeholder="მაგ: მატარე — საიუველირო სახლი"
+                          className={`w-full px-4 py-2.5 rounded-xl border outline-none transition-colors ${
+                            darkMode
+                              ? "bg-[#1c1a17] border-stone-800 focus:border-amber-500 text-stone-200"
+                              : "bg-stone-50 border-stone-300 focus:border-amber-500"
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <button
-                  onClick={() => syncData(siteSettings, products)}
-                  className="px-6 py-3 rounded-xl bg-amber-500 text-black font-semibold"
+                  type="button"
+                  onClick={() => syncData(siteSettings, products, inquiries)}
+                  className="w-full py-3.5 sm:py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm flex items-center justify-center gap-2 shadow-xl shadow-amber-500/10 transition-all active:scale-[0.99]"
                 >
-                  ცვლილებების შენახვა
+                  <Save className="w-4 h-4" />
+                  <span>ცვლილებების შენახვა</span>
                 </button>
               </div>
             )}
 
-            {/* TAB 5: CRAFTSMANSHIP */}
-            {adminTab === "craft" && (
+            {/* HOME SUBTAB: CRAFTSMANSHIP */}
+            {((adminTab === "home" && homeSubTab === "craft") || adminTab === "craft") && (
               <div className="space-y-4 max-w-3xl text-xs">
                 <h4 className="font-serif text-lg text-amber-500">„ხელოვნება, რომელიც თაობებს გადაეცემა“ — ტექსტები და ფოტოები</h4>
                 <input
@@ -1492,91 +1711,198 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* TAB 6: FOOTER & CONTACTS */}
-            {adminTab === "footer" && (
-              <div className="space-y-4 max-w-2xl text-xs">
-                <h4 className="font-serif text-lg text-amber-500">კონტაქტები, WhatsApp/Messenger და ქვედა პანელი</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="opacity-70 block mb-1">ტელეფონი:</label>
-                    <input
-                      type="text"
-                      value={siteSettings.phone || ""}
-                      onChange={(e) => setSiteSettings({ ...siteSettings, phone: e.target.value })}
-                      className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                    />
+            {/* SUBTAB: FOOTER & CONTACTS (MATCHING SCREENSHOT) */}
+            {((adminTab === "site" && siteSubTab === "contacts") || adminTab === "footer" || adminTab === "contacts") && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* მარცხენა ბარათი: საკონტაქტო მონაცემები */}
+                  <div
+                    className={`p-6 rounded-2xl border space-y-4 ${
+                      darkMode ? "bg-[#141210] border-stone-800" : "bg-white border-stone-200 shadow-sm"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3 pb-3 border-b border-stone-800/80">
+                      <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+                        <Phone className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-sm text-stone-100">საკონტაქტო მონაცემები</h4>
+                        <p className="text-xs text-stone-400 mt-0.5">
+                          ეს მონაცემები ავტომატურად ისახება ჰედერში, ფუტერში, FAQ-სა და საკონტაქტო ფანჯარაში.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3.5 text-xs">
+                      <div>
+                        <label className="block mb-1.5 font-medium text-stone-300">მთავარი ტელეფონის ნომერი:</label>
+                        <input
+                          type="text"
+                          value={siteSettings.phone || ""}
+                          onChange={(e) => setSiteSettings({ ...siteSettings, phone: e.target.value })}
+                          placeholder="+995 555 12 34 56"
+                          className={`w-full px-4 py-2.5 rounded-xl border outline-none transition-colors ${
+                            darkMode
+                              ? "bg-[#1c1a17] border-stone-800 focus:border-amber-500 text-stone-200"
+                              : "bg-stone-50 border-stone-300 focus:border-amber-500"
+                          }`}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block mb-1.5 font-medium text-stone-300">საკონტაქტო ელფოსტა:</label>
+                        <input
+                          type="email"
+                          value={siteSettings.email || siteSettings.contactEmail || ""}
+                          onChange={(e) =>
+                            setSiteSettings({ ...siteSettings, email: e.target.value, contactEmail: e.target.value })
+                          }
+                          placeholder="info@matare.store"
+                          className={`w-full px-4 py-2.5 rounded-xl border outline-none transition-colors ${
+                            darkMode
+                              ? "bg-[#1c1a17] border-stone-800 focus:border-amber-500 text-stone-200"
+                              : "bg-stone-50 border-stone-300 focus:border-amber-500"
+                          }`}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block mb-1.5 font-medium text-stone-300">მისამართი (საწარმო / შოურუმი):</label>
+                        <input
+                          type="text"
+                          value={siteSettings.address || ""}
+                          onChange={(e) => setSiteSettings({ ...siteSettings, address: e.target.value })}
+                          placeholder="თბილისი, საქართველო (საწარმო & შოურუმი)"
+                          className={`w-full px-4 py-2.5 rounded-xl border outline-none transition-colors ${
+                            darkMode
+                              ? "bg-[#1c1a17] border-stone-800 focus:border-amber-500 text-stone-200"
+                              : "bg-stone-50 border-stone-300 focus:border-amber-500"
+                          }`}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block mb-1.5 font-medium text-stone-300">სამუშაო საათები:</label>
+                        <input
+                          type="text"
+                          value={siteSettings.hours || ""}
+                          onChange={(e) => setSiteSettings({ ...siteSettings, hours: e.target.value })}
+                          placeholder="ორშაბათი - შაბათი: 10:00 - 19:00"
+                          className={`w-full px-4 py-2.5 rounded-xl border outline-none transition-colors ${
+                            darkMode
+                              ? "bg-[#1c1a17] border-stone-800 focus:border-amber-500 text-stone-200"
+                              : "bg-stone-50 border-stone-300 focus:border-amber-500"
+                          }`}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block mb-1.5 font-medium text-stone-300">საავტორო უფლებები (Footer Copyright):</label>
+                        <input
+                          type="text"
+                          value={siteSettings.copyright || ""}
+                          onChange={(e) => setSiteSettings({ ...siteSettings, copyright: e.target.value })}
+                          placeholder="© 2026 მატარე. ყველა უფლება დაცულია."
+                          className={`w-full px-4 py-2.5 rounded-xl border outline-none transition-colors ${
+                            darkMode
+                              ? "bg-[#1c1a17] border-stone-800 focus:border-amber-500 text-stone-200"
+                              : "bg-stone-50 border-stone-300 focus:border-amber-500"
+                          }`}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <label className="opacity-70 block mb-1">WhatsApp ნომერი (მაგ: 995555000000):</label>
-                    <input
-                      type="text"
-                      value={siteSettings.whatsapp || ""}
-                      onChange={(e) => setSiteSettings({ ...siteSettings, whatsapp: e.target.value })}
-                      className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                    />
-                  </div>
-                  <div>
-                    <label className="opacity-70 block mb-1">Messenger ლინკი (მაგ: https://m.me/yourpage):</label>
-                    <input
-                      type="text"
-                      value={siteSettings.messenger || ""}
-                      onChange={(e) => setSiteSettings({ ...siteSettings, messenger: e.target.value })}
-                      className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                    />
-                  </div>
-                  <div>
-                    <label className="opacity-70 block mb-1">მისამართი:</label>
-                    <input
-                      type="text"
-                      value={siteSettings.address || ""}
-                      onChange={(e) => setSiteSettings({ ...siteSettings, address: e.target.value })}
-                      className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                    />
-                  </div>
-                  <div>
-                    <label className="opacity-70 block mb-1">სამუშაო საათები:</label>
-                    <input
-                      type="text"
-                      value={siteSettings.hours || ""}
-                      onChange={(e) => setSiteSettings({ ...siteSettings, hours: e.target.value })}
-                      className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                    />
-                  </div>
-                  <div>
-                    <label className="opacity-70 block mb-1">საავტორო უფლებების ტექსტი (Footer):</label>
-                    <input
-                      type="text"
-                      value={siteSettings.copyright || ""}
-                      onChange={(e) => setSiteSettings({ ...siteSettings, copyright: e.target.value })}
-                      className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                    />
-                  </div>
-                  <div>
-                    <label className="opacity-70 block mb-1">Instagram ლინკი:</label>
-                    <input
-                      type="text"
-                      value={siteSettings.instagram || ""}
-                      onChange={(e) => setSiteSettings({ ...siteSettings, instagram: e.target.value })}
-                      placeholder="https://instagram.com/..."
-                      className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                    />
-                  </div>
-                  <div>
-                    <label className="opacity-70 block mb-1">Facebook ლინკი:</label>
-                    <input
-                      type="text"
-                      value={siteSettings.facebook || ""}
-                      onChange={(e) => setSiteSettings({ ...siteSettings, facebook: e.target.value })}
-                      placeholder="https://facebook.com/..."
-                      className={`w-full p-2.5 rounded-xl border ${darkMode ? "bg-stone-900 border-stone-700" : "bg-stone-50 border-stone-300"}`}
-                    />
+
+                  {/* მარჯვენა ბარათი: სოციალური ქსელები */}
+                  <div
+                    className={`p-6 rounded-2xl border space-y-4 ${
+                      darkMode ? "bg-[#141210] border-stone-800" : "bg-white border-stone-200 shadow-sm"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3 pb-3 border-b border-stone-800/80">
+                      <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+                        <Globe className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-sm text-stone-100">სოციალური ქსელები</h4>
+                        <p className="text-xs text-stone-400 mt-0.5">
+                          აქტიური ბმულები თქვენს სოციალურ პროფილებთან და მესენჯერებთან.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3.5 text-xs">
+                      <div>
+                        <label className="block mb-1.5 font-medium text-stone-300">Facebook გვერდის ბმული:</label>
+                        <input
+                          type="text"
+                          value={siteSettings.facebook || ""}
+                          onChange={(e) => setSiteSettings({ ...siteSettings, facebook: e.target.value })}
+                          placeholder="https://facebook.com/..."
+                          className={`w-full px-4 py-2.5 rounded-xl border outline-none transition-colors ${
+                            darkMode
+                              ? "bg-[#1c1a17] border-stone-800 focus:border-amber-500 text-stone-200"
+                              : "bg-stone-50 border-stone-300 focus:border-amber-500"
+                          }`}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block mb-1.5 font-medium text-stone-300">Instagram პროფილის ბმული:</label>
+                        <input
+                          type="text"
+                          value={siteSettings.instagram || ""}
+                          onChange={(e) => setSiteSettings({ ...siteSettings, instagram: e.target.value })}
+                          placeholder="https://instagram.com/..."
+                          className={`w-full px-4 py-2.5 rounded-xl border outline-none transition-colors ${
+                            darkMode
+                              ? "bg-[#1c1a17] border-stone-800 focus:border-amber-500 text-stone-200"
+                              : "bg-stone-50 border-stone-300 focus:border-amber-500"
+                          }`}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block mb-1.5 font-medium text-stone-300">WhatsApp პირდაპირი ჩატი (URL ან ნომერი):</label>
+                        <input
+                          type="text"
+                          value={siteSettings.whatsapp || ""}
+                          onChange={(e) => setSiteSettings({ ...siteSettings, whatsapp: e.target.value })}
+                          placeholder="https://wa.me/995555123456"
+                          className={`w-full px-4 py-2.5 rounded-xl border outline-none transition-colors ${
+                            darkMode
+                              ? "bg-[#1c1a17] border-stone-800 focus:border-amber-500 text-stone-200"
+                              : "bg-stone-50 border-stone-300 focus:border-amber-500"
+                          }`}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block mb-1.5 font-medium text-stone-300">Messenger პირდაპირი ბმული:</label>
+                        <input
+                          type="text"
+                          value={siteSettings.messenger || ""}
+                          onChange={(e) => setSiteSettings({ ...siteSettings, messenger: e.target.value })}
+                          placeholder="https://m.me/yourpage"
+                          className={`w-full px-4 py-2.5 rounded-xl border outline-none transition-colors ${
+                            darkMode
+                              ? "bg-[#1c1a17] border-stone-800 focus:border-amber-500 text-stone-200"
+                              : "bg-stone-50 border-stone-300 focus:border-amber-500"
+                          }`}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
+
+                {/* ცვლილებების შენახვის დიდი ქვედა ღილაკი - როგორც სქრინშოტში */}
                 <button
-                  onClick={() => syncData(siteSettings, products)}
-                  className="px-6 py-3 rounded-xl bg-amber-500 text-black font-semibold"
+                  type="button"
+                  onClick={() => syncData(siteSettings, products, inquiries)}
+                  className="w-full py-3.5 sm:py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm flex items-center justify-center gap-2 shadow-xl shadow-amber-500/10 transition-all active:scale-[0.99]"
                 >
-                  შენახვა
+                  <Save className="w-4 h-4" />
+                  <span>ცვლილებების შენახვა</span>
                 </button>
               </div>
             )}
@@ -1611,8 +1937,8 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* TAB 8: ABOUT PAGE MANAGEMENT */}
-            {adminTab === "about" && (
+            {/* SUBTAB: ABOUT PAGE MANAGEMENT */}
+            {((adminTab === "site" && siteSubTab === "about") || adminTab === "about") && (
               <div className="space-y-6 max-w-3xl text-xs">
                 <h4 className="font-serif text-lg text-amber-500">
                   „ჩვენს შესახებ“ გვერდის მართვა
@@ -2195,8 +2521,8 @@ export default function AdminPage() {
             )}
 
 
-            {/* TAB 10: FAQ & PRODUCT ASSURANCE MANAGEMENT */}
-            {adminTab === "faq" && (() => {
+            {/* SUBTAB: FAQ & PRODUCT ASSURANCE MANAGEMENT */}
+            {((adminTab === "site" && siteSubTab === "faq") || adminTab === "faq") && (() => {
               const currentFaqList = siteSettings.faqItems && siteSettings.faqItems.length > 0
                 ? siteSettings.faqItems
                 : DEFAULT_FAQ_ITEMS;
@@ -2493,6 +2819,7 @@ export default function AdminPage() {
               );
             })()}
 
+            </div>
           </div>
         )}
       </main>
