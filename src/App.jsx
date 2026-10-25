@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import StorePage from './pages/StorePage';
 import CompareFloatingBar from './components/store/CompareFloatingBar';
-import CompareModal from './components/modals/CompareModal';
+import { useStore } from './context/StoreContext';
 
 // ეს გვერდები მთავარ გვერდზე შესვლისას აღარ დაამძიმებს საიტს (Code Splitting)
 const AdminPage = lazy(() => import('./pages/AdminPage'));
@@ -12,6 +12,7 @@ const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
 const CatalogPage = lazy(() => import('./pages/CatalogPage'));
 const SizeGuidePage = lazy(() => import('./pages/SizeGuidePage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const CompareModal = lazy(() => import('./components/modals/CompareModal'));
 
 // მსუბუქი ჩამტვირთავი ეკრანი გვერდებს შორის გადასვლისას
 const PageLoader = () => (
@@ -21,6 +22,7 @@ const PageLoader = () => (
 );
 
 export default function App() {
+  const { showCompareModal } = useStore();
   const [currentPath, setCurrentPath] = useState(() =>
     window.location.pathname.replace(/\/+$/, "") || "/"
   );
@@ -94,7 +96,11 @@ export default function App() {
     <>
       {content}
       <CompareFloatingBar />
-      <CompareModal />
+      {showCompareModal && (
+        <Suspense fallback={null}>
+          <CompareModal />
+        </Suspense>
+      )}
     </>
   );
 }

@@ -591,9 +591,9 @@ export default function CatalogPage() {
                       {/* Card Details */}
                       <div className="p-2 sm:p-4 flex-1 flex flex-col justify-between space-y-1 sm:space-y-2">
                         <div>
-                          <div className="flex items-center justify-between text-[8px] sm:text-[10px] opacity-60 mb-0.5 gap-1">
+                          <div className="flex items-center justify-between text-[8px] sm:text-[10px] opacity-80 mb-0.5 gap-1">
                             <span className="truncate uppercase tracking-wider">{product.category}</span>
-                            <span className="font-mono text-amber-500/80 shrink-0">#{product.sku}</span>
+                            <span className="font-mono text-amber-400 font-medium shrink-0">#{product.sku}</span>
                           </div>
                           <h3
                             onClick={() => openProduct(product)}

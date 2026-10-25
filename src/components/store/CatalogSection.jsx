@@ -154,9 +154,9 @@ export default function CatalogSection({ openProductModal }) {
                 {/* Card Details */}
                 <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2 sm:space-y-3">
                   <div>
-                    <div className="flex items-center justify-between text-[10px] sm:text-[11px] opacity-60 mb-1 gap-1">
+                    <div className="flex items-center justify-between text-[10px] sm:text-[11px] opacity-80 mb-1 gap-1">
                       <span className="truncate uppercase tracking-wider text-[9px] sm:text-[10px] font-medium">{product.category || "სამკაული"}</span>
-                      <span className="font-mono text-[9px] sm:text-[11px] shrink-0 text-amber-500/80">#{product.sku}</span>
+                      <span className="font-mono text-[9px] sm:text-[11px] shrink-0 text-amber-400 font-medium">#{product.sku}</span>
                     </div>
                     <h3
                       className="font-serif text-xs sm:text-base font-medium hover:text-amber-500 transition-colors line-clamp-1 leading-snug"

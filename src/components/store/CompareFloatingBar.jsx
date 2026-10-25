@@ -29,7 +29,7 @@ export default function CompareFloatingBar() {
             <span className="text-xs font-semibold block leading-tight truncate">
               {lang === "ka" ? "შედარება" : "Compare"} ({compareList.length}/4)
             </span>
-            <span className="text-[10px] text-amber-500/80 block leading-none">
+            <span className="text-[10px] text-amber-400 font-medium block leading-none">
               {compareList.length < 2
                 ? (lang === "ka" ? "დაამატეთ მეორე ნივთი" : "Add another piece")
                 : (lang === "ka" ? "მზადაა შესადარებლად" : "Ready to compare")}

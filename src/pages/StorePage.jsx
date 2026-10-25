@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { DEFAULT_SETTINGS } from '../data/defaultSettings';
 import { useStore } from '../context/StoreContext';
 import InfoCards from '../components/store/InfoCards';
@@ -8,7 +8,8 @@ import HeroCarousel from '../components/store/HeroCarousel';
 import CatalogSection from '../components/store/CatalogSection';
 import CraftsmanshipSection from '../components/store/CraftsmanshipSection';
 import FaqSection from '../components/store/FaqSection';
-import FavoritesModal from '../components/modals/FavoritesModal';
+
+const FavoritesModal = lazy(() => import('../components/modals/FavoritesModal'));
 
 export default function StorePage() {
   const {
@@ -86,11 +87,15 @@ export default function StorePage() {
 
       <Footer darkMode={darkMode} lang={lang} siteSettings={siteSettings} />
 
-      <FavoritesModal
-        isOpen={showFavoritesModal}
-        onClose={() => setShowFavoritesModal(false)}
-        onSelectProduct={openProductModal}
-      />
+      {showFavoritesModal && (
+        <Suspense fallback={null}>
+          <FavoritesModal
+            isOpen={showFavoritesModal}
+            onClose={() => setShowFavoritesModal(false)}
+            onSelectProduct={openProductModal}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

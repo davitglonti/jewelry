@@ -660,7 +660,7 @@ export default function SizeGuidePage() {
                           <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-stone-500/10">{b.label}</span>
                         </div>
                         <p className="text-xs opacity-75">{b.wrist}</p>
-                        <p className="text-[11px] text-amber-500/80 font-medium pt-1">{b.fit}</p>
+                        <p className="text-[11px] text-amber-400 font-medium pt-1">{b.fit}</p>
                       </div>
                     ))}
                   </div>
