@@ -3,7 +3,7 @@ import { DEFAULT_SETTINGS } from '../data/defaultSettings';
 import { DEFAULT_PRODUCTS } from '../data/defaultProducts';
 import { DEFAULT_ARTICLES } from '../data/defaultArticles';
 
-const StoreContext = createContext();
+export const StoreContext = createContext();
 
 const KEYS = {
   settings: "aurelia_settings_v2",
