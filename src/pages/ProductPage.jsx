@@ -16,6 +16,7 @@ import FavoritesModal from '../components/modals/FavoritesModal';
 import Video360Viewer from '../components/store/Video360Viewer';
 import StockStatusBadge from '../components/store/StockStatusBadge';
 import RingSizerModal from '../components/modals/RingSizerModal';
+import ProductCard from '../components/store/ProductCard';
 
 export default function ProductPage({ skuProp }) {
   // ვიღებთ პროდუქტის კოდს URL-იდან (მაგ: /product/AUR-102)
@@ -885,100 +886,15 @@ export default function ProductPage({ skuProp }) {
               ref={relatedScrollRef}
               className="-mx-4 px-4 sm:mx-0 sm:px-0 flex lg:grid lg:grid-cols-4 gap-3 sm:gap-5 xl:gap-6 overflow-x-auto lg:overflow-x-visible pb-4 lg:pb-0 snap-x snap-mandatory scrollbar-none"
             >
-              {relatedProducts.map((item) => {
-                const discount = calculateDiscountPercent(item.originalPrice, item.price);
-                const isHovered = hoveredRelatedId === item.id;
-                const displayImg = isHovered && item.images?.[1] ? item.images[1] : (item.images?.[0] || item.image);
-                const isFav = favorites?.includes(item.id) || (item.sku && favorites?.includes(item.sku));
-
-                return (
-                  <article
-                    key={item.id}
-                    data-related-card
-                    onClick={() => goToProduct(item.sku || item.id)}
-                    onMouseEnter={() => setHoveredRelatedId(item.id)}
-                    onMouseLeave={() => setHoveredRelatedId(null)}
-                    className={`group cursor-pointer rounded-2xl sm:rounded-3xl overflow-hidden border transition-all duration-300 flex flex-col justify-between shrink-0 lg:shrink w-[40vw] min-w-[40vw] sm:w-[220px] sm:min-w-[220px] lg:w-auto lg:min-w-0 snap-start ${
-                      darkMode
-                        ? "bg-[#141210] border-stone-800/80 hover:border-amber-500/50 shadow-md hover:shadow-xl hover:shadow-amber-500/5"
-                        : "bg-white border-stone-200/90 hover:border-amber-500 shadow-xs hover:shadow-lg"
-                    }`}
-                  >
-                    {/* Strictly Square 1:1 Image Container */}
-                    <div className="relative w-full pt-[100%] overflow-hidden bg-stone-900/40">
-                      {/* Discount Badge */}
-                      {discount && (
-                        <span className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10 text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-rose-500 text-white shadow-md">
-                          -{discount}%
-                        </span>
-                      )}
-
-                      {/* Action Buttons: Favorite & Compare Side-by-Side */}
-                      <div className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 z-10 flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFavorite(item.id);
-                          }}
-                          aria-label="რჩეულებში დამატება"
-                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md ${
-                            isFav
-                              ? "bg-rose-500 text-white shadow-rose-500/30"
-                              : "bg-black/50 text-white/80 hover:text-rose-400 hover:bg-black/70"
-                          }`}
-                        >
-                          <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isFav ? "fill-white text-white" : ""}`} />
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleCompare(item.id);
-                          }}
-                          title="შედარება"
-                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md ${
-                            compareList?.includes(item.id)
-                              ? "bg-amber-500 text-black shadow-amber-500/30 scale-105"
-                              : "bg-black/50 text-white/80 hover:text-amber-400 hover:bg-black/70"
-                          }`}
-                        >
-                          <ArrowLeftRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </button>
-                      </div>
-
-                      {/* Photo strictly bounded to 1:1 square */}
-                      <img
-                        src={displayImg}
-                        alt={item.name}
-                        loading="lazy"
-                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                      />
-                    </div>
-
-                    {/* Product Details */}
-                    <div className="p-3 sm:p-4 space-y-1 sm:space-y-1.5">
-                      <div className="text-[10px] sm:text-[11px] text-amber-500 uppercase tracking-widest font-mono font-medium">
-                        {item.sku}
-                      </div>
-                      <h4 className="font-serif text-xs sm:text-base font-normal truncate group-hover:text-amber-500 transition-colors">
-                        {lang === "ka" ? item.name : (item.nameEn || item.name)}
-                      </h4>
-                      <div className="flex items-baseline gap-1.5 sm:gap-2 pt-0.5">
-                        <span className="font-serif text-amber-500 font-semibold text-xs sm:text-base">
-                          {formatPrice(item.price)}
-                        </span>
-                        {item.originalPrice && Number(item.originalPrice) > Number(item.price) && (
-                          <span className="text-[10px] sm:text-xs line-through opacity-40">
-                            {formatPrice(item.originalPrice)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
+              {relatedProducts.map((item) => (
+                <ProductCard
+                  key={item.id}
+                  product={item}
+                  onClick={(p) => goToProduct(p.sku || p.id)}
+                  className="shrink-0 lg:shrink w-[40vw] min-w-[40vw] sm:w-[220px] sm:min-w-[220px] lg:w-auto lg:min-w-0 snap-start"
+                  showDetailsButton={false}
+                />
+              ))}
             </div>
           </div>
         )}
