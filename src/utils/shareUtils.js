@@ -1,13 +1,16 @@
-export const getWhatsAppLink = (product, siteSettings, lang, selectedSize = "") => {
-  const cleanPhone = (siteSettings.whatsapp || "995555000000").replace(/[^0-9]/g, "");
+export const getWhatsAppLink = (product, siteSettings, lang, selectedSize = "", promoCode = "") => {
+  const cleanPhone = (siteSettings?.whatsapp || "995555000000").replace(/[^0-9]/g, "");
   const code = product.sku || product.id;
   const itemUrl = `${window.location.origin}/product/${encodeURIComponent(code)}`;
   const priceText = product.oldPrice ? `${product.price} (ძველი ფასი: ${product.oldPrice})` : product.price;
   const priceTextEn = product.oldPrice ? `${product.price} (Was: ${product.oldPrice})` : product.price;
 
+  const promoSuffixKa = promoCode ? `\n🏷️ VIP პრომო კოდი: ${promoCode} (-10% ფასდაკლება)` : "";
+  const promoSuffixEn = promoCode ? `\n🏷️ VIP Promo Code: ${promoCode} (-10% Discount)` : "";
+
   const message = lang === "ka"
-    ? `გამარჯობა! მაინტერესებს სამკაული: ${product.name} (კოდი: ${product.sku})${selectedSize ? `, ზომა: ${selectedSize}` : ""}, ფასი: ${priceText}\nბმული: ${itemUrl}`
-    : `Hello! I am interested in: ${product.nameEn || product.name} (SKU: ${product.sku})${selectedSize ? `, Size: ${selectedSize}` : ""}, Price: ${priceTextEn}\nLink: ${itemUrl}`;
+    ? `გამარჯობა! მაინტერესებს სამკაული: ${product.name} (კოდი: ${product.sku})${selectedSize ? `, ზომა: ${selectedSize}` : ""}, ფასი: ${priceText}${promoSuffixKa}\nბმული: ${itemUrl}`
+    : `Hello! I am interested in: ${product.nameEn || product.name} (SKU: ${product.sku})${selectedSize ? `, Size: ${selectedSize}` : ""}, Price: ${priceTextEn}${promoSuffixEn}\nLink: ${itemUrl}`;
     
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Search, Gem, SlidersHorizontal, Heart, Eye, ArrowUpDown,
-  X, Sparkles, Filter, ChevronRight, Home, ArrowLeftRight
+  X, Sparkles, Filter, ChevronRight, Home, ArrowLeftRight, PlusCircle
 } from 'lucide-react';
 import { ALL } from '../constants';
 import { pick, formatPrice, calculateDiscountPercent } from '../utils/i18n';

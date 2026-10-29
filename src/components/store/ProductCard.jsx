@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Heart, Eye, ArrowLeftRight } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
+import { useAuth } from '../../context/AuthContext';
 import { pick, formatPrice, calculateDiscountPercent } from '../../utils/i18n';
 import { getOptimizedImageUrl, getProductCardSrcSet } from '../../utils/imageUtils';
 
@@ -13,6 +14,7 @@ export default function ProductCard({
   imageSizes = "(max-width: 640px) 200px, (max-width: 1024px) 240px, 260px"
 }) {
   const { darkMode, lang, favorites, toggleFavorite, compareList, toggleCompare } = useStore();
+  const { user } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
 
   if (!product) return null;
@@ -99,6 +101,11 @@ export default function ProductCard({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
+              if (!user) {
+                const current = window.location.pathname + window.location.search;
+                window.location.href = `/login?redirect=${encodeURIComponent(current)}`;
+                return;
+              }
               toggleFavorite(product.id);
             }}
             aria-label={
@@ -119,6 +126,11 @@ export default function ProductCard({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
+              if (!user) {
+                const current = window.location.pathname + window.location.search;
+                window.location.href = `/login?redirect=${encodeURIComponent(current)}`;
+                return;
+              }
               toggleCompare(product.id);
             }}
             title={

@@ -6,6 +6,7 @@ import {
 import { pick, formatPrice, calculateDiscountPercent } from '../utils/i18n';
 import { shareProductLink } from '../utils/shareUtils';
 import { useStore } from '../context/StoreContext';
+import { useAuth } from '../context/AuthContext';
 import { DEFAULT_PRODUCT_ASSURANCE } from '../data/defaultSettings';
 
 import Navbar from '../components/layout/Navbar';
@@ -39,6 +40,7 @@ export default function ProductPage({ skuProp }) {
     syncData,
     settingsLoaded
   } = useStore();
+  const { user } = useAuth();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showFavoritesModal, setShowFavoritesModal] = useState(false);
@@ -295,7 +297,14 @@ export default function ProductPage({ skuProp }) {
                   {/* Favorite Button */}
                   <button
                     type="button"
-                    onClick={() => toggleFavorite(selectedProduct.id)}
+                    onClick={() => {
+                      if (!user) {
+                        const current = window.location.pathname + window.location.search;
+                        window.location.href = `/login?redirect=${encodeURIComponent(current)}`;
+                        return;
+                      }
+                      toggleFavorite(selectedProduct.id);
+                    }}
                     className={`h-8 sm:h-9 px-2.5 sm:px-3 rounded-full border text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 ${
                       favorites?.includes(selectedProduct.id)
                         ? "bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/20 font-semibold"
@@ -342,7 +351,14 @@ export default function ProductPage({ skuProp }) {
                   {/* Compare Button */}
                   <button
                     type="button"
-                    onClick={() => toggleCompare(selectedProduct.id)}
+                    onClick={() => {
+                      if (!user) {
+                        const current = window.location.pathname + window.location.search;
+                        window.location.href = `/login?redirect=${encodeURIComponent(current)}`;
+                        return;
+                      }
+                      toggleCompare(selectedProduct.id);
+                    }}
                     className={`h-8 sm:h-9 px-2.5 sm:px-3.5 rounded-full border text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 ${
                       compareList?.includes(selectedProduct.id)
                         ? "bg-amber-500 text-black border-amber-500 font-semibold shadow-md shadow-amber-500/20"

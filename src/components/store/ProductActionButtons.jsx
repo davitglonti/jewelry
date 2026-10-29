@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Ruler, MessageCircle, Send, Check } from 'lucide-react';
+import { Ruler, MessageCircle, Send, Check, Lock, Tag, Sparkles, Copy } from 'lucide-react';
 import { getWhatsAppLink } from '../../utils/shareUtils';
+import { useAuth } from '../../context/AuthContext';
+import { formatPrice } from '../../utils/i18n';
 
 export default function ProductActionButtons({
   product,
@@ -20,6 +22,24 @@ export default function ProductActionButtons({
   const [clientPhone, setClientPhone] = useState('');
   const [inquirySent, setInquirySent] = useState(false);
   const [phoneError, setPhoneError] = useState('');
+  const [promoCopied, setPromoCopied] = useState(false);
+  const { user } = useAuth();
+
+  const PROMO_CODE = 'VIP-AURELIA10';
+
+  const rawPrice = typeof product?.price === 'number'
+    ? product.price
+    : parseFloat(String(product?.price || '0').replace(/[^0-9.]/g, '')) || 0;
+  const discountAmount = Math.round(rawPrice * 0.1);
+  const discountedPrice = Math.max(0, rawPrice - discountAmount);
+
+  const handleCopyPromo = (e) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    navigator.clipboard?.writeText(PROMO_CODE);
+    setPromoCopied(true);
+    setTimeout(() => setPromoCopied(false), 2500);
+  };
 
   if (!product) return null;
 
@@ -133,6 +153,102 @@ export default function ProductActionButtons({
         </div>
       )}
 
+      {/* VIP Promo Code Section */}
+      {!user ? (
+        <div className={`p-4 sm:p-5 rounded-3xl border transition-all shadow-md ${
+          darkMode
+            ? 'bg-gradient-to-r from-amber-950/20 via-[#181614] to-amber-950/15 border-amber-500/25'
+            : 'bg-gradient-to-r from-amber-50 via-white to-amber-50/50 border-amber-200'
+        }`}>
+          <div className="flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-500 flex items-center justify-center shrink-0">
+                <Tag className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-xs sm:text-sm">
+                    {lang === 'ka' ? 'VIP პრომო კოდი (-10%)' : 'VIP Promo Code (-10%)'}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[9px] uppercase font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                    VIP
+                  </span>
+                </div>
+                <p className="text-[11px] opacity-75 truncate">
+                  {lang === 'ka'
+                    ? 'ავტორიზებული მომხმარებლის ექსკლუზივი ამ მოდელზე'
+                    : 'Registered members exclusive discount'}
+                </p>
+              </div>
+            </div>
+            <a
+              href={`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black flex items-center justify-center gap-2 shrink-0 shadow-md shadow-amber-500/20 transition-all text-center"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span>{lang === 'ka' ? 'კოდის მიღება' : 'Unlock Code'}</span>
+            </a>
+          </div>
+        </div>
+      ) : (
+        <div className={`p-4 sm:p-5 rounded-3xl border transition-all shadow-lg ${
+          promoCopied
+            ? 'bg-emerald-950/20 border-emerald-500/40'
+            : darkMode
+            ? 'bg-gradient-to-r from-amber-950/30 via-[#181614] to-amber-950/20 border-amber-500/40'
+            : 'bg-gradient-to-r from-amber-50 via-white to-amber-50 border-amber-300'
+        }`}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                <span className="font-semibold text-xs sm:text-sm text-amber-400">
+                  {lang === 'ka' ? 'თქვენი VIP პრომო კოდი:' : 'Your VIP Promo Code:'}
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-black">
+                  -10% VIP
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="opacity-70">{lang === 'ka' ? 'ფასი პრომო კოდით:' : 'VIP Price:'}</span>
+                <span className="font-mono font-bold text-amber-400 text-sm">{formatPrice(discountedPrice)}</span>
+                <span className="text-[10px] opacity-50 line-through">{formatPrice(rawPrice)}</span>
+                <span className="text-[10px] text-emerald-400 font-semibold font-mono">
+                  (-{formatPrice(discountAmount)})
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="px-3 py-1.5 rounded-xl border border-dashed border-amber-500/50 bg-black/40 font-mono font-bold text-amber-400 text-xs tracking-wider select-all">
+                {PROMO_CODE}
+              </div>
+              <button
+                type="button"
+                onClick={handleCopyPromo}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm ${
+                  promoCopied
+                    ? 'bg-emerald-500 text-black'
+                    : 'bg-amber-500 hover:bg-amber-400 text-black'
+                }`}
+              >
+                {promoCopied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{lang === 'ka' ? 'დაკოპირდა!' : 'Copied!'}</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>{lang === 'ka' ? 'კოპირება' : 'Copy'}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Direct Messaging Inquiry */}
       <div className="space-y-3 pt-2">
         <span className="text-xs uppercase tracking-wider opacity-70 block font-medium">
@@ -140,13 +256,13 @@ export default function ProductActionButtons({
         </span>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <a
-            href={getWhatsAppLink(product, siteSettings, lang, selectedSize)}
+            href={getWhatsAppLink(product, siteSettings, lang, selectedSize, user ? PROMO_CODE : '')}
             target="_blank"
             rel="noreferrer"
             className="py-3.5 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-600/20 transition-all"
           >
             <MessageCircle className="w-5 h-5" />
-            {lang === 'ka' ? 'WhatsApp-ში მიწერა' : 'Ask on WhatsApp'}
+            <span>{lang === 'ka' ? 'WhatsApp-ში მიწერა' : 'Ask on WhatsApp'}</span>
           </a>
           <a
             href={siteSettings?.messenger || 'https://m.me/'}
@@ -155,7 +271,7 @@ export default function ProductActionButtons({
             className="py-3.5 px-5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2.5 shadow-lg shadow-blue-600/20 transition-all"
           >
             <Send className="w-5 h-5" />
-            {lang === 'ka' ? 'Messenger-ში მიწერა' : 'Ask on Messenger'}
+            <span>{lang === 'ka' ? 'Messenger-ში მიწერა' : 'Ask on Messenger'}</span>
           </a>
         </div>
       </div>

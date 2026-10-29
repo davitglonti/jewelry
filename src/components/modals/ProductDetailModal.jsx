@@ -3,6 +3,7 @@ import { ArrowLeft, X, Check, Share2, ArrowLeftRight } from 'lucide-react';
 import { pick, formatPrice, calculateDiscountPercent } from '../../utils/i18n';
 import { shareProductLink } from '../../utils/shareUtils';
 import { useStore } from '../../context/StoreContext';
+import { useAuth } from '../../context/AuthContext';
 import StockStatusBadge from '../store/StockStatusBadge';
 import RingSizerModal from './RingSizerModal';
 import ProductMediaGallery from '../store/ProductMediaGallery';
@@ -19,6 +20,7 @@ export default function ProductDetailModal({
   setLightboxImage
 }) {
   const { darkMode, lang, siteSettings, products, inquiries, setInquiries, syncData, compareList, toggleCompare } = useStore();
+  const { user } = useAuth();
 
   const [showRingSizer, setShowRingSizer] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -124,7 +126,14 @@ export default function ProductDetailModal({
                   {/* Compare Button */}
                   <button
                     type="button"
-                    onClick={() => toggleCompare(selectedProduct.id)}
+                    onClick={() => {
+                      if (!user) {
+                        const current = window.location.pathname + window.location.search;
+                        window.location.href = `/login?redirect=${encodeURIComponent(current)}`;
+                        return;
+                      }
+                      toggleCompare(selectedProduct.id);
+                    }}
                     className={`h-8 sm:h-9 px-2.5 sm:px-3.5 rounded-full border text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 ${
                       compareList?.includes(selectedProduct.id)
                         ? 'bg-amber-500 text-black border-amber-500 font-semibold shadow-md shadow-amber-500/20'

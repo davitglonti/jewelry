@@ -13,6 +13,11 @@ const CatalogPage = lazy(() => import('./pages/CatalogPage'));
 const SizeGuidePage = lazy(() => import('./pages/SizeGuidePage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const CompareModal = lazy(() => import('./components/modals/CompareModal'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const AddProductPage = lazy(() => import('./pages/AddProductPage'));
+const MyItemsPage = lazy(() => import('./pages/MyItemsPage'));
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // მსუბუქი ჩამტვირთავი ეკრანი გვერდებს შორის გადასვლისას
 const PageLoader = () => (
@@ -83,6 +88,22 @@ export default function App() {
         <ProductPage />
       </Suspense>
     );
+  } else if (currentPath === "/login") {
+    content = (
+      <Suspense fallback={<PageLoader />}>
+        <LoginPage />
+      </Suspense>
+    );
+  } else if (currentPath === "/register") {
+    content = (
+      <Suspense fallback={<PageLoader />}>
+        <RegisterPage />
+      </Suspense>
+    );
+  } else if (currentPath === "/add" || currentPath === "/my-items" || currentPath === "/my-products") {
+    // ნივთების მართვა და დამატება მხოლოდ ადმინ პანელშია
+    window.location.replace("/admin");
+    return null;
   } else {
     // 404: ნებისმიერი არარსებული გვერდი (მაგ: /dadsad)
     content = (

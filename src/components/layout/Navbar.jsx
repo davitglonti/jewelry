@@ -1,6 +1,7 @@
 import React from 'react';
-import { Sparkles, Globe, Sun, Moon, Heart, Menu, X } from 'lucide-react';
+import { Sparkles, Globe, Sun, Moon, Heart, Menu, X, PlusCircle, User, LogOut, LogIn, Package } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Navbar({
   lang, setLang,
@@ -9,6 +10,25 @@ export default function Navbar({
   isMobileMenuOpen, setIsMobileMenuOpen
 }) {
   const { siteSettings } = useStore();
+  const { user, logout } = useAuth();
+
+  const handleFavoritesClick = () => {
+    if (!user) {
+      const current = window.location.pathname + window.location.search;
+      window.location.href = `/login?redirect=${encodeURIComponent(current)}`;
+      return;
+    }
+    setShowFavoritesModal(true);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      window.location.href = '/';
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
+  };
 
   return (
     <>
@@ -89,7 +109,7 @@ export default function Navbar({
 
             <button
               type="button"
-              onClick={() => setShowFavoritesModal(true)}
+              onClick={handleFavoritesClick}
               aria-label={lang === "ka" ? `რჩეული სამკაულები (${favorites.length})` : `Saved items (${favorites.length})`}
               className={`relative p-2.5 rounded-full border transition-all ${
                 darkMode ? "border-stone-800 bg-stone-900/80 hover:border-amber-500/50" : "border-stone-200 bg-stone-100 hover:border-amber-600"
@@ -102,6 +122,57 @@ export default function Navbar({
                 </span>
               )}
             </button>
+
+            {/* Desktop Auth Section */}
+            {user ? (
+              <div className="flex items-center gap-2 pl-2 border-l border-stone-500/20">
+                <div
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border flex items-center gap-2 ${
+                    darkMode ? "border-stone-800 bg-stone-900/80 text-stone-200" : "border-stone-200 bg-stone-100 text-stone-800"
+                  }`}
+                  title={user.email}
+                >
+                  <div className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-500 font-bold text-[10px] flex items-center justify-center shrink-0">
+                    {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
+                  </div>
+                  <span className="max-w-[120px] truncate hidden xl:inline">
+                    {user.displayName || user.email?.split('@')[0]}
+                  </span>
+                  <span className="text-[10px] text-amber-500 font-semibold uppercase tracking-wider">VIP</span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  title={lang === "ka" ? `გასვლა (${user.displayName || user.email})` : `Logout (${user.displayName || user.email})`}
+                  className={`p-2.5 rounded-full border transition-all ${
+                    darkMode ? "border-stone-800 bg-stone-900/80 text-stone-400 hover:text-red-400 hover:border-red-500/40" : "border-stone-200 bg-stone-100 text-stone-600 hover:text-red-600 hover:border-red-400"
+                  }`}
+                  aria-label={lang === "ka" ? "ანგარიშიდან გასვლა" : "Sign out"}
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 pl-2 border-l border-stone-500/20">
+                <a
+                  href="/login"
+                  className={`px-3.5 py-2 rounded-full text-xs font-medium border flex items-center gap-1.5 transition-all whitespace-nowrap ${
+                    darkMode ? "border-stone-800 bg-stone-900/80 hover:border-amber-500/50 text-stone-200" : "border-stone-200 bg-stone-100 hover:border-amber-600 text-stone-800"
+                  }`}
+                >
+                  <LogIn className="w-3.5 h-3.5 text-amber-500" />
+                  <span>{lang === "ka" ? "შესვლა" : "Sign In"}</span>
+                </a>
+
+                <a
+                  href="/register"
+                  className="px-3.5 py-2 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-500 border border-amber-500/30 hover:bg-amber-500 hover:text-black transition-all whitespace-nowrap hidden xl:flex items-center gap-1.5"
+                >
+                  <span>{lang === "ka" ? "რეგისტრაცია" : "Register"}</span>
+                </a>
+              </div>
+            )}
           </div>
 
           {/* Mobile & Tablet Action Icons (< 1024px) */}
@@ -132,7 +203,7 @@ export default function Navbar({
 
             <button
               type="button"
-              onClick={() => setShowFavoritesModal(true)}
+              onClick={handleFavoritesClick}
               aria-label={lang === "ka" ? `რჩეული სამკაულები (${favorites.length})` : `Saved items (${favorites.length})`}
               className={`relative p-2 rounded-full border transition-all ${darkMode ? "border-stone-800 bg-stone-900 text-stone-300" : "border-stone-200 bg-stone-100 text-stone-700"}`}
             >
@@ -158,6 +229,48 @@ export default function Navbar({
         {/* Mobile & Tablet Dropdown Navigation (< 1024px) */}
         {isMobileMenuOpen && (
           <div className={`lg:hidden border-b p-5 space-y-4 animate-fadeIn ${darkMode ? "bg-[#0c0b0a] border-stone-800" : "bg-white border-stone-200"}`}>
+            {/* User status mobile banner */}
+            {user ? (
+              <div className={`p-3.5 rounded-2xl border flex items-center justify-between ${darkMode ? "bg-stone-900/80 border-amber-500/25" : "bg-stone-100 border-stone-200"}`}>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center font-bold text-xs shrink-0">
+                    {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold truncate">{user.displayName || user.email}</p>
+                    <p className="text-[10px] text-amber-500">{lang === "ka" ? "ავტორიზებული" : "Signed In"}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="p-2 rounded-xl text-stone-400 hover:text-red-400 transition-colors"
+                  title={lang === "ka" ? "გასვლა" : "Sign out"}
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <a
+                  href="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`py-2.5 px-4 rounded-xl text-center text-xs font-semibold border transition-all ${
+                    darkMode ? "border-stone-800 bg-stone-900 hover:border-amber-500" : "border-stone-200 bg-stone-100"
+                  }`}
+                >
+                  {lang === "ka" ? "შესვლა" : "Sign In"}
+                </a>
+                <a
+                  href="/register"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="py-2.5 px-4 rounded-xl text-center text-xs font-semibold bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-md shadow-amber-500/20"
+                >
+                  {lang === "ka" ? "რეგისტრაცია" : "Register"}
+                </a>
+              </div>
+            )}
+
             <nav className="flex flex-col space-y-3 text-sm tracking-wider uppercase" aria-label="Mobile navigation">
               <a href="/catalog" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
                 {lang === "ka" ? "კოლექცია" : "Collection"}

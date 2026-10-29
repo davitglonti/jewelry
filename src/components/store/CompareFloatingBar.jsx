@@ -1,11 +1,13 @@
 import React from 'react';
 import { ArrowLeftRight, X } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
+import { useAuth } from '../../context/AuthContext';
 
 export default function CompareFloatingBar() {
   const { products, compareList, clearCompare, setShowCompareModal, lang } = useStore();
+  const { user } = useAuth();
 
-  if (!compareList || compareList.length === 0) return null;
+  if (!user || !compareList || compareList.length === 0) return null;
 
   const comparedProducts = products.filter((p) => compareList.includes(p.id));
 
