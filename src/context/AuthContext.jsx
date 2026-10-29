@@ -4,6 +4,7 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut,
   updateProfile
 } from 'firebase/auth';
@@ -11,15 +12,22 @@ import { auth } from '../lib/firebase';
 
 const AuthContext = createContext(null);
 
-export const getAuthErrorMessage = (error, lang = 'ka') => {
+export const getAuthErrorMessage = (error, lang = 'ka', action = 'login') => {
   const code = error?.code || (typeof error === 'string' ? error : '');
   switch (code) {
     case 'auth/invalid-credential':
     case 'auth/wrong-password':
-    case 'auth/user-not-found':
       return lang === 'ka'
         ? 'ელფოსტა ან პაროლი არასწორია.'
         : 'Invalid email or password.';
+    case 'auth/user-not-found':
+      return action === 'reset'
+        ? (lang === 'ka' ? 'ამ ელფოსტით დარეგისტრირებული მომხმარებელი ვერ მოიძებნა.' : 'No user found with this email address.')
+        : (lang === 'ka' ? 'ელფოსტა ან პაროლი არასწორია.' : 'Invalid email or password.');
+    case 'auth/missing-email':
+      return lang === 'ka'
+        ? 'გთხოვთ მიუთითოთ ელფოსტის მისამართი.'
+        : 'Please enter your email address.';
     case 'auth/email-already-in-use':
       return lang === 'ka'
         ? 'ეს ელფოსტა უკვე დარეგისტრირებულია სისტემაში.'
@@ -92,12 +100,23 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  const resetPassword = async (email) => {
+    if (!auth) throw new Error('Firebase Auth არ არის ინიციალიზებული');
+    if (!email || !email.trim()) {
+      const err = new Error('auth/missing-email');
+      err.code = 'auth/missing-email';
+      throw err;
+    }
+    await sendPasswordResetEmail(auth, email.trim());
+  };
+
   const value = {
     user,
     loading,
     register,
     login,
     logout,
+    resetPassword,
     isAuthenticated: !!user,
   };
 

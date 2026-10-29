@@ -91,7 +91,13 @@ export default function App() {
   } else if (currentPath === "/login") {
     content = (
       <Suspense fallback={<PageLoader />}>
-        <LoginPage />
+        <LoginPage initialMode="login" />
+      </Suspense>
+    );
+  } else if (currentPath === "/forgot-password" || currentPath === "/reset-password") {
+    content = (
+      <Suspense fallback={<PageLoader />}>
+        <LoginPage initialMode="forgot" />
       </Suspense>
     );
   } else if (currentPath === "/register") {
