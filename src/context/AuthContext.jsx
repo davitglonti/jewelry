@@ -111,31 +111,39 @@ export function AuthProvider({ children }) {
   };
 
   const resetPassword = async (email) => {
-    if (!auth) throw new Error('Firebase Auth არ არის ინიციალიზებული');
     if (!email || !email.trim()) {
       const err = new Error('auth/missing-email');
       err.code = 'auth/missing-email';
       throw err;
     }
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const actionCodeSettings = origin ? {
-      url: `${origin}/reset-password`,
-      handleCodeInApp: false,
-    } : null;
 
     try {
-      if (actionCodeSettings) {
-        await sendPasswordResetEmail(auth, email.trim(), actionCodeSettings);
-      } else {
-        await sendPasswordResetEmail(auth, email.trim());
-      }
-    } catch (err) {
-      // თუ actionCodeSettings დომენი არ არის ავტორიზებული Firebase Console-ში, ვუშვებთ სტანდარტულად
-      if (err?.code === 'auth/unauthorized-continue-uri') {
-        await sendPasswordResetEmail(auth, email.trim());
-      } else {
+      const res = await fetch('/api/send-reset-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), origin }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        const err = new Error(data.error || 'შეცდომა ბმულის გაგზავნისას');
+        err.code = data.code || 'custom/reset-error';
         throw err;
       }
+
+      return data;
+    } catch (err) {
+      if (err?.code === 'auth/user-not-found' || err?.code === 'custom/reset-error') {
+        throw err;
+      }
+      // თუ ლოკალურ გარემოში სერვერული ფუნქცია მიუწვდომელია, fallback პირდაპირ Firebase-ზე
+      if (auth) {
+        await sendPasswordResetEmail(auth, email.trim());
+        return;
+      }
+      throw err;
     }
   };
 
