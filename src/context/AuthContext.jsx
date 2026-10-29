@@ -118,33 +118,21 @@ export function AuthProvider({ children }) {
     }
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
-    try {
-      const res = await fetch('/api/send-reset-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), origin }),
-      });
+    const res = await fetch('/api/send-reset-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim(), origin }),
+    });
 
-      const data = await res.json().catch(() => ({}));
+    const data = await res.json().catch(() => ({}));
 
-      if (!res.ok) {
-        const err = new Error(data.error || 'შეცდომა ბმულის გაგზავნისას');
-        err.code = data.code || 'custom/reset-error';
-        throw err;
-      }
-
-      return data;
-    } catch (err) {
-      if (err?.code === 'auth/user-not-found' || err?.code === 'custom/reset-error') {
-        throw err;
-      }
-      // თუ ლოკალურ გარემოში სერვერული ფუნქცია მიუწვდომელია, fallback პირდაპირ Firebase-ზე
-      if (auth) {
-        await sendPasswordResetEmail(auth, email.trim());
-        return;
-      }
+    if (!res.ok) {
+      const err = new Error(data.error || 'შეცდომა ბმულის გაგზავნისას');
+      err.code = data.code || 'custom/reset-error';
       throw err;
     }
+
+    return data;
   };
 
   const verifyResetCode = async (actionCode) => {
