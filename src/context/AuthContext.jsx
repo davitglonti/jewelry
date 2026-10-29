@@ -5,6 +5,8 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
+  confirmPasswordReset as fbConfirmPasswordReset,
+  verifyPasswordResetCode as fbVerifyPasswordResetCode,
   signOut,
   updateProfile
 } from 'firebase/auth';
@@ -52,6 +54,14 @@ export const getAuthErrorMessage = (error, lang = 'ka', action = 'login') => {
       return lang === 'ka'
         ? 'ეს ანგარიში დეაქტივირებულია ადმინისტრაციის მიერ.'
         : 'This account has been disabled by an administrator.';
+    case 'auth/expired-action-code':
+      return lang === 'ka'
+        ? 'პაროლის აღდგენის ბმულის ვადა ამოიწურა. გთხოვთ მოითხოვოთ ახალი ბმული.'
+        : 'The password reset link has expired. Please request a new one.';
+    case 'auth/invalid-action-code':
+      return lang === 'ka'
+        ? 'პაროლის აღდგენის ბმული არასწორია ან უკვე გამოყენებულია.'
+        : 'The reset link is invalid or has already been used.';
     default:
       return error?.message || (lang === 'ka' ? 'დაფიქსირდა შეცდომა. სცადეთ ხელახლა.' : 'An error occurred. Please try again.');
   }
@@ -107,7 +117,41 @@ export function AuthProvider({ children }) {
       err.code = 'auth/missing-email';
       throw err;
     }
-    await sendPasswordResetEmail(auth, email.trim());
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const actionCodeSettings = origin ? {
+      url: `${origin}/reset-password`,
+      handleCodeInApp: false,
+    } : null;
+
+    try {
+      if (actionCodeSettings) {
+        await sendPasswordResetEmail(auth, email.trim(), actionCodeSettings);
+      } else {
+        await sendPasswordResetEmail(auth, email.trim());
+      }
+    } catch (err) {
+      // თუ actionCodeSettings დომენი არ არის ავტორიზებული Firebase Console-ში, ვუშვებთ სტანდარტულად
+      if (err?.code === 'auth/unauthorized-continue-uri') {
+        await sendPasswordResetEmail(auth, email.trim());
+      } else {
+        throw err;
+      }
+    }
+  };
+
+  const verifyResetCode = async (actionCode) => {
+    if (!auth) throw new Error('Firebase Auth არ არის ინიციალიზებული');
+    return await fbVerifyPasswordResetCode(auth, actionCode);
+  };
+
+  const confirmReset = async (actionCode, newPassword) => {
+    if (!auth) throw new Error('Firebase Auth არ არის ინიციალიზებული');
+    if (!newPassword || newPassword.length < 6) {
+      const err = new Error('auth/weak-password');
+      err.code = 'auth/weak-password';
+      throw err;
+    }
+    await fbConfirmPasswordReset(auth, actionCode, newPassword);
   };
 
   const value = {
@@ -117,6 +161,8 @@ export function AuthProvider({ children }) {
     login,
     logout,
     resetPassword,
+    verifyResetCode,
+    confirmReset,
     isAuthenticated: !!user,
   };
 

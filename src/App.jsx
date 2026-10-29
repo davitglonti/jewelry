@@ -94,10 +94,16 @@ export default function App() {
         <LoginPage initialMode="login" />
       </Suspense>
     );
-  } else if (currentPath === "/forgot-password" || currentPath === "/reset-password") {
+  } else if (currentPath === "/forgot-password") {
     content = (
       <Suspense fallback={<PageLoader />}>
         <LoginPage initialMode="forgot" />
+      </Suspense>
+    );
+  } else if (currentPath === "/reset-password" || currentPath === "/__/auth/action") {
+    content = (
+      <Suspense fallback={<PageLoader />}>
+        <LoginPage initialMode="new-password" />
       </Suspense>
     );
   } else if (currentPath === "/register") {
