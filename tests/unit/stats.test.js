@@ -24,6 +24,7 @@ describe('trackProductView', () => {
   });
 
   it('tracks view and unique view on first visit', async () => {
+    localStorage.setItem('matare_visitor_id', 'test_user');
     await trackProductView('p-101');
 
     expect(mockSetDoc).toHaveBeenCalledTimes(1);
@@ -34,12 +35,13 @@ describe('trackProductView', () => {
     expect(options).toEqual({ merge: true });
 
     // Session and Local flags must be set
-    expect(sessionStorage.getItem('matare_view_session_p-101')).toBe('1');
-    expect(localStorage.getItem('matare_view_ever_p-101')).toBe('1');
+    expect(sessionStorage.getItem('matare_view_session_p-101_test_user')).toBe('1');
+    expect(localStorage.getItem('matare_view_ever_p-101_test_user')).toBe('1');
   });
 
   it('does not re-track if already viewed in same session', async () => {
-    sessionStorage.setItem('matare_view_session_p-101', '1');
+    localStorage.setItem('matare_visitor_id', 'test_user');
+    sessionStorage.setItem('matare_view_session_p-101_test_user', '1');
 
     await trackProductView('p-101');
 
@@ -47,7 +49,8 @@ describe('trackProductView', () => {
   });
 
   it('tracks regular view but not unique view if viewed previously on device but new session', async () => {
-    localStorage.setItem('matare_view_ever_p-101', '1');
+    localStorage.setItem('matare_visitor_id', 'test_user');
+    localStorage.setItem('matare_view_ever_p-101_test_user', '1');
 
     await trackProductView('p-101');
 

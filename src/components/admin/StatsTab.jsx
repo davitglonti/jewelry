@@ -28,7 +28,8 @@ export default function StatsTab({ products = [], darkMode = true, lang = 'ka' }
     refresh: lang === 'ka' ? 'განახლება' : 'Refresh',
     lastRefreshedText: lang === 'ka' ? 'ბოლო განახლება' : 'Last refreshed',
     totalViews: lang === 'ka' ? 'სულ ნახვები' : 'Total Views',
-    totalUnique: lang === 'ka' ? 'უნიკალური ვიზიტორი' : 'Unique Visitors',
+    totalUnique: lang === 'ka' ? 'უნიკალური ნახვები (ნაკეთობებზე)' : 'Unique Views (Per Item)',
+    catalogCoverage: lang === 'ka' ? 'ნანახი პროდუქცია' : 'Viewed Products',
     top3Title: lang === 'ka' ? 'ტოპ 3 ყველაზე მოთხოვნადი' : 'Top 3 Most Viewed',
     searchPlaceholder: lang === 'ka' ? 'ძიება ნივთის სახელით ან SKU-ით...' : 'Search by item name or SKU...',
     filterAll: lang === 'ka' ? 'ყველა ნივთი' : 'All Items',
@@ -331,7 +332,7 @@ export default function StatsTab({ products = [], darkMode = true, lang = 'ka' }
           </div>
         </div>
 
-        {/* Card 2: Unique Visitors */}
+        {/* Card 2: Unique Views across Items */}
         <div
           className={`p-5 rounded-2xl border transition-all ${
             darkMode ? 'bg-[#141210] border-stone-800' : 'bg-white border-stone-200 shadow-sm'
@@ -351,11 +352,9 @@ export default function StatsTab({ products = [], darkMode = true, lang = 'ka' }
           <div className="text-xs opacity-60 mt-2 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
             <span>
-              {summary.totalUnique > 0
-                ? (lang === 'ka'
-                    ? `საშუალოდ ${(summary.totalViews / summary.totalUnique).toFixed(1)} ნახვა ვიზიტორზე`
-                    : `Avg ${(summary.totalViews / summary.totalUnique).toFixed(1)} views / visitor`)
-                : (lang === 'ka' ? 'ვიზიტორები არ ფიქსირდება' : 'No visitors yet')}
+              {lang === 'ka'
+                ? `უნიკალური ნახვების ჯამი ${summary.itemsWithViews} ნივთზე`
+                : `Total unique views across ${summary.itemsWithViews} items`}
             </span>
           </div>
         </div>

@@ -50,15 +50,27 @@ export async function trackProductView(productId) {
     const idStr = String(productId).trim();
     if (!idStr) return;
 
-    const sessionKey = `matare_view_session_${idStr}`;
-    const localKey = `matare_view_ever_${idStr}`;
+    // მომხმარებლის ან სტუმრის იდენტიფიკატორი (ანგარიშების სწორად გასამიჯნად)
+    const currentUid = auth?.currentUser?.uid;
+    let visitorId = currentUid ? `user_${currentUid}` : null;
+    if (!visitorId) {
+      let guestId = localStorage.getItem('matare_visitor_id');
+      if (!guestId) {
+        guestId = 'g_' + Math.random().toString(36).substring(2, 10);
+        localStorage.setItem('matare_visitor_id', guestId);
+      }
+      visitorId = guestId;
+    }
 
-    // 1. სესიის შემოწმება: თუ ამ სესიაში უკვე ნახა, არაფერს ვთვლით
+    const sessionKey = `matare_view_session_${idStr}_${visitorId}`;
+    const localKey = `matare_view_ever_${idStr}_${visitorId}`;
+
+    // 1. სესიის შემოწმება: თუ ამ სესიაში უკვე ნახა ამ მომხმარებელმა, არაფერს ვთვლით
     if (sessionStorage.getItem(sessionKey)) {
       return;
     }
 
-    // 2. უნიკალური ვიზიტორის შემოწმება
+    // 2. უნიკალური ვიზიტორის შემოწმება ამ კონკრეტულ ნივთზე
     const hasViewedEver = localStorage.getItem(localKey);
     const isUnique = !hasViewedEver;
 
