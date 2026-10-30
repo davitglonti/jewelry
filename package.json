@@ -13,7 +13,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "firebase": "^10.13.0",
-    "firebase-admin": "^14.5.0",
+    "firebase-admin": "^12.7.0",
     "lucide-react": "^0.436.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

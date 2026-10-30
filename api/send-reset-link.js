@@ -1,20 +1,27 @@
 // api/send-reset-link.js
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
+import admin from 'firebase-admin';
 
 function getAdminAuth() {
-  if (getApps().length === 0) {
+  if (!admin.apps.length) {
     const projectId = process.env.FIREBASE_PROJECT_ID || 'jewelry-4fdb3';
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-    const rawKey = process.env.FIREBASE_PRIVATE_KEY || '';
-    const privateKey = rawKey.includes('\\n') ? rawKey.replace(/\\n/g, '\n') : rawKey;
+    let rawKey = process.env.FIREBASE_PRIVATE_KEY || '';
 
-    if (!clientEmail || !privateKey) {
+    if (!clientEmail || !rawKey) {
       throw new Error('Firebase Admin-ის პარამეტრები (CLIENT_EMAIL / PRIVATE_KEY) არ არის მითითებული');
     }
 
-    initializeApp({
-      credential: cert({
+    rawKey = rawKey.trim();
+    if (rawKey.startsWith('"') && rawKey.endsWith('"')) {
+      rawKey = rawKey.slice(1, -1);
+    }
+    if (rawKey.startsWith("'") && rawKey.endsWith("'")) {
+      rawKey = rawKey.slice(1, -1);
+    }
+    const privateKey = rawKey.replace(/\\n/g, '\n');
+
+    admin.initializeApp({
+      credential: admin.credential.cert({
         projectId,
         clientEmail,
         privateKey,
@@ -22,7 +29,7 @@ function getAdminAuth() {
     });
   }
 
-  return getAuth();
+  return admin.auth();
 }
 
 export default async function handler(req, res) {
@@ -150,6 +157,8 @@ export default async function handler(req, res) {
 </html>
     `;
 
+    // თუ დომენი matare.store დადასტურებულია Resend-ში, გაგზავნის noreply@matare.store-ით
+    // თუ ჯერ არ არის, სატესტოდ onboarding@resend.dev
     const fromAddress = process.env.RESEND_FROM_EMAIL || 'მატარე <onboarding@resend.dev>';
 
     const resendRes = await fetch('https://api.resend.com/emails', {
@@ -173,7 +182,7 @@ export default async function handler(req, res) {
       if (resendData?.message?.includes('testing emails to your own email address')) {
         return res.status(403).json({
           code: 'resend/domain-not-verified',
-          error: `Resend ტესტურ რეჟიმში მეილს აგზავნის მხოლოდ თქვენს ანგარიშზე (datiglonti@gmail.com). სხვა მომხმარებლებზე გასაგზავნად გთხოვთ დაამატოთ matare.store resend.com/domains-ში.`,
+          error: `Resend ტესტურ რეჟიმში მეილს აგზავნის მხოლოდ თქვენს ანგარიშზე (datiglonti@gmail.com). სხვა მომხმარებლებზე გასაგზავნად გთხოვთ დაასრულოთ matare.store-ის დადასტურება resend.com/domains-ში.`,
           resetLink: brandedResetLink,
         });
       }
