@@ -172,7 +172,17 @@ export function AuthProvider({ children }) {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth უნდა გამოიძახოთ AuthProvider-ის შიგნით');
+    return {
+      user: null,
+      loading: false,
+      isAuthenticated: false,
+      register: async () => {},
+      login: async () => {},
+      logout: async () => {},
+      resetPassword: async () => {},
+      verifyResetCode: async () => {},
+      confirmReset: async () => {},
+    };
   }
   return context;
 };

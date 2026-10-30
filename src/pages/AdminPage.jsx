@@ -14,6 +14,7 @@ import AdminHomeTab from '../components/admin/AdminHomeTab';
 import AdminBlogTab from '../components/admin/AdminBlogTab';
 import AdminInquiriesTab from '../components/admin/AdminInquiriesTab';
 import AdminSettingsTab from '../components/admin/AdminSettingsTab';
+import StatsTab from '../components/admin/StatsTab';
 
 export default function AdminPage() {
   const {
@@ -57,11 +58,28 @@ export default function AdminPage() {
       setIsAdminAuthenticated(!!user);
       if (user && user.email) {
         setCurrentUserEmail(user.email);
+        try {
+          localStorage.setItem('isAdmin', 'true');
+          sessionStorage.setItem('isAdmin', 'true');
+        } catch (e) {}
+      } else {
+        try {
+          localStorage.removeItem('isAdmin');
+          sessionStorage.removeItem('isAdmin');
+        } catch (e) {}
       }
       setAuthChecked(true);
     });
     return () => unsub();
   }, []);
+
+  const handleAdminLogout = () => {
+    try {
+      localStorage.removeItem('isAdmin');
+      sessionStorage.removeItem('isAdmin');
+    } catch (e) {}
+    signOut(auth);
+  };
 
   return (
     <div
@@ -147,7 +165,7 @@ export default function AdminPage() {
           {isAdminAuthenticated && (
             <button
               type="button"
-              onClick={() => signOut(auth)}
+              onClick={handleAdminLogout}
               className="px-3 sm:px-4 py-2 rounded-xl border border-stone-800 bg-[#141210] hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-400 text-stone-300 text-xs font-medium flex items-center gap-1.5 transition-all"
             >
               <LogOut className="w-3.5 h-3.5" />
@@ -211,6 +229,7 @@ export default function AdminPage() {
                 { id: 'home', label: 'მთავარი გვერდი 🌟' },
                 { id: 'blog', label: `ბლოგი & სიახლეები (${(articles || []).length})` },
                 { id: 'inquiries', label: `შემოსული მოთხოვნები (${inquiries.length})` },
+                { id: 'stats', label: lang === 'ka' ? 'სტატისტიკა 📊' : 'Statistics 📊' },
                 { id: 'site', label: 'საიტის პარამეტრები' }
               ].map((tab) => {
                 const isSelected =
@@ -294,6 +313,14 @@ export default function AdminPage() {
                 siteSettings={siteSettings}
                 products={products}
                 syncData={syncData}
+              />
+            )}
+
+            {adminTab === 'stats' && (
+              <StatsTab
+                products={products}
+                darkMode={darkMode}
+                lang={lang}
               />
             )}
 

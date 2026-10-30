@@ -4,6 +4,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import ProductCard from '../../src/components/store/ProductCard';
 import { StoreContext } from '../../src/context/StoreContext';
 
+vi.mock('../../src/context/AuthContext', () => ({
+  useAuth: () => ({ user: { uid: 'test-user' }, isAuthenticated: true })
+}));
+
 const renderWithContext = (ui, contextOverrides = {}) => {
   const defaultContext = {
     darkMode: true,

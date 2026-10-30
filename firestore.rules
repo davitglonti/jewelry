@@ -27,5 +27,26 @@ service cloud.firestore {
       allow create: if true;
       allow read, update, delete: if request.auth != null;
     }
+
+    // ნივთების ნახვების სტატისტიკა (Product Stats)
+    // წაკითხვა და წაშლა: მხოლოდ ადმინისტრატორს
+    // ჩაწერა: ყველას, მხოლოდ views +1, uniqueViews +0 ან +1, და lastViewedAt
+    match /productStats/{productId} {
+      allow read, delete: if request.auth != null;
+
+      allow create: if request.resource.data.keys().hasOnly(['views', 'uniqueViews', 'lastViewedAt'])
+                    && request.resource.data.views == 1
+                    && (request.resource.data.uniqueViews == 0 || request.resource.data.uniqueViews == 1);
+
+      allow update: if request.auth != null
+                    || (
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'uniqueViews', 'lastViewedAt'])
+                      && request.resource.data.views == resource.data.views + 1
+                      && (
+                        request.resource.data.uniqueViews == resource.data.uniqueViews
+                        || request.resource.data.uniqueViews == resource.data.uniqueViews + 1
+                      )
+                    );
+    }
   }
 }

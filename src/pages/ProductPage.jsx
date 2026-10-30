@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { pick, formatPrice, calculateDiscountPercent } from '../utils/i18n';
 import { shareProductLink } from '../utils/shareUtils';
+import { trackProductView } from '../lib/stats';
 import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
 import { DEFAULT_PRODUCT_ASSURANCE } from '../data/defaultSettings';
@@ -79,6 +80,14 @@ export default function ProductPage({ skuProp }) {
       setSelectedSize("");
     }
   }, [currentSku, selectedProduct]);
+
+  // ნივთის ნახვების აღრიცხვა (productStats)
+  useEffect(() => {
+    const targetId = selectedProduct?.id || selectedProduct?.sku || currentSku;
+    if (targetId) {
+      trackProductView(targetId);
+    }
+  }, [selectedProduct?.id, selectedProduct?.sku, currentSku]);
 
   // ბრაუზერის ტაბის სათაურის, OpenGraph-ისა და Product Schema JSON-LD-ის დინამიური განახლება (SEO)
   useEffect(() => {
