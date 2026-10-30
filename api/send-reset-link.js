@@ -157,9 +157,8 @@ export default async function handler(req, res) {
 </html>
     `;
 
-    // თუ დომენი matare.store დადასტურებულია Resend-ში, გაგზავნის noreply@matare.store-ით
-    // თუ ჯერ არ არის, სატესტოდ onboarding@resend.dev
-    const fromAddress = process.env.RESEND_FROM_EMAIL || 'მატარე <onboarding@resend.dev>';
+    // დომენი matare.store დადასტურებულია Resend-ში, ამიტომ ვაგზავნით ოფიციალური noreply@matare.store-ით
+    const fromAddress = process.env.RESEND_FROM_EMAIL || 'მატარე <noreply@matare.store>';
 
     const resendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
