@@ -32,7 +32,24 @@ export default function CatalogPage() {
   const [onlyExclusive, setOnlyExclusive] = useState(initialParams.get("exclusive") === "true");
   const [onlyOnSale, setOnlyOnSale] = useState(initialParams.get("sale") === "true");
   const [searchQuery, setSearchQuery] = useState(initialParams.get("q") || "");
-  const [sortBy, setSortBy] = useState("newest"); // "newest", "price-asc", "price-desc"
+  const [sortBy, setSortBy] = useState(initialParams.get("sort") || "newest"); // "newest", "popular", "price-asc", "price-desc"
+  const [popularityMap, setPopularityMap] = useState({});
+
+  // Fetch product popularity stats (aggregated views from serverless endpoint, cached at edge)
+  useEffect(() => {
+    let isMounted = true;
+    fetch('/api/product-popularity')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (isMounted && data?.popularity) {
+          setPopularityMap(data.popularity);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // მობილურის ბადის ხედი: 3 სვეტი (ნაგულისხმევი, მინიმალური სქროლვისთვის) ან 2 სვეტი
   const [mobileCols, setMobileCols] = useState(() => {
@@ -158,7 +175,17 @@ export default function CatalogPage() {
       return matchesCat && matchesMetal && matchesExcl && matchesSale && matchesSearch;
     });
 
-    if (sortBy === "price-asc") {
+    if (sortBy === "popular") {
+      result.sort((a, b) => {
+        const viewsA = Number(popularityMap[a.id] ?? popularityMap[a.sku] ?? popularityMap[a.sku?.toLowerCase()] ?? 0);
+        const viewsB = Number(popularityMap[b.id] ?? popularityMap[b.sku] ?? popularityMap[b.sku?.toLowerCase()] ?? 0);
+        if (viewsB !== viewsA) {
+          return viewsB - viewsA;
+        }
+        // თანაბარი ნახვების შემთხვევაში (ან თუ ჯერ არ აქვს ნახვა) — უახლესი პირველად
+        return (b.createdAt || 0) - (a.createdAt || 0);
+      });
+    } else if (sortBy === "price-asc") {
       result.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
     } else if (sortBy === "price-desc") {
       result.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
@@ -168,7 +195,7 @@ export default function CatalogPage() {
     }
 
     return result;
-  }, [products, selectedCategory, selectedMetal, onlyExclusive, onlyOnSale, searchQuery, sortBy]);
+  }, [products, selectedCategory, selectedMetal, onlyExclusive, onlyOnSale, searchQuery, sortBy, popularityMap]);
 
   const openProduct = (item) => {
     const code = item.sku || item.id;
@@ -377,12 +404,16 @@ export default function CatalogPage() {
                   <ArrowUpDown className="w-3.5 h-3.5 text-amber-500" />
                   <select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
+                    onChange={(e) => {
+                      setSortBy(e.target.value);
+                      updateFilterParam("sort", e.target.value === "newest" ? null : e.target.value);
+                    }}
                     className={`p-2 rounded-xl border outline-none text-xs cursor-pointer ${
                       darkMode ? "bg-stone-800 border-stone-700 text-white" : "bg-white border-stone-300 text-stone-900"
                     }`}
                   >
                     <option value="newest">{lang === "ka" ? "უახლესი პირველად" : "Newest first"}</option>
+                    <option value="popular">{lang === "ka" ? "პოპულარობით" : "Most popular"}</option>
                     <option value="price-asc">{lang === "ka" ? "ფასი: ზრდადობით" : "Price: Low to High"}</option>
                     <option value="price-desc">{lang === "ka" ? "ფასი: კლებადობით" : "Price: High to Low"}</option>
                   </select>
