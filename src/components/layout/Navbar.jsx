@@ -3,7 +3,6 @@ import { Sparkles, Globe, Sun, Moon, Heart, Menu, X, PlusCircle, User, LogOut, L
 import { useStore } from '../../context/StoreContext';
 import { useAuth } from '../../context/AuthContext';
 import { navigateTo, switchLanguage } from '../../utils/navigation';
-import UserProfileModal from '../modals/UserProfileModal';
 
 export default function Navbar({
   lang, setLang,
@@ -13,7 +12,6 @@ export default function Navbar({
 }) {
   const { siteSettings } = useStore();
   const { user, userRole, logout } = useAuth();
-  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const handleToggleLang = () => {
     const nextLang = lang === "ka" ? "en" : "ka";
@@ -135,9 +133,12 @@ export default function Navbar({
             {/* Desktop Auth Section */}
             {user ? (
               <div className="flex items-center gap-2 pl-2 border-l border-stone-500/20">
-                <button
-                  type="button"
-                  onClick={() => setShowProfileModal(true)}
+                <a
+                  href={lang === "en" ? "/en/profile" : "/profile"}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo(lang === "en" ? "/en/profile" : "/profile");
+                  }}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium border flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer ${
                     darkMode
                       ? "border-stone-800 bg-stone-900/80 text-stone-200 hover:border-amber-500/50 hover:bg-stone-800"
@@ -178,7 +179,7 @@ export default function Navbar({
                       CLIENT
                     </span>
                   )}
-                </button>
+                </a>
 
                 <button
                   type="button"
@@ -271,11 +272,12 @@ export default function Navbar({
             {/* User status mobile banner */}
             {user ? (
               <div className={`p-3 rounded-2xl border flex items-center justify-between gap-3 ${darkMode ? "bg-stone-900/80 border-amber-500/25" : "bg-stone-100 border-stone-200"}`}>
-                <button
-                  type="button"
-                  onClick={() => {
+                <a
+                  href={lang === "en" ? "/en/profile" : "/profile"}
+                  onClick={(e) => {
+                    e.preventDefault();
                     setIsMobileMenuOpen(false);
-                    setShowProfileModal(true);
+                    navigateTo(lang === "en" ? "/en/profile" : "/profile");
                   }}
                   className="flex items-center gap-2.5 min-w-0 flex-1 text-left group"
                 >
@@ -308,7 +310,7 @@ export default function Navbar({
                       )}
                     </div>
                   </div>
-                </button>
+                </a>
 
                 <button
                   type="button"
@@ -359,6 +361,20 @@ export default function Navbar({
               <a href={lang === "en" ? "/en/#contact" : "/#contact"} onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
                 {lang === "ka" ? "შოურუმი" : "Showroom"}
               </a>
+              {user && (
+                <a
+                  href={lang === "en" ? "/en/profile" : "/profile"}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsMobileMenuOpen(false);
+                    navigateTo(lang === "en" ? "/en/profile" : "/profile");
+                  }}
+                  className="hover:text-amber-500 py-1 text-amber-500 font-semibold flex items-center justify-between"
+                >
+                  <span>{lang === "ka" ? "ჩემი პროფილი" : "My Profile"}</span>
+                  <span className="text-xs">⚙️</span>
+                </a>
+              )}
             </nav>
 
             <div className="pt-3 border-t border-stone-500/20 flex items-center gap-2 sm:hidden">
@@ -388,14 +404,6 @@ export default function Navbar({
           </div>
         )}
       </header>
-
-      {/* User Profile & Avatar Customization Modal */}
-      <UserProfileModal
-        isOpen={showProfileModal}
-        onClose={() => setShowProfileModal(false)}
-        lang={lang}
-        darkMode={darkMode}
-      />
     </>
   );
 }

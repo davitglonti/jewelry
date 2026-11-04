@@ -9,6 +9,7 @@ const routePreloaders = {
   '/ring-size': () => import('../pages/SizeGuidePage'),
   '/login': () => import('../pages/LoginPage'),
   '/register': () => import('../pages/RegisterPage'),
+  '/profile': () => import('../pages/ProfilePage'),
   '/forgot-password': () => import('../pages/LoginPage'),
   '/reset-password': () => import('../pages/LoginPage'),
 };

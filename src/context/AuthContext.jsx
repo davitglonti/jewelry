@@ -52,6 +52,10 @@ export const getAuthErrorMessage = (error, lang = 'ka', action = 'login') => {
       return lang === 'ka'
         ? 'პაროლის აღდგენის ბმული არასწორია ან უკვე გამოყენებულია.'
         : 'The reset link is invalid or has already been used.';
+    case 'auth/requires-recent-login':
+      return lang === 'ka'
+        ? 'უსაფრთხოების მიზნით, პაროლის შესაცვლელად გთხოვთ ხელახლა გაიაროთ ავტორიზაცია.'
+        : 'This operation is sensitive and requires recent authentication. Please log in again.';
     default:
       return error?.message || (lang === 'ka' ? 'დაფიქსირდა შეცდომა. სცადეთ ხელახლა.' : 'An error occurred. Please try again.');
   }
@@ -228,6 +232,18 @@ export function AuthProvider({ children }) {
     setUser({ ...auth.currentUser, ...updates });
   };
 
+  const changePassword = async (newPassword) => {
+    const auth = await getLazyAuth();
+    if (!auth || !auth.currentUser) throw new Error('ავტორიზაცია არ მოიძებნა');
+    if (!newPassword || newPassword.length < 6) {
+      const err = new Error('auth/weak-password');
+      err.code = 'auth/weak-password';
+      throw err;
+    }
+    const { updatePassword } = await import('firebase/auth');
+    await updatePassword(auth.currentUser, newPassword);
+  };
+
   const value = {
     user,
     userRole,
@@ -236,6 +252,7 @@ export function AuthProvider({ children }) {
     login,
     logout,
     updateUserProfile,
+    changePassword,
     resetPassword,
     verifyResetCode,
     confirmReset,
@@ -261,6 +278,7 @@ export const useAuth = () => {
       login: async () => {},
       logout: async () => {},
       updateUserProfile: async () => {},
+      changePassword: async () => {},
       resetPassword: async () => {},
       verifyResetCode: async () => {},
       confirmReset: async () => {},

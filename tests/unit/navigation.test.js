@@ -13,6 +13,7 @@ describe('Navigation & i18n URL Routing', () => {
       expect(parsePath('/about')).toEqual({ lang: 'ka', route: '/about' });
       expect(parsePath('/product/AUR-101')).toEqual({ lang: 'ka', route: '/product/AUR-101' });
       expect(parsePath('/blog/my-first-post')).toEqual({ lang: 'ka', route: '/blog/my-first-post' });
+      expect(parsePath('/profile')).toEqual({ lang: 'ka', route: '/profile' });
     });
 
     it('correctly parses English root path', () => {
@@ -25,6 +26,7 @@ describe('Navigation & i18n URL Routing', () => {
       expect(parsePath('/en/about')).toEqual({ lang: 'en', route: '/about' });
       expect(parsePath('/en/product/AUR-101')).toEqual({ lang: 'en', route: '/product/AUR-101' });
       expect(parsePath('/en/blog/my-first-post')).toEqual({ lang: 'en', route: '/blog/my-first-post' });
+      expect(parsePath('/en/profile')).toEqual({ lang: 'en', route: '/profile' });
     });
   });
 
@@ -34,6 +36,7 @@ describe('Navigation & i18n URL Routing', () => {
       expect(localizePath('', 'en')).toBe('/en');
       expect(localizePath('/catalog', 'en')).toBe('/en/catalog');
       expect(localizePath('/about', 'en')).toBe('/en/about');
+      expect(localizePath('/profile', 'en')).toBe('/en/profile');
       expect(localizePath('/product/AUR-101', 'en')).toBe('/en/product/AUR-101');
     });
 
@@ -42,6 +45,7 @@ describe('Navigation & i18n URL Routing', () => {
       expect(localizePath('/en/', 'ka')).toBe('/');
       expect(localizePath('/en/catalog', 'ka')).toBe('/catalog');
       expect(localizePath('/en/about', 'ka')).toBe('/about');
+      expect(localizePath('/en/profile', 'ka')).toBe('/profile');
       expect(localizePath('/en/product/AUR-101', 'ka')).toBe('/product/AUR-101');
     });
 
