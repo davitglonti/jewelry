@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, MapPin, Phone, Clock } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { pick } from '../utils/i18n';
+import { navigateTo } from '../utils/navigation';
 import InfoCards from '../components/store/InfoCards';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
@@ -114,7 +115,7 @@ export default function AboutPage() {
         isOpen={showFavoritesModal}
         onClose={() => setShowFavoritesModal(false)}
         onSelectProduct={(item) => {
-          window.location.href = `/?item=${encodeURIComponent(item.sku || item.id)}`;
+          navigateTo(`/product/${encodeURIComponent(item.sku || item.id)}`);
         }}
       />
     </div>

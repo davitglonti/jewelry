@@ -6,6 +6,7 @@ import {
 import { ALL } from '../constants';
 import { pick, formatPrice, calculateDiscountPercent } from '../utils/i18n';
 import { useStore } from '../context/StoreContext';
+import { navigateTo } from '../utils/navigation';
 import { getOptimizedImageUrl, getProductCardSrcSet } from '../utils/imageUtils';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
@@ -199,7 +200,7 @@ export default function CatalogPage() {
 
   const openProduct = (item) => {
     const code = item.sku || item.id;
-    window.location.href = `/product/${encodeURIComponent(code)}`;
+    navigateTo(`/product/${encodeURIComponent(code)}`);
   };
 
   const hasActiveFilters =

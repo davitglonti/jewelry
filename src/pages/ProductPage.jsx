@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { pick, formatPrice, calculateDiscountPercent } from '../utils/i18n';
 import { shareProductLink } from '../utils/shareUtils';
+import { navigateTo } from '../utils/navigation';
 import { trackProductView } from '../lib/stats';
 import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
@@ -190,11 +191,11 @@ export default function ProductPage({ skuProp }) {
   }, [selectedProduct, lang, siteSettings.brandName]);
 
   const goToHome = () => {
-    window.location.href = "/";
+    navigateTo("/");
   };
 
   const goToProduct = (code) => {
-    window.location.href = `/product/${encodeURIComponent(code)}`;
+    navigateTo(`/product/${encodeURIComponent(code)}`);
   };
 
   if (!settingsLoaded && !selectedProduct) {
@@ -309,7 +310,7 @@ export default function ProductPage({ skuProp }) {
                     onClick={() => {
                       if (!user) {
                         const current = window.location.pathname + window.location.search;
-                        window.location.href = `/login?redirect=${encodeURIComponent(current)}`;
+                        navigateTo(`/login?redirect=${encodeURIComponent(current)}`);
                         return;
                       }
                       toggleFavorite(selectedProduct.id);
@@ -363,7 +364,7 @@ export default function ProductPage({ skuProp }) {
                     onClick={() => {
                       if (!user) {
                         const current = window.location.pathname + window.location.search;
-                        window.location.href = `/login?redirect=${encodeURIComponent(current)}`;
+                        navigateTo(`/login?redirect=${encodeURIComponent(current)}`);
                         return;
                       }
                       toggleCompare(selectedProduct.id);

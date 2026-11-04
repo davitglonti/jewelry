@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Home, ShoppingBag, MessageCircle } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
+import { navigateTo } from '../utils/navigation';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import FavoritesModal from '../components/modals/FavoritesModal';
@@ -142,7 +143,7 @@ export default function NotFoundPage() {
         isOpen={showFavoritesModal}
         onClose={() => setShowFavoritesModal(false)}
         onSelectProduct={(item) => {
-          window.location.href = `/?item=${encodeURIComponent(item.sku || item.id)}`;
+          navigateTo(`/product/${encodeURIComponent(item.sku || item.id)}`);
         }}
       />
     </div>

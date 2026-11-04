@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Clock, Calendar, Share2, Check, MessageCircle, Send, Sparkles } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
+import { navigateTo } from '../utils/navigation';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import FavoritesModal from '../components/modals/FavoritesModal';
@@ -338,7 +339,7 @@ export default function BlogPostPage({ slugProp }) {
         isOpen={showFavoritesModal}
         onClose={() => setShowFavoritesModal(false)}
         onSelectProduct={(product) => {
-          window.location.href = `/product/${encodeURIComponent(product.sku || product.id)}`;
+          navigateTo(`/product/${encodeURIComponent(product.sku || product.id)}`);
         }}
       />
     </div>

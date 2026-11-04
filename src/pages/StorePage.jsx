@@ -1,6 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { DEFAULT_SETTINGS } from '../data/defaultSettings';
 import { useStore } from '../context/StoreContext';
+import { navigateTo } from '../utils/navigation';
 import InfoCards from '../components/store/InfoCards';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
@@ -32,10 +33,10 @@ export default function StorePage() {
     }
   }, []);
 
-  // პროდუქტზე დაჭერისას გადავდივართ ცალკე გვერდზე
+  // პროდუქტზე დაჭერისას გადავდივართ ცალკე გვერდზე (SPA კლიენტური ნავიგაცია მომენტალური გახსნისთვის)
   const openProductModal = (product) => {
     const code = product.sku || product.id;
-    window.location.href = `/product/${encodeURIComponent(code)}`;
+    navigateTo(`/product/${encodeURIComponent(code)}`);
   };
 
   const slides = siteSettings?.heroSlides?.length > 0 ? siteSettings.heroSlides : DEFAULT_SETTINGS.heroSlides;

@@ -1,13 +1,14 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import StorePage from './pages/StorePage';
 import CatalogPage from './pages/CatalogPage';
+import ProductPage from './pages/ProductPage';
 import CompareFloatingBar from './components/store/CompareFloatingBar';
 import { useStore } from './context/StoreContext';
+import { initSpaNavigation } from './utils/navigation';
 
 // მეორადი და ადმინ გვერდების lazy ჩატვირთვა (Code Splitting)
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
-const ProductPage = lazy(() => import('./pages/ProductPage'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
 const SizeGuidePage = lazy(() => import('./pages/SizeGuidePage'));
@@ -36,7 +37,12 @@ export default function App() {
       setCurrentPath(window.location.pathname.replace(/\/+$/, "") || "/");
     };
     window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+    const cleanupSpa = initSpaNavigation();
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      cleanupSpa();
+    };
   }, []);
 
   if (currentPath === "/admin") {
@@ -78,11 +84,7 @@ export default function App() {
       </Suspense>
     );
   } else if (currentPath === "/product" || currentPath.startsWith("/product/") || currentPath.startsWith("/product?")) {
-    content = (
-      <Suspense fallback={<PageLoader />}>
-        <ProductPage />
-      </Suspense>
-    );
+    content = <ProductPage key={currentPath} />;
   } else if (currentPath === "/login") {
     content = (
       <Suspense fallback={<PageLoader />}>

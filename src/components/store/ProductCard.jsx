@@ -4,6 +4,7 @@ import { useStore } from '../../context/StoreContext';
 import { useAuth } from '../../context/AuthContext';
 import { pick, formatPrice, calculateDiscountPercent } from '../../utils/i18n';
 import { getOptimizedImageUrl, getProductCardSrcSet } from '../../utils/imageUtils';
+import { navigateTo } from '../../utils/navigation';
 
 export default function ProductCard({
   product,
@@ -103,7 +104,7 @@ export default function ProductCard({
               e.stopPropagation();
               if (!user) {
                 const current = window.location.pathname + window.location.search;
-                window.location.href = `/login?redirect=${encodeURIComponent(current)}`;
+                navigateTo(`/login?redirect=${encodeURIComponent(current)}`);
                 return;
               }
               toggleFavorite(product.id);
@@ -128,7 +129,7 @@ export default function ProductCard({
               e.stopPropagation();
               if (!user) {
                 const current = window.location.pathname + window.location.search;
-                window.location.href = `/login?redirect=${encodeURIComponent(current)}`;
+                navigateTo(`/login?redirect=${encodeURIComponent(current)}`);
                 return;
               }
               toggleCompare(product.id);

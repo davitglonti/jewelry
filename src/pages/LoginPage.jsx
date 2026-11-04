@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Mail, Lock, Eye, EyeOff, LogIn, ArrowLeft, Sparkles, AlertCircle, KeyRound, CheckCircle2, Send, ShieldCheck, RefreshCw } from 'lucide-react';
 import { useAuth, getAuthErrorMessage } from '../context/AuthContext';
 import { useStore } from '../context/StoreContext';
+import { navigateTo } from '../utils/navigation';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 
@@ -69,7 +70,7 @@ export default function LoginPage({ initialMode = 'login' }) {
     setLoading(true);
     try {
       await login(email, password);
-      window.location.href = redirectTarget;
+      navigateTo(redirectTarget);
     } catch (err) {
       setErrorMessage(getAuthErrorMessage(err, lang, 'login'));
       setLoading(false);
@@ -448,7 +449,7 @@ export default function LoginPage({ initialMode = 'login' }) {
                   <button
                     type="button"
                     onClick={() => {
-                      window.location.href = '/login';
+                      navigateTo('/login');
                     }}
                     className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold text-sm tracking-wider uppercase flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.99] transition-all"
                   >

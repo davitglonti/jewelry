@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Mail, Lock, User, Eye, EyeOff, UserPlus, ArrowLeft, Sparkles, AlertCircle } from 'lucide-react';
 import { useAuth, getAuthErrorMessage } from '../context/AuthContext';
 import { useStore } from '../context/StoreContext';
+import { navigateTo } from '../utils/navigation';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 
@@ -52,7 +53,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await register(email, password, name);
-      window.location.href = redirectTarget;
+      navigateTo(redirectTarget);
     } catch (err) {
       setErrorMessage(getAuthErrorMessage(err, lang));
       setLoading(false);

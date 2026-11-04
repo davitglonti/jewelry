@@ -3,6 +3,7 @@ import {
   Ruler, Sparkles, AlertCircle, MessageCircle, ArrowRight
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
+import { navigateTo } from '../utils/navigation';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import FavoritesModal from '../components/modals/FavoritesModal';
@@ -592,7 +593,7 @@ export default function SizeGuidePage() {
         onClose={() => setShowFavoritesModal(false)}
         onSelectProduct={(prod) => {
           setShowFavoritesModal(false);
-          window.location.href = `/product/${encodeURIComponent(prod.sku || prod.id)}`;
+          navigateTo(`/product/${encodeURIComponent(prod.sku || prod.id)}`);
         }}
       />
     </div>

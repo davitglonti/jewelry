@@ -2,6 +2,7 @@ import React from 'react';
 import { Sparkles, Globe, Sun, Moon, Heart, Menu, X, PlusCircle, User, LogOut, LogIn, Package } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { useAuth } from '../../context/AuthContext';
+import { navigateTo } from '../../utils/navigation';
 
 export default function Navbar({
   lang, setLang,
@@ -15,7 +16,7 @@ export default function Navbar({
   const handleFavoritesClick = () => {
     if (!user) {
       const current = window.location.pathname + window.location.search;
-      window.location.href = `/login?redirect=${encodeURIComponent(current)}`;
+      navigateTo(`/login?redirect=${encodeURIComponent(current)}`);
       return;
     }
     setShowFavoritesModal(true);
@@ -24,7 +25,7 @@ export default function Navbar({
   const handleLogout = async () => {
     try {
       await logout();
-      window.location.href = '/';
+      navigateTo('/');
     } catch (err) {
       console.error('Logout error:', err);
     }

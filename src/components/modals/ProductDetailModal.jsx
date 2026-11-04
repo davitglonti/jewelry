@@ -4,6 +4,7 @@ import { pick, formatPrice, calculateDiscountPercent } from '../../utils/i18n';
 import { shareProductLink } from '../../utils/shareUtils';
 import { useStore } from '../../context/StoreContext';
 import { useAuth } from '../../context/AuthContext';
+import { navigateTo } from '../../utils/navigation';
 import StockStatusBadge from '../store/StockStatusBadge';
 import RingSizerModal from './RingSizerModal';
 import ProductMediaGallery from '../store/ProductMediaGallery';
@@ -129,7 +130,7 @@ export default function ProductDetailModal({
                     onClick={() => {
                       if (!user) {
                         const current = window.location.pathname + window.location.search;
-                        window.location.href = `/login?redirect=${encodeURIComponent(current)}`;
+                        navigateTo(`/login?redirect=${encodeURIComponent(current)}`);
                         return;
                       }
                       toggleCompare(selectedProduct.id);

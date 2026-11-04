@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Clock, Calendar, ArrowRight, BookOpen, Sparkles } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
+import { navigateTo } from '../utils/navigation';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import FavoritesModal from '../components/modals/FavoritesModal';
@@ -41,7 +42,7 @@ export default function BlogPage() {
   const remainingArticles = filteredArticles.slice(1);
 
   const openArticle = (art) => {
-    window.location.href = `/blog/${encodeURIComponent(art.slug || art.id)}`;
+    navigateTo(`/blog/${encodeURIComponent(art.slug || art.id)}`);
   };
 
   return (
@@ -263,7 +264,7 @@ export default function BlogPage() {
         isOpen={showFavoritesModal}
         onClose={() => setShowFavoritesModal(false)}
         onSelectProduct={(product) => {
-          window.location.href = `/product/${encodeURIComponent(product.sku || product.id)}`;
+          navigateTo(`/product/${encodeURIComponent(product.sku || product.id)}`);
         }}
       />
     </div>
