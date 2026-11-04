@@ -1,8 +1,9 @@
-import React from 'react';
-import { Sparkles, Globe, Sun, Moon, Heart, Menu, X, PlusCircle, User, LogOut, LogIn, Package } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sparkles, Globe, Sun, Moon, Heart, Menu, X, PlusCircle, User, LogOut, LogIn, Package, ShieldCheck, Shield } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { useAuth } from '../../context/AuthContext';
 import { navigateTo, switchLanguage } from '../../utils/navigation';
+import UserProfileModal from '../modals/UserProfileModal';
 
 export default function Navbar({
   lang, setLang,
@@ -11,7 +12,8 @@ export default function Navbar({
   isMobileMenuOpen, setIsMobileMenuOpen
 }) {
   const { siteSettings } = useStore();
-  const { user, logout } = useAuth();
+  const { user, userRole, logout } = useAuth();
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const handleToggleLang = () => {
     const nextLang = lang === "ka" ? "en" : "ka";
@@ -133,20 +135,50 @@ export default function Navbar({
             {/* Desktop Auth Section */}
             {user ? (
               <div className="flex items-center gap-2 pl-2 border-l border-stone-500/20">
-                <div
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border flex items-center gap-2 ${
-                    darkMode ? "border-stone-800 bg-stone-900/80 text-stone-200" : "border-stone-200 bg-stone-100 text-stone-800"
+                <button
+                  type="button"
+                  onClick={() => setShowProfileModal(true)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer ${
+                    darkMode
+                      ? "border-stone-800 bg-stone-900/80 text-stone-200 hover:border-amber-500/50 hover:bg-stone-800"
+                      : "border-stone-200 bg-stone-100 text-stone-800 hover:border-amber-500 hover:bg-stone-200"
                   }`}
-                  title={user.email}
+                  title={lang === "ka" ? `პროფილი: ${user.displayName || user.email}` : `Profile: ${user.displayName || user.email}`}
                 >
-                  <div className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-500 font-bold text-[10px] flex items-center justify-center shrink-0">
-                    {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
-                  </div>
+                  {user.photoURL ? (
+                    <img
+                      src={user.photoURL}
+                      alt="Avatar"
+                      className="w-5 h-5 rounded-full object-cover border border-amber-500/50 shrink-0"
+                    />
+                  ) : (
+                    <div className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-500 font-bold text-[10px] flex items-center justify-center shrink-0">
+                      {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+
                   <span className="max-w-[120px] truncate hidden xl:inline">
                     {user.displayName || user.email?.split('@')[0]}
                   </span>
-                  <span className="text-[10px] text-amber-500 font-semibold uppercase tracking-wider">VIP</span>
-                </div>
+
+                  {userRole === 'superadmin' ? (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-xs">
+                      ADMIN
+                    </span>
+                  ) : userRole === 'admin' ? (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/40">
+                      ADMIN
+                    </span>
+                  ) : userRole === 'moderator' ? (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-purple-500/20 text-purple-400 border border-purple-500/40">
+                      MOD
+                    </span>
+                  ) : (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                      CLIENT
+                    </span>
+                  )}
+                </button>
 
                 <button
                   type="button"
@@ -238,20 +270,50 @@ export default function Navbar({
           <div className={`lg:hidden border-b p-5 space-y-4 animate-fadeIn ${darkMode ? "bg-[#0c0b0a] border-stone-800" : "bg-white border-stone-200"}`}>
             {/* User status mobile banner */}
             {user ? (
-              <div className={`p-3.5 rounded-2xl border flex items-center justify-between ${darkMode ? "bg-stone-900/80 border-amber-500/25" : "bg-stone-100 border-stone-200"}`}>
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center font-bold text-xs shrink-0">
-                    {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
+              <div className={`p-3 rounded-2xl border flex items-center justify-between gap-3 ${darkMode ? "bg-stone-900/80 border-amber-500/25" : "bg-stone-100 border-stone-200"}`}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setShowProfileModal(true);
+                  }}
+                  className="flex items-center gap-2.5 min-w-0 flex-1 text-left group"
+                >
+                  <div className="relative shrink-0">
+                    {user.photoURL ? (
+                      <img
+                        src={user.photoURL}
+                        alt="Avatar"
+                        className="w-9 h-9 rounded-full object-cover border border-amber-500/50 shadow-sm"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center font-bold text-xs shrink-0">
+                        {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
+                      </div>
+                    )}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold truncate">{user.displayName || user.email}</p>
-                    <p className="text-[10px] text-amber-500">{lang === "ka" ? "ავტორიზებული" : "Signed In"}</p>
+                    <p className="text-xs font-semibold truncate group-hover:text-amber-500 transition-colors">
+                      {user.displayName || user.email}
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      {userRole === 'superadmin' ? (
+                        <span className="text-[10px] font-bold text-amber-400">Super Admin</span>
+                      ) : userRole === 'admin' ? (
+                        <span className="text-[10px] font-semibold text-blue-400">ადმინისტრატორი</span>
+                      ) : userRole === 'moderator' ? (
+                        <span className="text-[10px] font-semibold text-purple-400">მოდერატორი</span>
+                      ) : (
+                        <span className="text-[10px] text-amber-500">{lang === "ka" ? "მომხმარებელი (პროფილი ⚙️)" : "Member (Profile ⚙️)"}</span>
+                      )}
+                    </div>
                   </div>
-                </div>
+                </button>
+
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="p-2 rounded-xl text-stone-400 hover:text-red-400 transition-colors"
+                  className="p-2 rounded-xl text-stone-400 hover:text-red-400 transition-colors shrink-0"
                   title={lang === "ka" ? "გასვლა" : "Sign out"}
                 >
                   <LogOut className="w-4 h-4" />
@@ -326,6 +388,14 @@ export default function Navbar({
           </div>
         )}
       </header>
+
+      {/* User Profile & Avatar Customization Modal */}
+      <UserProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        lang={lang}
+        darkMode={darkMode}
+      />
     </>
   );
 }

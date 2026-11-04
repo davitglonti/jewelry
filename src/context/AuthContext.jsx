@@ -59,6 +59,7 @@ export const getAuthErrorMessage = (error, lang = 'ka', action = 'login') => {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [userRole, setUserRole] = useState('guest'); // 'guest' | 'member' | 'moderator' | 'admin' | 'superadmin'
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -78,11 +79,32 @@ export function AuthProvider({ children }) {
         const { onAuthStateChanged } = await import('firebase/auth');
         if (isCancelled) return;
 
-        unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-          if (!isCancelled) {
-            setUser(currentUser);
+        unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+          if (isCancelled) return;
+          setUser(currentUser);
+
+          if (!currentUser) {
+            setUserRole('guest');
             setLoading(false);
+            return;
           }
+
+          // როლის განსაზღვრა (Super Admin / Admin / Moderator / Member)
+          try {
+            const { checkUserIsAdmin } = await import('../lib/adminAuth');
+            const { db } = await import('../lib/firebase');
+            const check = await checkUserIsAdmin(currentUser, db);
+            if (!isCancelled) {
+              if (check.isSuperAdmin) setUserRole('superadmin');
+              else if (check.role === 'moderator') setUserRole('moderator');
+              else if (check.isAdmin) setUserRole('admin');
+              else setUserRole('member');
+            }
+          } catch (e) {
+            if (!isCancelled) setUserRole('member');
+          }
+
+          if (!isCancelled) setLoading(false);
         });
       } catch (err) {
         console.warn('Firebase Auth defer init error:', err);
@@ -194,12 +216,26 @@ export function AuthProvider({ children }) {
     await fbConfirmPasswordReset(auth, actionCode, newPassword);
   };
 
+  const updateUserProfile = async ({ displayName, photoURL }) => {
+    const auth = await getLazyAuth();
+    if (!auth || !auth.currentUser) throw new Error('ავტორიზაცია არ მოიძებნა');
+    const { updateProfile } = await import('firebase/auth');
+    const updates = {};
+    if (displayName !== undefined) updates.displayName = displayName.trim();
+    if (photoURL !== undefined) updates.photoURL = photoURL;
+
+    await updateProfile(auth.currentUser, updates);
+    setUser({ ...auth.currentUser, ...updates });
+  };
+
   const value = {
     user,
+    userRole,
     loading,
     register,
     login,
     logout,
+    updateUserProfile,
     resetPassword,
     verifyResetCode,
     confirmReset,
@@ -218,11 +254,13 @@ export const useAuth = () => {
   if (!context) {
     return {
       user: null,
+      userRole: 'guest',
       loading: false,
       isAuthenticated: false,
       register: async () => {},
       login: async () => {},
       logout: async () => {},
+      updateUserProfile: async () => {},
       resetPassword: async () => {},
       verifyResetCode: async () => {},
       confirmReset: async () => {},
