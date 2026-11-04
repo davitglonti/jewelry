@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { Lock } from 'lucide-react';
+import { Lock, AlertCircle, ShieldAlert } from 'lucide-react';
+import { checkUserIsAdmin } from '../../lib/adminAuth';
+import { db } from '../../lib/firebase';
 
 export default function AdminLoginView({ darkMode = true, auth, signInWithEmailAndPassword }) {
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -15,12 +18,26 @@ export default function AdminLoginView({ darkMode = true, auth, signInWithEmailA
       return;
     }
 
+    setLoading(true);
+
     try {
-      await signInWithEmailAndPassword(
+      const userCred = await signInWithEmailAndPassword(
         auth,
         adminEmail.trim(),
         adminPassword.trim()
       );
+
+      // გადავამოწმოთ, ნამდვილად აქვს თუ არა ამ მომხმარებელს ადმინისტრატორის უფლებები
+      const adminCheck = await checkUserIsAdmin(userCred.user, db);
+      if (!adminCheck.isAdmin) {
+        // თუ ჩვეულებრივი მომხმარებელია, დაუყოვნებლივ გამოვლოგოთ
+        const { signOut } = await import('firebase/auth');
+        await signOut(auth);
+        setLoginError(`წვდომა შეზღუდულია: ანგარიშს (${userCred.user.email}) არ გააჩნია ადმინისტრატორის უფლებები!`);
+        setLoading(false);
+        return;
+      }
+
       setLoginError('');
     } catch (err) {
       console.error('Firebase Login Error:', err.code, err.message);
@@ -35,6 +52,8 @@ export default function AdminLoginView({ darkMode = true, auth, signInWithEmailA
       } else {
         setLoginError(`შეცდომა: ${err.code || err.message}`);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -48,15 +67,16 @@ export default function AdminLoginView({ darkMode = true, auth, signInWithEmailA
         <Lock className="w-6 h-6" />
       </div>
       <h3 className="font-serif text-2xl">ადმინისტრატორის ავტორიზაცია</h3>
-      <p className="text-xs opacity-65">შეიყვანეთ თქვენი ელ-ფოსტა და პაროლი</p>
+      <p className="text-xs opacity-65">შეიყვანეთ ადმინისტრატორის ელ-ფოსტა და პაროლი</p>
 
       <form onSubmit={handleLogin} className="space-y-3">
         <input
           type="email"
           value={adminEmail}
           onChange={(e) => setAdminEmail(e.target.value)}
-          placeholder="ელფოსტა"
+          placeholder="ადმინის ელფოსტა"
           required
+          disabled={loading}
           className={`w-full px-4 py-3 rounded-xl text-xs border outline-none ${
             darkMode ? 'bg-stone-900 border-stone-700 text-white' : 'bg-stone-100 border-stone-300 text-stone-900'
           }`}
@@ -67,16 +87,23 @@ export default function AdminLoginView({ darkMode = true, auth, signInWithEmailA
           onChange={(e) => setAdminPassword(e.target.value)}
           placeholder="პაროლი..."
           required
+          disabled={loading}
           className={`w-full px-4 py-3 rounded-xl text-xs border outline-none ${
             darkMode ? 'bg-stone-900 border-stone-700 text-white' : 'bg-stone-100 border-stone-300 text-stone-900'
           }`}
         />
-        {loginError && <p className="text-xs text-red-400 font-medium">{loginError}</p>}
+        {loginError && (
+          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2 text-left">
+            <ShieldAlert className="w-4 h-4 shrink-0" />
+            <span>{loginError}</span>
+          </div>
+        )}
         <button
           type="submit"
-          className="w-full py-3 rounded-xl bg-amber-500 text-black font-semibold text-sm hover:brightness-110 transition-all"
+          disabled={loading}
+          className="w-full py-3 rounded-xl bg-amber-500 text-black font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-50"
         >
-          შესვლა
+          {loading ? 'მოწმდება...' : 'შესვლა'}
         </button>
       </form>
     </div>

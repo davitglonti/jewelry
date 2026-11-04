@@ -1,44 +1,96 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
+    // 1. მთავარი ადმინისტრატორი (Super Admin / სისტემის მფლობელი)
+    function isSuperAdmin() {
+      return request.auth != null && 
+             request.auth.token.email != null &&
+             request.auth.token.email.lower() == 'datiglonti@gmail.com';
+    }
+
+    // 2. დინამიური ადმინისტრატორი (/admins კოლექციიდან)
+    function isDynamicAdmin() {
+      return request.auth != null &&
+             request.auth.token.email != null &&
+             exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower())) &&
+             get(/databases/$(database)/documents/admins/$(request.auth.token.email.lower())).data.isActive != false;
+    }
+
+    // 3. ნებისმიერი ავტორიზებული ადმინისტრატორი
+    function isAdmin() {
+      return isSuperAdmin() || isDynamicAdmin();
+    }
+
+    // ==========================================
+    // ადმინისტრატორების მართვა (Admins Collection)
+    // ==========================================
+    // - get: ავტორიზებულ მომხმარებელს შეუძლია გადაამოწმოს მხოლოდ საკუთარი სტატუსი
+    //        (ან სრულ სიას კითხულობს ადმინი)
+    // - list: სრული სიის წაკითხვა შეუძლია მხოლოდ ადმინს
+    // - write: ადმინისტრატორების დამატება/წაშლა შეუძლია მხოლოდ მთავარ ადმინს (Super Admin)
+    match /admins/{adminEmail} {
+      allow get: if request.auth != null && (
+        isAdmin() || 
+        (request.auth.token.email != null && request.auth.token.email.lower() == adminEmail.lower())
+      );
+      allow list: if isAdmin();
+      allow write: if isSuperAdmin();
+    }
+
+    // ==========================================
     // პროდუქტების კოლექცია (Products collection)
-    // წაკითხვა ყველასთვის ღიაა (სტუმრებისთვისაც).
-    // დამატება, რედაქტირება და წაშლა მხოლოდ ადმინისტრატორს შეუძლია (Admin Dashboard).
+    // ==========================================
+    // - წაკითხვა: ყველასთვის ღიაა (სტუმრებისთვისაც)
+    // - დამატება, რედაქტირება, წაშლა: მხოლოდ ადმინისტრატორს!
     match /products/{productId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
-    // მაღაზიის პარამეტრები და სექციები (Settings & Home customization)
+    // ==========================================
+    // მაღაზიის პარამეტრები (Settings & Layout)
+    // ==========================================
+    // - წაკითხვა: ყველასთვის ღიაა
+    // - შეცვლა: მხოლოდ ადმინისტრატორს!
     match /aurelia/{document=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
+    // ==========================================
     // ბლოგის სტატიები (Blog articles)
+    // ==========================================
+    // - წაკითხვა: ყველასთვის ღიაა
+    // - შექმნა, რედაქტირება, წაშლა: მხოლოდ ადმინისტრატორს!
     match /articles/{articleId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
-    // შემოსული მოთხოვნები (Inquiries)
+    // ==========================================
+    // შემოსული მოთხოვნები (Inquiries - პერსონალური მონაცემები)
+    // ==========================================
+    // - შექმნა (create): ნებისმიერ სტუმარს/მომხმარებელს
+    // - წაკითხვა, შეცვლა, წაშლა: მხოლოდ ადმინისტრატორს! (დაცულია კონფიდენციალურობა)
     match /inquiries/{inquiryId} {
       allow create: if true;
-      allow read, update, delete: if request.auth != null;
+      allow read, update, delete: if isAdmin();
     }
 
+    // ==========================================
     // ნივთების ნახვების სტატისტიკა (Product Stats)
-    // წაკითხვა და წაშლა: მხოლოდ ადმინისტრატორს
-    // ჩაწერა: ყველას, მხოლოდ views +1, uniqueViews +0 ან +1, და lastViewedAt
+    // ==========================================
+    // - წაკითხვა და წაშლა: მხოლოდ ადმინისტრატორს
+    // - ჩაწერა (ნახვის დაფიქსირება): საჯარო (მხოლოდ views +1, uniqueViews +0/1)
     match /productStats/{productId} {
-      allow read, delete: if request.auth != null;
+      allow read, delete: if isAdmin();
 
       allow create: if request.resource.data.keys().hasOnly(['views', 'uniqueViews', 'lastViewedAt'])
                     && request.resource.data.views == 1
                     && (request.resource.data.uniqueViews == 0 || request.resource.data.uniqueViews == 1);
 
-      allow update: if request.auth != null
+      allow update: if isAdmin()
                     || (
                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'uniqueViews', 'lastViewedAt'])
                       && request.resource.data.views == resource.data.views + 1

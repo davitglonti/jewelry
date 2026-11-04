@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   Sun, Moon, ExternalLink, LogOut, CheckCircle2,
-  AlertCircle, X, Cloud, Database
+  AlertCircle, X, Cloud, Database, ShieldAlert
 } from 'lucide-react';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../lib/firebaseAuth';
+import { db } from '../lib/firebase';
+import { checkUserIsAdmin } from '../lib/adminAuth';
 import { useStore } from '../context/StoreContext';
 
 import AdminLoginView from '../components/admin/AdminLoginView';
@@ -14,6 +16,7 @@ import AdminHomeTab from '../components/admin/AdminHomeTab';
 import AdminBlogTab from '../components/admin/AdminBlogTab';
 import AdminInquiriesTab from '../components/admin/AdminInquiriesTab';
 import AdminSettingsTab from '../components/admin/AdminSettingsTab';
+import AdminManagementTab from '../components/admin/AdminManagementTab';
 import StatsTab from '../components/admin/StatsTab';
 
 export default function AdminPage() {
@@ -28,6 +31,8 @@ export default function AdminPage() {
   } = useStore();
 
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [unauthorizedUser, setUnauthorizedUser] = useState(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [activeAuth, setActiveAuth] = useState(auth);
   const [currentUserEmail, setCurrentUserEmail] = useState('');
@@ -67,16 +72,41 @@ export default function AdminPage() {
       }
       setActiveAuth(authInstance);
 
-      unsub = onAuthStateChanged(authInstance, (user) => {
+      unsub = onAuthStateChanged(authInstance, async (user) => {
         if (isCancelled) return;
-        setIsAdminAuthenticated(!!user);
-        if (user && user.email) {
+
+        if (!user) {
+          setIsAdminAuthenticated(false);
+          setUnauthorizedUser(null);
+          setIsSuperAdmin(false);
+          setCurrentUserEmail('');
+          try {
+            localStorage.removeItem('isAdmin');
+            sessionStorage.removeItem('isAdmin');
+          } catch (e) {}
+          setAuthChecked(true);
+          return;
+        }
+
+        // მკაცრი გადამოწმება: ნამდვილად აქვს თუ არა ამ ანგარიშს ადმინისტრატორის უფლებები
+        const adminCheck = await checkUserIsAdmin(user, db);
+        if (isCancelled) return;
+
+        if (adminCheck.isAdmin) {
+          setIsAdminAuthenticated(true);
+          setUnauthorizedUser(null);
+          setIsSuperAdmin(adminCheck.isSuperAdmin);
           setCurrentUserEmail(user.email);
           try {
             localStorage.setItem('isAdmin', 'true');
             sessionStorage.setItem('isAdmin', 'true');
           } catch (e) {}
         } else {
+          // მომხმარებელი ავტორიზებულია, მაგრამ ჩვეულებრივი იუზერია (არ არის ადმინი)
+          setIsAdminAuthenticated(false);
+          setUnauthorizedUser(user.email);
+          setIsSuperAdmin(false);
+          setCurrentUserEmail(user.email);
           try {
             localStorage.removeItem('isAdmin');
             sessionStorage.removeItem('isAdmin');
@@ -92,12 +122,20 @@ export default function AdminPage() {
     };
   }, []);
 
-  const handleAdminLogout = () => {
+  const handleAdminLogout = async () => {
     try {
       localStorage.removeItem('isAdmin');
       sessionStorage.removeItem('isAdmin');
     } catch (e) {}
-    if (activeAuth || auth) signOut(activeAuth || auth);
+    setIsAdminAuthenticated(false);
+    setUnauthorizedUser(null);
+    setIsSuperAdmin(false);
+    setCurrentUserEmail('');
+    if (activeAuth || auth) {
+      try {
+        await signOut(activeAuth || auth);
+      } catch (e) {}
+    }
   };
 
   return (
@@ -198,6 +236,37 @@ export default function AdminPage() {
       <main className="w-full min-w-0 max-w-[1720px] mx-auto p-3 sm:p-6 lg:p-8 space-y-5">
         {!authChecked ? (
           <div className="text-center py-20 opacity-60 text-sm">იტვირთება...</div>
+        ) : unauthorizedUser ? (
+          <div
+            className={`p-8 sm:p-10 max-w-md mx-auto mt-12 rounded-3xl border text-center space-y-5 ${
+              darkMode ? 'bg-[#121110] border-stone-800' : 'bg-white border-stone-200 shadow-xl'
+            }`}
+          >
+            <div className="w-14 h-14 rounded-full bg-red-500/15 text-red-400 flex items-center justify-center mx-auto border border-red-500/30">
+              <ShieldAlert className="w-7 h-7" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-serif text-2xl font-medium">წვდომა შეზღუდულია</h3>
+              <p className="text-xs opacity-75 leading-relaxed">
+                თქვენ ავტორიზებული ხართ როგორც <strong className="text-amber-400">{unauthorizedUser}</strong>, მაგრამ ამ ანგარიშს არ გააჩნია ადმინისტრატორის უფლებები.
+              </p>
+            </div>
+            <div className="pt-2 flex flex-col gap-2.5">
+              <button
+                type="button"
+                onClick={handleAdminLogout}
+                className="w-full py-2.5 px-4 rounded-xl border border-stone-700 bg-stone-900 text-stone-200 text-xs font-semibold hover:border-amber-500 hover:text-white transition-all"
+              >
+                სხვა ანგარიშით შესვლა (Logout)
+              </button>
+              <a
+                href="/"
+                className="w-full py-2.5 px-4 rounded-xl bg-amber-500 text-black text-xs font-semibold uppercase tracking-wider hover:brightness-110 transition-all text-center"
+              >
+                მაღაზიაში დაბრუნება
+              </a>
+            </div>
+          </div>
         ) : !isAdminAuthenticated ? (
           <AdminLoginView
             darkMode={darkMode}
@@ -249,7 +318,8 @@ export default function AdminPage() {
                 { id: 'blog', label: `ბლოგი & სიახლეები (${(articles || []).length})` },
                 { id: 'inquiries', label: `შემოსული მოთხოვნები (${inquiries.length})` },
                 { id: 'stats', label: lang === 'ka' ? 'სტატისტიკა 📊' : 'Statistics 📊' },
-                { id: 'site', label: 'საიტის პარამეტრები' }
+                { id: 'site', label: 'საიტის პარამეტრები' },
+                { id: 'admins', label: 'ადმინისტრატორები 🛡️' }
               ].map((tab) => {
                 const isSelected =
                   adminTab === tab.id ||
@@ -362,6 +432,14 @@ export default function AdminPage() {
                 inquiries={inquiries}
                 syncData={syncData}
                 darkMode={darkMode}
+              />
+            )}
+
+            {adminTab === 'admins' && (
+              <AdminManagementTab
+                darkMode={darkMode}
+                currentUserEmail={currentUserEmail}
+                isSuperAdmin={isSuperAdmin}
               />
             )}
           </div>
