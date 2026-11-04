@@ -1,31 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import {
-  ShieldCheck, ShieldAlert, UserPlus, Trash2, CheckCircle2,
-  AlertCircle, Lock, Power, RefreshCw, Mail
+  ShieldCheck, UserPlus, Trash2, CheckCircle2,
+  AlertCircle, Lock, Power, RefreshCw, Mail, Key, Dices, Copy, Check, Users
 } from 'lucide-react';
 import {
   SUPER_ADMIN_EMAIL,
   getAdminsList,
-  addAdminAccount,
+  createAdminAccountApi,
   removeAdminAccount,
-  toggleAdminAccountStatus
+  toggleAdminAccountStatus,
+  updateAdminRole,
+  generateSecureTempPassword
 } from '../../lib/adminAuth';
 import { db } from '../../lib/firebase';
 
 export default function AdminManagementTab({
   darkMode = true,
+  currentUser = null,
   currentUserEmail = '',
   isSuperAdmin = false
 }) {
   const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState(() => generateSecureTempPassword());
+  const [selectedRole, setSelectedRole] = useState('moderator'); // 'moderator' | 'admin'
   const [actionLoading, setActionLoading] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
+  const [createdCredentials, setCreatedCredentials] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   const showFeedback = (type, message) => {
     setFeedback({ type, message });
-    setTimeout(() => setFeedback({ type: '', message: '' }), 5000);
+    setTimeout(() => setFeedback({ type: '', message: '' }), 6000);
   };
 
   const loadAdmins = async () => {
@@ -45,32 +52,70 @@ export default function AdminManagementTab({
     loadAdmins();
   }, []);
 
-  const handleAddAdmin = async (e) => {
+  const handleGeneratePassword = () => {
+    setNewPassword(generateSecureTempPassword());
+  };
+
+  const handleCreateAccount = async (e) => {
     e.preventDefault();
-    if (!newEmail.trim()) return;
+    if (!newEmail.trim() || !newPassword.trim()) return;
 
     setActionLoading(true);
+    setCreatedCredentials(null);
+
     try {
-      await addAdminAccount(db, newEmail.trim(), currentUserEmail);
-      showFeedback('success', `ადმინისტრატორი ${newEmail.trim()} წარმატებით დაემატა`);
+      const res = await createAdminAccountApi(currentUser, {
+        email: newEmail.trim(),
+        password: newPassword.trim(),
+        role: selectedRole
+      });
+
+      setCreatedCredentials({
+        email: res.email,
+        password: res.temporaryPassword,
+        role: res.role
+      });
+
+      showFeedback('success', `ანგარიში ${res.email} წარმატებით შეიქმნა (${res.role === 'moderator' ? 'მოდერატორი' : 'ადმინისტრატორი'})`);
       setNewEmail('');
+      setNewPassword(generateSecureTempPassword());
       await loadAdmins();
     } catch (err) {
-      showFeedback('error', err.message || 'დამატებისას დაფიქსირდა შეცდომა');
+      showFeedback('error', err.message || 'ანგარიშის შექმნისას დაფიქსირდა შეცდომა');
     } finally {
       setActionLoading(false);
     }
   };
 
+  const handleCopyCredentials = () => {
+    if (!createdCredentials) return;
+    const roleLabel = createdCredentials.role === 'moderator'
+      ? 'მოდერატორი (მხოლოდ პროდუქცია & ბლოგი)'
+      : 'სრული ადმინისტრატორი';
+
+    const text = `✨ matare.store — სამუშაო წვდომა
+
+🔗 ბმული: https://www.matare.store/admin
+📧 ელ-ფოსტა: ${createdCredentials.email}
+🔑 დროებითი პაროლი: ${createdCredentials.password}
+🛡️ როლი: ${roleLabel}
+
+⚠️ შენიშვნა: პირველივე შესვლისას სისტემა ავტომატურად მოგთხოვთ თქვენი პირადი, საიდუმლო პაროლის დაყენებას.`;
+
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 3000);
+  };
+
   const handleRemove = async (email) => {
-    if (!window.confirm(`დარწმუნებული ხართ, რომ გსურთ ${email}-ისთვის ადმინისტრატორის წვდომის წაშლა?`)) {
+    if (!window.confirm(`დარწმუნებული ხართ, რომ გსურთ ${email}-ისთვის წვდომის წაშლა?`)) {
       return;
     }
 
     setActionLoading(true);
     try {
       await removeAdminAccount(db, email);
-      showFeedback('success', `ადმინისტრატორი ${email} წარმატებით წაიშალა`);
+      showFeedback('success', `მომხმარებელი ${email} წარმატებით წაიშალა`);
       await loadAdmins();
     } catch (err) {
       showFeedback('error', err.message || 'წაშლისას დაფიქსირდა შეცდომა');
@@ -92,6 +137,19 @@ export default function AdminManagementTab({
     }
   };
 
+  const handleChangeRole = async (email, newRole) => {
+    setActionLoading(true);
+    try {
+      await updateAdminRole(db, email, newRole);
+      showFeedback('success', `როლი შეიცვალა: ${email} -> ${newRole === 'moderator' ? 'მოდერატორი' : 'ადმინისტრატორი'}`);
+      await loadAdmins();
+    } catch (err) {
+      showFeedback('error', err.message || 'როლის შეცვლისას დაფიქსირდა შეცდომა');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* Header Banner */}
@@ -106,14 +164,14 @@ export default function AdminManagementTab({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-serif text-lg sm:text-xl font-medium">ადმინისტრატორების წვდომის მართვა</h3>
+              <h3 className="font-serif text-lg sm:text-xl font-medium">უფლებების მართვა (ადმინები & მოდერატორები)</h3>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-amber-500/15 border border-amber-500/30 text-amber-400">
                 RBAC Security
               </span>
             </div>
             <p className="text-xs opacity-65 mt-1 max-w-2xl leading-relaxed">
-              აქედან შეგიძლიათ ადმინისტრატორის წვდომა მიანიჭოთ თქვენს თანამშრომლებს ან ნებისმიერ დროს ჩამოართვათ უფლება.
-              მხოლოდ აქ მითითებულ ელფოსტებს ექნებათ ადმინ-პანელზე და Firestore-ის ბაზაზე ცვლილებების შეტანის უფლება.
+              აქედან შეგიძლიათ შექმნათ ანგარიშები **მოდერატორებისთვის** (მხოლოდ პროდუქციის და ბლოგის მართვა) ან **ადმინისტრატორებისთვის** (სრული წვდომა).
+              თანამშრომელი პირველივე შესვლისას ვალდებული იქნება დააყენოს საკუთარი პირადი პაროლი.
             </p>
           </div>
         </div>
@@ -147,56 +205,199 @@ export default function AdminManagementTab({
         </div>
       )}
 
-      {/* Add New Admin Section (Only Super Admin can add) */}
+      {/* Successfully Created Credentials Box */}
+      {createdCredentials && (
+        <div className="p-6 rounded-3xl border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent space-y-4 animate-fadeIn">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                <Check className="w-4 h-4" />
+              </div>
+              <h4 className="font-serif text-base font-semibold text-amber-400">
+                ანგარიში მზადაა თანამშრომლისთვის გადასაცემად!
+              </h4>
+            </div>
+            <span className="text-[11px] opacity-60">პირველი შესვლისას პაროლი შეიცვლება</span>
+          </div>
+
+          <div className={`p-4 rounded-2xl border grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs ${
+            darkMode ? 'bg-stone-900/90 border-stone-800' : 'bg-white border-stone-200'
+          }`}>
+            <div>
+              <span className="opacity-50 block text-[10px] uppercase font-bold">ელ-ფოსტა</span>
+              <span className="font-mono font-semibold text-stone-100">{createdCredentials.email}</span>
+            </div>
+            <div>
+              <span className="opacity-50 block text-[10px] uppercase font-bold">დროებითი პაროლი</span>
+              <span className="font-mono font-bold text-amber-400">{createdCredentials.password}</span>
+            </div>
+            <div>
+              <span className="opacity-50 block text-[10px] uppercase font-bold">მინიჭებული როლი</span>
+              <span className="font-semibold text-emerald-400">
+                {createdCredentials.role === 'moderator' ? 'მოდერატორი (კონტენტი)' : 'სრული ადმინი'}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
+            <button
+              type="button"
+              onClick={handleCopyCredentials}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md shadow-amber-500/20"
+            >
+              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              <span>{copied ? 'დაკოპირდა WhatsApp-ისთვის!' : 'მონაცემების კოპირება WhatsApp-ისთვის 📋'}</span>
+            </button>
+            <span className="text-[11px] opacity-60">
+              გადაეცით ეს მონაცემები თანამშრომელს. შესვლისთანავე მას სისტემა მოსთხოვს საკუთარი პაროლის არჩევას.
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Create New Account Section (Super Admin only) */}
       {isSuperAdmin ? (
         <div
-          className={`p-6 rounded-3xl border space-y-4 ${
+          className={`p-6 rounded-3xl border space-y-5 ${
             darkMode ? 'bg-[#121110] border-stone-800' : 'bg-white border-stone-200 shadow-sm'
           }`}
         >
           <div className="flex items-center gap-2.5">
             <UserPlus className="w-4 h-4 text-amber-500" />
-            <h4 className="font-serif text-base font-medium">ახალი ადმინისტრატორის დამატება</h4>
+            <h4 className="font-serif text-base font-medium">ახალი თანამშრომლის დამატება</h4>
           </div>
-          <p className="text-xs opacity-65">
-            მიუთითეთ იმ პირის ელ-ფოსტა, ვისაც გსურთ მიანიჭოთ მაღაზიის ადმინისტრატორის სრული უფლებები:
-          </p>
 
-          <form onSubmit={handleAddAdmin} className="flex flex-col sm:flex-row gap-3 pt-1">
-            <div className="relative flex-1">
-              <Mail className="w-4 h-4 text-stone-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="email"
-                value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
-                placeholder="მაგ: colleague@matare.store ან name@gmail.com"
-                required
-                className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-xs border outline-none transition-all ${
-                  darkMode
-                    ? 'bg-stone-900/80 border-stone-700 text-white focus:border-amber-500'
-                    : 'bg-stone-50 border-stone-300 text-stone-900 focus:border-amber-600'
-                }`}
-              />
+          <form onSubmit={handleCreateAccount} className="space-y-4">
+            {/* Role Selection */}
+            <div>
+              <label className="text-[11px] uppercase tracking-wider font-semibold opacity-60 block mb-2">
+                აირჩიეთ წვდომის დონე (როლი):
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole('moderator')}
+                  className={`p-3.5 rounded-2xl border text-left flex items-start gap-3 transition-all ${
+                    selectedRole === 'moderator'
+                      ? 'border-amber-500/60 bg-amber-500/10 text-stone-100 shadow-sm'
+                      : darkMode
+                      ? 'border-stone-800 bg-stone-900/40 text-stone-400 hover:border-stone-700'
+                      : 'border-stone-200 bg-stone-50 text-stone-600 hover:border-stone-300'
+                  }`}
+                >
+                  <div className={`p-2 rounded-xl mt-0.5 ${selectedRole === 'moderator' ? 'bg-amber-500 text-black' : 'bg-stone-800 text-stone-400'}`}>
+                    <Users className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-xs flex items-center gap-1.5">
+                      <span>მოდერატორი</span>
+                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 font-normal">რეკომენდებული</span>
+                    </div>
+                    <p className="text-[11px] opacity-70 mt-1 leading-snug">
+                      შეუძლია **მხოლოდ პროდუქციის** და **ბლოგის** დამატება/შეცვლა. არ აქვს წვდომა მომხმარებლების შეკვეთებზე, სტატისტიკასა და საიტის პარამეტრებზე.
+                    </p>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole('admin')}
+                  className={`p-3.5 rounded-2xl border text-left flex items-start gap-3 transition-all ${
+                    selectedRole === 'admin'
+                      ? 'border-amber-500/60 bg-amber-500/10 text-stone-100 shadow-sm'
+                      : darkMode
+                      ? 'border-stone-800 bg-stone-900/40 text-stone-400 hover:border-stone-700'
+                      : 'border-stone-200 bg-stone-50 text-stone-600 hover:border-stone-300'
+                  }`}
+                >
+                  <div className={`p-2 rounded-xl mt-0.5 ${selectedRole === 'admin' ? 'bg-amber-500 text-black' : 'bg-stone-800 text-stone-400'}`}>
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-xs">სრული ადმინისტრატორი</div>
+                    <p className="text-[11px] opacity-70 mt-1 leading-snug">
+                      სრული წვდომა ყველა ტაბზე: პროდუქცია, კატეგორიები, ბანერები, მომხმარებელთა მოთხოვნები, გაყიდვები, პარამეტრები.
+                    </p>
+                  </div>
+                </button>
+              </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={actionLoading || !newEmail.trim()}
-              className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 shrink-0"
-            >
-              <UserPlus className="w-3.5 h-3.5" />
-              <span>{actionLoading ? 'ინახება...' : 'ადმინის დამატება'}</span>
-            </button>
+            {/* Email and Password Fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] uppercase tracking-wider font-semibold opacity-60 block mb-1.5">
+                  თანამშრომლის ელ-ფოსტა:
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-stone-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder="მაგ: colleague@matare.store ან name@gmail.com"
+                    required
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-xs border outline-none transition-all ${
+                      darkMode
+                        ? 'bg-stone-900/80 border-stone-700 text-white focus:border-amber-500'
+                        : 'bg-stone-50 border-stone-300 text-stone-900 focus:border-amber-600'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-[11px] uppercase tracking-wider font-semibold opacity-60">
+                    დროებითი პაროლი:
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleGeneratePassword}
+                    className="text-[10px] text-amber-500 hover:text-amber-400 flex items-center gap-1 font-semibold transition-colors"
+                  >
+                    <Dices className="w-3 h-3" />
+                    <span>ახალი პაროლის გენერირება</span>
+                  </button>
+                </div>
+                <div className="relative">
+                  <Key className="w-4 h-4 text-stone-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="დროებითი პაროლი (მინ. 6 სიმბოლო)"
+                    required
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-xs border font-mono font-medium outline-none transition-all ${
+                      darkMode
+                        ? 'bg-stone-900/80 border-stone-700 text-amber-400 focus:border-amber-500'
+                        : 'bg-stone-50 border-stone-300 text-stone-900 focus:border-amber-600'
+                    }`}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="submit"
+                disabled={actionLoading || !newEmail.trim() || !newPassword.trim()}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>{actionLoading ? 'იქმნება ანგარიში...' : 'ანგარიშის შექმნა და უფლების მინიჭება'}</span>
+              </button>
+            </div>
           </form>
         </div>
       ) : (
         <div className="p-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 text-amber-400 text-xs flex items-center gap-3">
           <Lock className="w-4 h-4 shrink-0" />
-          <span>ადმინისტრატორების სიის რედაქტირება (დამატება/წაშლა) შეუძლია მხოლოდ მთავარ ადმინისტრატორს ({SUPER_ADMIN_EMAIL}).</span>
+          <span>თანამშრომლების ანგარიშების მართვა (შექმნა/წაშლა) შეუძლია მხოლოდ მთავარ ადმინისტრატორს ({SUPER_ADMIN_EMAIL}).</span>
         </div>
       )}
 
-      {/* Admins List Table / Cards */}
+      {/* List of Authorized Users */}
       <div
         className={`rounded-3xl border overflow-hidden ${
           darkMode ? 'bg-[#121110] border-stone-800' : 'bg-white border-stone-200 shadow-sm'
@@ -204,29 +405,30 @@ export default function AdminManagementTab({
       >
         <div className="p-5 border-b border-stone-500/15 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="font-serif text-base font-medium">უფლებამოსილი ადმინისტრატორები</span>
+            <span className="font-serif text-base font-medium">უფლებამოსილი ანგარიშები</span>
             <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
               {admins.length}
             </span>
           </div>
           <span className="text-[11px] opacity-60">
-            მხოლოდ ეს ანგარიშები შეძლებენ /admin პანელზე წვდომას
+            მხოლოდ ეს პირები შეძლებენ /admin პანელზე შესვლას
           </span>
         </div>
 
         {loading ? (
-          <div className="py-12 text-center text-xs opacity-60">იტვირთება ადმინისტრატორების სია...</div>
+          <div className="py-12 text-center text-xs opacity-60">იტვირთება სია...</div>
         ) : (
           <div className="divide-y divide-stone-500/10">
             {admins.map((adm) => {
               const isOwner = adm.isSuperAdmin || adm.email === SUPER_ADMIN_EMAIL.toLowerCase();
               const isCurrent = adm.email === (currentUserEmail || '').toLowerCase();
+              const isMod = adm.role === 'moderator';
 
               return (
                 <div
                   key={adm.email}
                   className={`p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${
-                    !adm.isActive ? 'opacity-60 bg-red-500/5' : ''
+                    !adm.isActive ? 'opacity-50 bg-red-500/5' : ''
                   }`}
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
@@ -234,9 +436,9 @@ export default function AdminManagementTab({
                       className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm shrink-0 border ${
                         isOwner
                           ? 'bg-gradient-to-br from-amber-500 to-amber-700 text-black border-amber-400/50 shadow-md shadow-amber-500/20'
-                          : adm.isActive
-                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                          : 'bg-stone-800 text-stone-400 border-stone-700'
+                          : isMod
+                          ? 'bg-purple-500/15 text-purple-400 border-purple-500/30'
+                          : 'bg-blue-500/15 text-blue-400 border-blue-500/30'
                       }`}
                     >
                       {adm.email.charAt(0).toUpperCase()}
@@ -245,16 +447,27 @@ export default function AdminManagementTab({
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-mono text-xs sm:text-sm font-semibold truncate">{adm.email}</span>
-                        {isOwner && (
+
+                        {isOwner ? (
                           <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-500 text-black">
                             Super Admin
                           </span>
+                        ) : isMod ? (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-purple-500/15 text-purple-400 border border-purple-500/30">
+                            მოდერატორი (კონტენტი)
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                            ადმინისტრატორი (სრული)
+                          </span>
                         )}
+
                         {isCurrent && (
                           <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                             თქვენ
                           </span>
                         )}
+
                         {!isOwner && (
                           <span
                             className={`px-2 py-0.5 rounded-md text-[10px] font-medium border ${
@@ -266,6 +479,12 @@ export default function AdminManagementTab({
                             {adm.isActive ? 'აქტიური' : 'შეჩერებული'}
                           </span>
                         )}
+
+                        {adm.mustChangePassword && (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                            პაროლის შეცვლა უწევს
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-3 text-[11px] opacity-60 mt-0.5 flex-wrap">
@@ -275,7 +494,7 @@ export default function AdminManagementTab({
                     </div>
                   </div>
 
-                  {/* Actions (Only Super Admin can modify other admins) */}
+                  {/* Actions (Only Super Admin can modify) */}
                   <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
                     {isOwner ? (
                       <span className="text-[11px] opacity-40 flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-500/20">
@@ -284,6 +503,21 @@ export default function AdminManagementTab({
                       </span>
                     ) : isSuperAdmin ? (
                       <>
+                        {/* Role switcher */}
+                        <select
+                          value={adm.role}
+                          onChange={(e) => handleChangeRole(adm.email, e.target.value)}
+                          disabled={actionLoading}
+                          className={`px-2.5 py-1.5 rounded-xl text-xs font-medium border outline-none cursor-pointer transition-all ${
+                            darkMode
+                              ? 'bg-stone-900 border-stone-700 text-stone-200 hover:border-stone-600'
+                              : 'bg-stone-100 border-stone-300 text-stone-800'
+                          }`}
+                        >
+                          <option value="moderator">მოდერატორი</option>
+                          <option value="admin">სრული ადმინი</option>
+                        </select>
+
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(adm.email, adm.isActive)}
@@ -303,7 +537,7 @@ export default function AdminManagementTab({
                           type="button"
                           onClick={() => handleRemove(adm.email)}
                           disabled={actionLoading}
-                          title="ადმინისტრატორის წაშლა"
+                          title="ანგარიშის წაშლა"
                           className="p-2 rounded-xl border border-stone-800 bg-stone-900/60 text-stone-400 hover:text-red-400 hover:border-red-500/40 hover:bg-red-500/10 transition-all"
                         >
                           <Trash2 className="w-3.5 h-3.5" />

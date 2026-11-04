@@ -17,6 +17,7 @@ import AdminBlogTab from '../components/admin/AdminBlogTab';
 import AdminInquiriesTab from '../components/admin/AdminInquiriesTab';
 import AdminSettingsTab from '../components/admin/AdminSettingsTab';
 import AdminManagementTab from '../components/admin/AdminManagementTab';
+import ForcePasswordChangeModal from '../components/admin/ForcePasswordChangeModal';
 import StatsTab from '../components/admin/StatsTab';
 
 export default function AdminPage() {
@@ -33,6 +34,9 @@ export default function AdminPage() {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [unauthorizedUser, setUnauthorizedUser] = useState(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [userRole, setUserRole] = useState('superadmin'); // 'superadmin' | 'admin' | 'moderator'
+  const [mustChangePassword, setMustChangePassword] = useState(false);
+  const [currentUserObj, setCurrentUserObj] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [activeAuth, setActiveAuth] = useState(auth);
   const [currentUserEmail, setCurrentUserEmail] = useState('');
@@ -79,6 +83,9 @@ export default function AdminPage() {
           setIsAdminAuthenticated(false);
           setUnauthorizedUser(null);
           setIsSuperAdmin(false);
+          setUserRole('');
+          setMustChangePassword(false);
+          setCurrentUserObj(null);
           setCurrentUserEmail('');
           try {
             localStorage.removeItem('isAdmin');
@@ -88,7 +95,7 @@ export default function AdminPage() {
           return;
         }
 
-        // მკაცრი გადამოწმება: ნამდვილად აქვს თუ არა ამ ანგარიშს ადმინისტრატორის უფლებები
+        // მკაცრი გადამოწმება: ნამდვილად აქვს თუ არა ამ ანგარიშს ადმინისტრატორის ან მოდერატორის უფლებები
         const adminCheck = await checkUserIsAdmin(user, db);
         if (isCancelled) return;
 
@@ -96,7 +103,16 @@ export default function AdminPage() {
           setIsAdminAuthenticated(true);
           setUnauthorizedUser(null);
           setIsSuperAdmin(adminCheck.isSuperAdmin);
+          setUserRole(adminCheck.role || (adminCheck.isSuperAdmin ? 'superadmin' : 'admin'));
+          setMustChangePassword(Boolean(adminCheck.mustChangePassword));
+          setCurrentUserObj(user);
           setCurrentUserEmail(user.email);
+
+          // თუ მომხმარებელი მოდერატორია და არჩეულია აკრძალული ტაბი, გადავიყვანოთ კატალოგზე
+          if (adminCheck.role === 'moderator' && !['catalog', 'blog'].includes(adminTab)) {
+            setAdminTab('catalog');
+          }
+
           try {
             localStorage.setItem('isAdmin', 'true');
             sessionStorage.setItem('isAdmin', 'true');
@@ -106,6 +122,9 @@ export default function AdminPage() {
           setIsAdminAuthenticated(false);
           setUnauthorizedUser(user.email);
           setIsSuperAdmin(false);
+          setUserRole('');
+          setMustChangePassword(false);
+          setCurrentUserObj(null);
           setCurrentUserEmail(user.email);
           try {
             localStorage.removeItem('isAdmin');
@@ -130,6 +149,9 @@ export default function AdminPage() {
     setIsAdminAuthenticated(false);
     setUnauthorizedUser(null);
     setIsSuperAdmin(false);
+    setUserRole('');
+    setMustChangePassword(false);
+    setCurrentUserObj(null);
     setCurrentUserEmail('');
     if (activeAuth || auth) {
       try {
@@ -185,6 +207,27 @@ export default function AdminPage() {
             </span>
             <span className="text-xs font-mono text-stone-500">/admin</span>
           </div>
+
+          {isAdminAuthenticated && (
+            <div className="hidden lg:flex items-center gap-2 pl-3 ml-2 border-l border-stone-500/20">
+              <span className="text-xs font-mono text-stone-400 truncate max-w-[160px]">
+                {currentUserEmail}
+              </span>
+              {isSuperAdmin ? (
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-500 text-black">
+                  Super Admin
+                </span>
+              ) : userRole === 'moderator' ? (
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                  მოდერატორი
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                  ადმინისტრატორი
+                </span>
+              )}
+            </div>
+          )}
 
           {saveMessage && (
             <span className="hidden md:inline-flex items-center gap-1.5 ml-3 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-medium animate-fadeIn">
@@ -313,14 +356,16 @@ export default function AdminPage() {
             <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
               {[
                 { id: 'catalog', label: `პროდუქცია (${products.length})` },
-                { id: 'categories', label: `კატეგორიები & მეტალები (${(siteSettings.categories || []).length})` },
-                { id: 'home', label: 'მთავარი გვერდი 🌟' },
+                { id: 'categories', label: `კატეგორიები & მეტალები (${(siteSettings.categories || []).length})`, minRole: 'admin' },
+                { id: 'home', label: 'მთავარი გვერდი 🌟', minRole: 'admin' },
                 { id: 'blog', label: `ბლოგი & სიახლეები (${(articles || []).length})` },
-                { id: 'inquiries', label: `შემოსული მოთხოვნები (${inquiries.length})` },
-                { id: 'stats', label: lang === 'ka' ? 'სტატისტიკა 📊' : 'Statistics 📊' },
-                { id: 'site', label: 'საიტის პარამეტრები' },
-                { id: 'admins', label: 'ადმინისტრატორები 🛡️' }
-              ].map((tab) => {
+                { id: 'inquiries', label: `შემოსული მოთხოვნები (${inquiries.length})`, minRole: 'admin' },
+                { id: 'stats', label: lang === 'ka' ? 'სტატისტიკა 📊' : 'Statistics 📊', minRole: 'admin' },
+                { id: 'site', label: 'საიტის პარამეტრები', minRole: 'admin' },
+                { id: 'admins', label: 'უფლებების მართვა 🛡️', minRole: 'admin' }
+              ]
+                .filter((tab) => userRole !== 'moderator' || !tab.minRole)
+                .map((tab) => {
                 const isSelected =
                   adminTab === tab.id ||
                   (tab.id === 'home' && ['carousel', 'craft'].includes(adminTab)) ||
@@ -438,6 +483,7 @@ export default function AdminPage() {
             {adminTab === 'admins' && (
               <AdminManagementTab
                 darkMode={darkMode}
+                currentUser={currentUserObj}
                 currentUserEmail={currentUserEmail}
                 isSuperAdmin={isSuperAdmin}
               />
@@ -445,6 +491,17 @@ export default function AdminPage() {
           </div>
         )}
       </main>
+
+      {/* Force Password Change Modal (პირველი შესვლისას პაროლის შეცვლა) */}
+      {mustChangePassword && currentUserObj && (
+        <ForcePasswordChangeModal
+          user={currentUserObj}
+          db={db}
+          onSuccess={() => setMustChangePassword(false)}
+          onLogout={handleAdminLogout}
+          darkMode={darkMode}
+        />
+      )}
     </div>
   );
 }
