@@ -85,32 +85,28 @@ export default function CraftsmanshipSection({
 
         {/* ფოტოების მხარე */}
         <div className={`grid grid-cols-2 gap-4 sm:gap-6 ${reverseLayout ? "lg:order-1" : "lg:order-2"}`}>
-          <div className="relative aspect-[4/3] sm:h-80 rounded-3xl overflow-hidden border border-amber-500/20 shadow-2xl">
-            <img
-              src={getOptimizedImageUrl(siteSettings.craftImg1, 450, 60)}
-              srcSet={getUnsplashSrcSet(siteSettings.craftImg1)}
-              sizes="(max-width: 640px) 46vw, 380px"
-              alt={lang === "ka" ? "საიუველირო ოსტატობა — ხელნაკეთი პროცესი" : "Jewelry craftsmanship process"}
-              loading="lazy"
-              decoding="async"
-              width="400"
-              height="320"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="relative aspect-[4/3] sm:h-80 rounded-3xl overflow-hidden border border-amber-500/20 shadow-2xl mt-8">
-            <img
-              src={getOptimizedImageUrl(siteSettings.craftImg2, 450, 60)}
-              srcSet={getUnsplashSrcSet(siteSettings.craftImg2)}
-              sizes="(max-width: 640px) 46vw, 380px"
-              alt={lang === "ka" ? "საიუველირო ხელოვნება და დეტალები" : "Jewelry craftsmanship and fine details"}
-              loading="lazy"
-              decoding="async"
-              width="400"
-              height="320"
-              className="w-full h-full object-cover"
-            />
-          </div>
+          <img
+            src={getOptimizedImageUrl(siteSettings.craftImg1, 450, 60)}
+            srcSet={getUnsplashSrcSet(siteSettings.craftImg1)}
+            sizes="(max-width: 640px) 46vw, 380px"
+            alt={lang === "ka" ? "საიუველირო ოსტატობა — ხელნაკეთი პროცესი" : "Jewelry craftsmanship process"}
+            loading="lazy"
+            decoding="async"
+            width="400"
+            height="320"
+            className="w-full h-72 sm:h-80 object-cover rounded-3xl border border-amber-500/20 shadow-2xl"
+          />
+          <img
+            src={getOptimizedImageUrl(siteSettings.craftImg2, 450, 60)}
+            srcSet={getUnsplashSrcSet(siteSettings.craftImg2)}
+            sizes="(max-width: 640px) 46vw, 380px"
+            alt={lang === "ka" ? "საიუველირო ხელოვნება და დეტალები" : "Jewelry craftsmanship and fine details"}
+            loading="lazy"
+            decoding="async"
+            width="400"
+            height="320"
+            className="w-full h-72 sm:h-80 object-cover rounded-3xl border border-amber-500/20 shadow-2xl mt-8"
+          />
         </div>
 
       </div>

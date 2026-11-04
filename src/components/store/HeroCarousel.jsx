@@ -19,7 +19,7 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
   if (!activeSlide) return null;
 
   return (
-    <section className="relative h-[500px] sm:h-[640px] aspect-[4/3] sm:aspect-[16/9] overflow-hidden flex items-center bg-black">
+    <section className="relative w-full h-[500px] sm:h-[640px] overflow-hidden flex items-center bg-black">
       <div className="absolute inset-0">
         <img
           src={getOptimizedImageUrl(slideImage, 1200, 60)}
