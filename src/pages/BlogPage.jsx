@@ -211,6 +211,7 @@ export default function BlogPage() {
                           alt={lang === "ka" ? art.titleKa : (art.titleEn || art.titleKa)}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           loading="lazy"
+                          decoding="async"
                         />
                         <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest bg-black/80 text-amber-400 border border-amber-500/30 backdrop-blur-md">
                           {art.category}

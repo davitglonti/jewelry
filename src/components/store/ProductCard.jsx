@@ -41,7 +41,7 @@ export default function ProductCard({
       <div className="relative aspect-square overflow-hidden bg-stone-900">
         {/* Primary Image */}
         <img
-          src={getOptimizedImageUrl(mainImg, 380, 68)}
+          src={getOptimizedImageUrl(mainImg, 380, 60)}
           srcSet={getProductCardSrcSet(mainImg)}
           sizes={imageSizes}
           alt={productName || "სამკაული"}
@@ -57,7 +57,7 @@ export default function ProductCard({
         {/* Secondary Image on Hover */}
         {secondaryImg && (
           <img
-            src={getOptimizedImageUrl(secondaryImg, 380, 68)}
+            src={getOptimizedImageUrl(secondaryImg, 380, 60)}
             srcSet={getProductCardSrcSet(secondaryImg)}
             sizes={imageSizes}
             alt={`${productName || "სამკაული"} - ხედი 2`}

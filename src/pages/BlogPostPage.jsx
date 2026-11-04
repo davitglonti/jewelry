@@ -256,6 +256,8 @@ export default function BlogPostPage({ slugProp }) {
               alt={title}
               className="w-full h-full object-cover"
               loading="eager"
+              fetchPriority="high"
+              decoding="async"
             />
           </div>
 
@@ -313,6 +315,7 @@ export default function BlogPostPage({ slugProp }) {
                         alt={lang === "ka" ? rel.titleKa : (rel.titleEn || rel.titleKa)}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         loading="lazy"
+                        decoding="async"
                       />
                     </div>
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-500 block">

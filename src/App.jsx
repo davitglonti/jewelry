@@ -1,15 +1,15 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import StorePage from './pages/StorePage';
+import CatalogPage from './pages/CatalogPage';
 import CompareFloatingBar from './components/store/CompareFloatingBar';
 import { useStore } from './context/StoreContext';
 
-// ეს გვერდები მთავარ გვერდზე შესვლისას აღარ დაამძიმებს საიტს (Code Splitting)
+// მეორადი და ადმინ გვერდების lazy ჩატვირთვა (Code Splitting)
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
 const ProductPage = lazy(() => import('./pages/ProductPage'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
-const CatalogPage = lazy(() => import('./pages/CatalogPage'));
 const SizeGuidePage = lazy(() => import('./pages/SizeGuidePage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const CompareModal = lazy(() => import('./components/modals/CompareModal'));
@@ -17,7 +17,6 @@ const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const AddProductPage = lazy(() => import('./pages/AddProductPage'));
 const MyItemsPage = lazy(() => import('./pages/MyItemsPage'));
-import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // მსუბუქი ჩამტვირთავი ეკრანი გვერდებს შორის გადასვლისას
 const PageLoader = () => (
@@ -71,11 +70,7 @@ export default function App() {
       </Suspense>
     );
   } else if (currentPath === "/catalog" || currentPath === "/collection") {
-    content = (
-      <Suspense fallback={<PageLoader />}>
-        <CatalogPage />
-      </Suspense>
-    );
+    content = <CatalogPage />;
   } else if (currentPath === "/size-guide" || currentPath === "/sizes" || currentPath === "/ring-size") {
     content = (
       <Suspense fallback={<PageLoader />}>

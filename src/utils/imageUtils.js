@@ -29,7 +29,7 @@ export const sanitizeImageUrl = (url, fallback = "/brand-logo.jpg") => {
   return url;
 };
 
-export const getOptimizedImageUrl = (url, width = 450, quality = 68) => {
+export const getOptimizedImageUrl = (url, width = 450, quality = 60) => {
   const cleanUrl = sanitizeImageUrl(url);
   if (cleanUrl.includes('images.unsplash.com')) {
     try {
@@ -37,7 +37,8 @@ export const getOptimizedImageUrl = (url, width = 450, quality = 68) => {
       u.searchParams.set('auto', 'format');
       u.searchParams.set('fit', 'crop');
       u.searchParams.set('w', String(width));
-      u.searchParams.set('q', String(quality));
+      u.searchParams.set('fm', 'webp');
+      u.searchParams.set('q', String(quality || 60));
       return u.toString();
     } catch {
       return cleanUrl;
@@ -52,7 +53,7 @@ export const getUnsplashSrcSet = (url) => {
   try {
     const u = new URL(cleanUrl);
     const base = `${u.origin}${u.pathname}`;
-    return `${base}?auto=format&fit=crop&w=360&q=65 360w, ${base}?auto=format&fit=crop&w=500&q=68 500w, ${base}?auto=format&fit=crop&w=720&q=70 720w, ${base}?auto=format&fit=crop&w=1200&q=72 1200w`;
+    return `${base}?auto=format&fit=crop&fm=webp&w=360&q=60 360w, ${base}?auto=format&fit=crop&fm=webp&w=500&q=60 500w, ${base}?auto=format&fit=crop&fm=webp&w=720&q=60 720w, ${base}?auto=format&fit=crop&fm=webp&w=1200&q=60 1200w`;
   } catch {
     return undefined;
   }
@@ -64,7 +65,7 @@ export const getProductCardSrcSet = (url) => {
   try {
     const u = new URL(cleanUrl);
     const base = `${u.origin}${u.pathname}`;
-    return `${base}?auto=format&fit=crop&w=260&q=65 260w, ${base}?auto=format&fit=crop&w=360&q=65 360w, ${base}?auto=format&fit=crop&w=480&q=68 480w, ${base}?auto=format&fit=crop&w=640&q=70 640w, ${base}?auto=format&fit=crop&w=900&q=72 900w`;
+    return `${base}?auto=format&fit=crop&fm=webp&w=260&q=60 260w, ${base}?auto=format&fit=crop&fm=webp&w=360&q=60 360w, ${base}?auto=format&fit=crop&fm=webp&w=480&q=60 480w, ${base}?auto=format&fit=crop&fm=webp&w=640&q=60 640w, ${base}?auto=format&fit=crop&fm=webp&w=900&q=60 900w`;
   } catch {
     return undefined;
   }

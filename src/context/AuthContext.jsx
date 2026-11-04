@@ -1,16 +1,6 @@
 // src/context/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  confirmPasswordReset as fbConfirmPasswordReset,
-  verifyPasswordResetCode as fbVerifyPasswordResetCode,
-  signOut,
-  updateProfile
-} from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { getLazyAuth } from '../lib/firebase';
 
 const AuthContext = createContext(null);
 
@@ -72,40 +62,90 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!auth) {
-      setLoading(false);
-      return;
+    let unsubscribe = null;
+    let idleId = null;
+    let timerId = null;
+    let isCancelled = false;
+
+    const initAuthListener = async () => {
+      try {
+        const auth = await getLazyAuth();
+        if (!auth || isCancelled) {
+          if (!isCancelled) setLoading(false);
+          return;
+        }
+
+        const { onAuthStateChanged } = await import('firebase/auth');
+        if (isCancelled) return;
+
+        unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+          if (!isCancelled) {
+            setUser(currentUser);
+            setLoading(false);
+          }
+        });
+      } catch (err) {
+        console.warn('Firebase Auth defer init error:', err);
+        if (!isCancelled) setLoading(false);
+      }
+    };
+
+    // Defer auth initialization using requestIdleCallback with ~800ms fallback
+    // to avoid blocking First Paint, LCP, and initial product browsing
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      idleId = window.requestIdleCallback(
+        () => {
+          initAuthListener();
+        },
+        { timeout: 1500 }
+      );
+    } else {
+      timerId = setTimeout(initAuthListener, 800);
     }
 
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    return () => {
+      isCancelled = true;
+      if (idleId && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timerId) {
+        clearTimeout(timerId);
+      }
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   const register = async (email, password, displayName = '') => {
+    const auth = await getLazyAuth();
     if (!auth) throw new Error('Firebase Auth არ არის ინიციალიზებული');
+    const { createUserWithEmailAndPassword, updateProfile } = await import('firebase/auth');
     const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
     if (displayName && displayName.trim()) {
       await updateProfile(userCredential.user, {
         displayName: displayName.trim()
       });
-      // განვაახლოთ ლოკალური state
       setUser({ ...userCredential.user, displayName: displayName.trim() });
+    } else {
+      setUser(userCredential.user);
     }
     return userCredential.user;
   };
 
   const login = async (email, password) => {
+    const auth = await getLazyAuth();
     if (!auth) throw new Error('Firebase Auth არ არის ინიციალიზებული');
+    const { signInWithEmailAndPassword } = await import('firebase/auth');
     const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+    setUser(userCredential.user);
     return userCredential.user;
   };
 
   const logout = async () => {
+    const auth = await getLazyAuth();
     if (!auth) return;
+    const { signOut } = await import('firebase/auth');
     await signOut(auth);
     setUser(null);
   };
@@ -136,17 +176,21 @@ export function AuthProvider({ children }) {
   };
 
   const verifyResetCode = async (actionCode) => {
+    const auth = await getLazyAuth();
     if (!auth) throw new Error('Firebase Auth არ არის ინიციალიზებული');
+    const { verifyPasswordResetCode: fbVerifyPasswordResetCode } = await import('firebase/auth');
     return await fbVerifyPasswordResetCode(auth, actionCode);
   };
 
   const confirmReset = async (actionCode, newPassword) => {
+    const auth = await getLazyAuth();
     if (!auth) throw new Error('Firebase Auth არ არის ინიციალიზებული');
     if (!newPassword || newPassword.length < 6) {
       const err = new Error('auth/weak-password');
       err.code = 'auth/weak-password';
       throw err;
     }
+    const { confirmPasswordReset: fbConfirmPasswordReset } = await import('firebase/auth');
     await fbConfirmPasswordReset(auth, actionCode, newPassword);
   };
 

@@ -83,6 +83,9 @@ export default function ProductMediaGallery({
             <img
               src={currentImage}
               alt={productName}
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
               className="w-full h-full object-contain transition-transform duration-200 p-4"
               style={
                 isZoomed
@@ -186,7 +189,15 @@ export default function ProductMediaGallery({
                   : 'border-transparent opacity-60 hover:opacity-100'
               }`}
             >
-              <img src={imgUrl} alt={`${productName} - ${idx + 1}`} className="w-full h-full object-cover" />
+              <img
+                src={imgUrl}
+                alt={`${productName} - ${idx + 1}`}
+                loading="lazy"
+                decoding="async"
+                width="64"
+                height="64"
+                className="w-full h-full object-cover"
+              />
             </button>
           ))}
         </div>

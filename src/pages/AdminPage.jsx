@@ -29,6 +29,7 @@ export default function AdminPage() {
 
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [activeAuth, setActiveAuth] = useState(auth);
   const [currentUserEmail, setCurrentUserEmail] = useState('');
   const [adminTab, setAdminTab] = useState('catalog');
   const [homeSubTab, setHomeSubTab] = useState('carousel');
@@ -50,27 +51,45 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    if (!auth) {
-      setAuthChecked(true);
-      return;
-    }
-    const unsub = onAuthStateChanged(auth, (user) => {
-      setIsAdminAuthenticated(!!user);
-      if (user && user.email) {
-        setCurrentUserEmail(user.email);
-        try {
-          localStorage.setItem('isAdmin', 'true');
-          sessionStorage.setItem('isAdmin', 'true');
-        } catch (e) {}
-      } else {
-        try {
-          localStorage.removeItem('isAdmin');
-          sessionStorage.removeItem('isAdmin');
-        } catch (e) {}
+    let unsub = null;
+    let isCancelled = false;
+
+    (async () => {
+      let authInstance = auth;
+      if (!authInstance) {
+        const { getLazyAuth } = await import('../lib/firebase');
+        authInstance = await getLazyAuth();
       }
-      setAuthChecked(true);
-    });
-    return () => unsub();
+      if (isCancelled) return;
+      if (!authInstance) {
+        setAuthChecked(true);
+        return;
+      }
+      setActiveAuth(authInstance);
+
+      unsub = onAuthStateChanged(authInstance, (user) => {
+        if (isCancelled) return;
+        setIsAdminAuthenticated(!!user);
+        if (user && user.email) {
+          setCurrentUserEmail(user.email);
+          try {
+            localStorage.setItem('isAdmin', 'true');
+            sessionStorage.setItem('isAdmin', 'true');
+          } catch (e) {}
+        } else {
+          try {
+            localStorage.removeItem('isAdmin');
+            sessionStorage.removeItem('isAdmin');
+          } catch (e) {}
+        }
+        setAuthChecked(true);
+      });
+    })();
+
+    return () => {
+      isCancelled = true;
+      if (unsub) unsub();
+    };
   }, []);
 
   const handleAdminLogout = () => {
@@ -78,7 +97,7 @@ export default function AdminPage() {
       localStorage.removeItem('isAdmin');
       sessionStorage.removeItem('isAdmin');
     } catch (e) {}
-    signOut(auth);
+    if (activeAuth || auth) signOut(activeAuth || auth);
   };
 
   return (
@@ -182,7 +201,7 @@ export default function AdminPage() {
         ) : !isAdminAuthenticated ? (
           <AdminLoginView
             darkMode={darkMode}
-            auth={auth}
+            auth={activeAuth || auth}
             signInWithEmailAndPassword={signInWithEmailAndPassword}
           />
         ) : (
