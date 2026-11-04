@@ -13,9 +13,73 @@ const routePreloaders = {
   '/reset-password': () => import('../pages/LoginPage'),
 };
 
+/**
+ * აბრუნებს მიმდინარე ენას URL-ის მიხედვით ('en' ან 'ka')
+ */
+export function getCurrentLang() {
+  if (typeof window === 'undefined') return 'ka';
+  const path = window.location.pathname;
+  return path === '/en' || path.startsWith('/en/') ? 'en' : 'ka';
+}
+
+/**
+ * გარდაქმნის ნებისმიერ შიდა path-ს სასურველი ენის მიხედვით:
+ * მაგ: ('/catalog', 'en') -> '/en/catalog'
+ *     ('/en/catalog', 'ka') -> '/catalog'
+ *     ('/', 'en') -> '/en'
+ *     ('/en', 'ka') -> '/'
+ */
+export function localizePath(path, targetLang = 'ka') {
+  if (!path) return targetLang === 'en' ? '/en' : '/';
+
+  // მოვაცილოთ არსებული /en პრეფიქსი
+  let clean = path;
+  if (clean === '/en') clean = '/';
+  else if (clean.startsWith('/en/')) clean = clean.substring(3);
+
+  if (!clean.startsWith('/')) clean = '/' + clean;
+
+  if (targetLang === 'en') {
+    return clean === '/' ? '/en' : `/en${clean}`;
+  }
+  return clean;
+}
+
+/**
+ * ყოფს URL path-ს ენად და მარშრუტად:
+ * მაგ: '/en/catalog' -> { lang: 'en', route: '/catalog' }
+ *     '/catalog' -> { lang: 'ka', route: '/catalog' }
+ *     '/en' -> { lang: 'en', route: '/' }
+ */
+export function parsePath(pathname) {
+  const clean = pathname ? pathname.replace(/\/+$/, '') || '/' : '/';
+  if (clean === '/en' || clean.startsWith('/en/')) {
+    const route = clean.substring(3) || '/';
+    return { lang: 'en', route };
+  }
+  return { lang: 'ka', route: clean };
+}
+
+/**
+ * ენის გადართვა URL-ის ავტომატური სინქრონიზაციით:
+ * გადაჰყავს მომხმარებელი იდენტურ გვერდზე მეორე ენის URL-ით.
+ */
+export function switchLanguage(targetLang) {
+  if (typeof window === 'undefined') return;
+  const currentPath = window.location.pathname;
+  const search = window.location.search || '';
+  const hash = window.location.hash || '';
+  const targetUrl = localizePath(currentPath, targetLang) + search + hash;
+  navigateTo(targetUrl);
+}
+
 export function prefetchRoute(pathname) {
   if (!pathname) return;
-  const clean = pathname.replace(/\/+$/, '') || '/';
+  let clean = pathname.replace(/\/+$/, '') || '/';
+  if (clean === '/en') clean = '/';
+  else if (clean.startsWith('/en/')) clean = clean.substring(3);
+  if (!clean.startsWith('/')) clean = '/' + clean;
+
   if (routePreloaders[clean]) {
     try {
       routePreloaders[clean]();
@@ -49,16 +113,16 @@ export function navigateTo(url) {
     return;
   }
 
-  // მთავარი გვერდის ჰეშ-ბმულები (მაგ: /#contact, /#craftsmanship)
-  if (url.startsWith('/#')) {
-    const hash = url.substring(1);
-    if (window.location.pathname === '/' || window.location.pathname === '') {
-      const el = document.querySelector(hash);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-      }
-      return;
+  // მთავარი გვერდის ჰეშ-ბმულები (მაგ: /#contact, /en/#contact)
+  const isEnHome = window.location.pathname === '/en' || window.location.pathname === '/en/';
+  const isKaHome = window.location.pathname === '/' || window.location.pathname === '';
+  if ((url.startsWith('/#') && isKaHome) || (url.startsWith('/en/#') && isEnHome)) {
+    const hash = '#' + url.split('#')[1];
+    const el = document.querySelector(hash);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
     }
+    return;
   }
 
   const [pathOnly] = url.split(/(?=[?#])/);
@@ -122,10 +186,11 @@ export function initSpaNavigation() {
       return;
     }
 
-    // /#hash როდესაც უკვე მთავარზე ვართ
-    if (href.startsWith('/#') && (window.location.pathname === '/' || window.location.pathname === '')) {
+    const isEnHome = window.location.pathname === '/en' || window.location.pathname === '/en/';
+    const isKaHome = window.location.pathname === '/' || window.location.pathname === '';
+    if ((href.startsWith('/#') && isKaHome) || (href.startsWith('/en/#') && isEnHome)) {
       e.preventDefault();
-      const hash = href.substring(1);
+      const hash = '#' + href.split('#')[1];
       const el = document.querySelector(hash);
       if (el) el.scrollIntoView({ behavior: 'smooth' });
       return;
@@ -141,7 +206,7 @@ export function initSpaNavigation() {
     const anchor = e.target.closest('a');
     if (!anchor) return;
     const href = anchor.getAttribute('href');
-    if (href && href.startsWith('/') && !href.startsWith('/#')) {
+    if (href && (href.startsWith('/') || href.startsWith('/en'))) {
       prefetchRoute(href.split('?')[0]);
     }
   };

@@ -72,7 +72,7 @@ export default function NotFoundPage() {
           {/* Action CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-1">
             <a
-              href="/catalog"
+              href={lang === "en" ? "/en/catalog" : "/catalog"}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-400 text-black font-semibold text-xs tracking-wider uppercase transition-all active:scale-95 shadow-sm"
             >
               <ShoppingBag className="w-4 h-4" />
@@ -81,7 +81,7 @@ export default function NotFoundPage() {
             </a>
 
             <a
-              href="/"
+              href={lang === "en" ? "/en" : "/"}
               className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full border text-xs font-semibold tracking-wider uppercase transition-all active:scale-95 ${
                 darkMode
                   ? "border-stone-700 bg-stone-900/60 text-stone-200 hover:border-amber-500/50 hover:bg-stone-800"
@@ -118,19 +118,22 @@ export default function NotFoundPage() {
               {lang === "ka" ? "პოპულარული კოლექციები" : "Popular Collections"}
             </span>
             <div className="flex flex-wrap items-center justify-center gap-2">
-              {categories.map((cat) => (
-                <a
-                  key={cat}
-                  href={`/catalog?category=${encodeURIComponent(cat)}`}
-                  className={`px-3 py-1.5 rounded-full text-xs transition-all border ${
-                    darkMode
-                      ? "border-stone-800 bg-stone-900/40 text-stone-300 hover:border-amber-500/40 hover:text-amber-400 hover:bg-stone-900"
-                      : "border-stone-200 bg-stone-100 text-stone-700 hover:border-amber-500 hover:text-amber-700 hover:bg-white"
-                  }`}
-                >
-                  {cat}
-                </a>
-              ))}
+              {categories.map((cat) => {
+                const prefix = lang === "en" ? "/en" : "";
+                return (
+                  <a
+                    key={cat}
+                    href={`${prefix}/catalog?category=${encodeURIComponent(cat)}`}
+                    className={`px-3 py-1.5 rounded-full text-xs transition-all border ${
+                      darkMode
+                        ? "border-stone-800 bg-stone-900/40 text-stone-300 hover:border-amber-500/40 hover:text-amber-400 hover:bg-stone-900"
+                        : "border-stone-200 bg-stone-100 text-stone-700 hover:border-amber-500 hover:text-amber-700 hover:bg-white"
+                    }`}
+                  >
+                    {cat}
+                  </a>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -143,7 +146,8 @@ export default function NotFoundPage() {
         isOpen={showFavoritesModal}
         onClose={() => setShowFavoritesModal(false)}
         onSelectProduct={(item) => {
-          navigateTo(`/product/${encodeURIComponent(item.sku || item.id)}`);
+          const prefix = lang === "en" ? "/en" : "";
+          navigateTo(`${prefix}/product/${encodeURIComponent(item.sku || item.id)}`);
         }}
       />
     </div>

@@ -29,14 +29,16 @@ export default function StorePage() {
     const params = new URLSearchParams(window.location.search);
     const itemCode = params.get("item");
     if (itemCode) {
-      window.location.replace(`/product/${encodeURIComponent(itemCode)}`);
+      const prefix = lang === "en" ? "/en" : "";
+      window.location.replace(`${prefix}/product/${encodeURIComponent(itemCode)}`);
     }
-  }, []);
+  }, [lang]);
 
   // პროდუქტზე დაჭერისას გადავდივართ ცალკე გვერდზე (SPA კლიენტური ნავიგაცია მომენტალური გახსნისთვის)
   const openProductModal = (product) => {
     const code = product.sku || product.id;
-    navigateTo(`/product/${encodeURIComponent(code)}`);
+    const prefix = lang === "en" ? "/en" : "";
+    navigateTo(`${prefix}/product/${encodeURIComponent(code)}`);
   };
 
   const slides = siteSettings?.heroSlides?.length > 0 ? siteSettings.heroSlides : DEFAULT_SETTINGS.heroSlides;

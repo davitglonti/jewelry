@@ -73,7 +73,7 @@ export default function CraftsmanshipSection({
           {showCtaButton && (
             <div className="pt-2">
               <a
-                href="/#catalog"
+                href={lang === "en" ? "/en/catalog" : "/catalog"}
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-amber-500 text-black font-semibold text-xs sm:text-sm uppercase tracking-wider hover:brightness-110 transition-all shadow-lg shadow-amber-500/20"
               >
                 <Sparkles className="w-4 h-4" />

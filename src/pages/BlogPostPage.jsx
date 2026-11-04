@@ -8,7 +8,8 @@ import FavoritesModal from '../components/modals/FavoritesModal';
 
 export default function BlogPostPage({ slugProp }) {
   const rawPath = window.location.pathname;
-  const currentSlug = slugProp || rawPath.replace('/blog/', '').replace(/\/$/, '');
+  const match = rawPath.match(/\/blog\/([^/?#]+)/);
+  const currentSlug = slugProp || (match ? decodeURIComponent(match[1]) : '');
 
   const {
     darkMode, setDarkMode,
@@ -173,7 +174,7 @@ export default function BlogPostPage({ slugProp }) {
           {/* ნავიგაციის ზოლი */}
           <div className="py-4">
             <a
-              href="/blog"
+              href={lang === "en" ? "/en/blog" : "/blog"}
               className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-500 hover:text-amber-400 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -286,7 +287,7 @@ export default function BlogPostPage({ slugProp }) {
             </p>
             <div className="pt-2">
               <a
-                href="/#catalog"
+                href={lang === "en" ? "/en/catalog" : "/catalog"}
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-amber-500 text-black font-semibold text-xs uppercase tracking-wider hover:brightness-110 shadow-lg shadow-amber-500/20 transition-all"
               >
                 <Sparkles className="w-4 h-4" />
@@ -305,7 +306,7 @@ export default function BlogPostPage({ slugProp }) {
                 {relatedArticles.map((rel) => (
                   <a
                     key={rel.id}
-                    href={`/blog/${encodeURIComponent(rel.slug || rel.id)}`}
+                    href={`${lang === "en" ? "/en" : ""}/blog/${encodeURIComponent(rel.slug || rel.id)}`}
                     className={`group rounded-2xl overflow-hidden border p-4 space-y-3 block transition-all ${
                       darkMode ? "bg-[#141210] border-stone-800 hover:border-amber-500/40" : "bg-white border-stone-200 hover:border-amber-500 shadow-sm"
                     }`}
@@ -339,7 +340,8 @@ export default function BlogPostPage({ slugProp }) {
         isOpen={showFavoritesModal}
         onClose={() => setShowFavoritesModal(false)}
         onSelectProduct={(product) => {
-          navigateTo(`/product/${encodeURIComponent(product.sku || product.id)}`);
+          const prefix = lang === "en" ? "/en" : "";
+          navigateTo(`${prefix}/product/${encodeURIComponent(product.sku || product.id)}`);
         }}
       />
     </div>

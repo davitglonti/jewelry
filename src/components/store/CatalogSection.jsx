@@ -29,7 +29,7 @@ export default function CatalogSection({ openProductModal }) {
 
         {/* "View Full Collection" button placed at the top-right */}
         <a
-          href="/catalog"
+          href={lang === "en" ? "/en/catalog" : "/catalog"}
           className="inline-flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-6 py-1.5 sm:py-3 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-black font-semibold text-[11px] sm:text-sm tracking-wider uppercase transition-all duration-300 shadow-sm hover:shadow-amber-500/20 hover:scale-105 active:scale-95 shrink-0 whitespace-nowrap"
         >
           <span>{lang === "ka" ? `სრული კოლექცია (${products.length})` : `Explore All (${products.length})`}</span>

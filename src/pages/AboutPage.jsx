@@ -39,7 +39,7 @@ export default function AboutPage() {
         <section className="relative pt-32 pb-16 sm:pt-40 sm:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
           <div className="max-w-4xl mx-auto text-center space-y-5 relative z-10">
             <a
-              href="/"
+              href={lang === "en" ? "/en" : "/"}
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500 hover:text-black transition-all"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -115,7 +115,8 @@ export default function AboutPage() {
         isOpen={showFavoritesModal}
         onClose={() => setShowFavoritesModal(false)}
         onSelectProduct={(item) => {
-          navigateTo(`/product/${encodeURIComponent(item.sku || item.id)}`);
+          const prefix = lang === "en" ? "/en" : "";
+          navigateTo(`${prefix}/product/${encodeURIComponent(item.sku || item.id)}`);
         }}
       />
     </div>

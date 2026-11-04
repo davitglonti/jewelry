@@ -72,7 +72,8 @@ export default function CompareModal() {
     if (!p) return null;
     const prodName = lang === "ka" ? p.name : (p.nameEn || p.name);
     const code = p.sku || p.id;
-    const link = `/product/${encodeURIComponent(code)}`;
+    const prefix = lang === "en" ? "/en" : "";
+    const link = `${prefix}/product/${encodeURIComponent(code)}`;
     const isFav = favorites?.includes(p.id);
 
     return (

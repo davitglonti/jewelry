@@ -90,7 +90,7 @@ export default function SizeGuidePage() {
           
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-xs opacity-60 mb-6">
-            <a href="/" className="hover:text-amber-500 transition-colors">
+            <a href={lang === "en" ? "/en" : "/"} className="hover:text-amber-500 transition-colors">
               {lang === "ka" ? "მთავარი" : "Home"}
             </a>
             <span>/</span>
@@ -249,7 +249,7 @@ export default function SizeGuidePage() {
                   </div>
 
                   <a
-                    href="/catalog"
+                    href={lang === "en" ? "/en/catalog" : "/catalog"}
                     className="w-full py-3 px-4 rounded-2xl bg-amber-500 text-black font-semibold text-xs uppercase tracking-wider hover:brightness-110 transition-all flex items-center justify-center gap-2 mt-4"
                   >
                     <span>{lang === "ka" ? "ბეჭდების კოლექციის ნახვა" : "Browse Rings"}</span>
@@ -474,7 +474,7 @@ export default function SizeGuidePage() {
                   </p>
                 </div>
                 <a
-                  href="/catalog"
+                  href={lang === "en" ? "/en/catalog" : "/catalog"}
                   className="px-5 py-3 rounded-2xl bg-amber-500 text-black font-semibold text-xs uppercase tracking-wider hover:brightness-110 transition-all shrink-0"
                 >
                   {lang === "ka" ? "სამაჯურების კატალოგი" : "View Bracelets"}
@@ -593,7 +593,8 @@ export default function SizeGuidePage() {
         onClose={() => setShowFavoritesModal(false)}
         onSelectProduct={(prod) => {
           setShowFavoritesModal(false);
-          navigateTo(`/product/${encodeURIComponent(prod.sku || prod.id)}`);
+          const prefix = lang === "en" ? "/en" : "";
+          navigateTo(`${prefix}/product/${encodeURIComponent(prod.sku || prod.id)}`);
         }}
       />
     </div>

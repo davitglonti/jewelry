@@ -4,7 +4,7 @@ import CatalogPage from './pages/CatalogPage';
 import ProductPage from './pages/ProductPage';
 import CompareFloatingBar from './components/store/CompareFloatingBar';
 import { useStore } from './context/StoreContext';
-import { initSpaNavigation } from './utils/navigation';
+import { initSpaNavigation, parsePath } from './utils/navigation';
 
 // მეორადი და ადმინ გვერდების lazy ჩატვირთვა (Code Splitting)
 const AdminPage = lazy(() => import('./pages/AdminPage'));
@@ -27,25 +27,35 @@ const PageLoader = () => (
 );
 
 export default function App() {
-  const { showCompareModal } = useStore();
-  const [currentPath, setCurrentPath] = useState(() =>
-    window.location.pathname.replace(/\/+$/, "") || "/"
-  );
+  const { showCompareModal, lang, setLang } = useStore();
+  const [currentInfo, setCurrentInfo] = useState(() => parsePath(window.location.pathname));
 
   useEffect(() => {
     const handlePopState = () => {
-      setCurrentPath(window.location.pathname.replace(/\/+$/, "") || "/");
+      const parsed = parsePath(window.location.pathname);
+      setCurrentInfo(parsed);
+      if (parsed.lang !== lang) {
+        setLang(parsed.lang);
+      }
     };
     window.addEventListener("popstate", handlePopState);
     const cleanupSpa = initSpaNavigation();
+
+    // საწყისი შემოწმება: თუ URL შეიცავს /en-ს, ენის state-იც სინქრონიზდეს
+    const initial = parsePath(window.location.pathname);
+    if (initial.lang !== lang) {
+      setLang(initial.lang);
+    }
 
     return () => {
       window.removeEventListener("popstate", handlePopState);
       cleanupSpa();
     };
-  }, []);
+  }, [lang, setLang]);
 
-  if (currentPath === "/admin") {
+  const route = currentInfo.route;
+
+  if (route === "/admin") {
     return (
       <Suspense fallback={<PageLoader />}>
         <AdminPage />
@@ -55,61 +65,61 @@ export default function App() {
 
   let content;
 
-  if (currentPath === "" || currentPath === "/") {
+  if (route === "" || route === "/") {
     content = <StorePage />;
-  } else if (currentPath === "/about") {
+  } else if (route === "/about") {
     content = (
       <Suspense fallback={<PageLoader />}>
         <AboutPage />
       </Suspense>
     );
-  } else if (currentPath === "/blog") {
+  } else if (route === "/blog") {
     content = (
       <Suspense fallback={<PageLoader />}>
         <BlogPage />
       </Suspense>
     );
-  } else if (currentPath.startsWith("/blog/")) {
+  } else if (route.startsWith("/blog/")) {
     content = (
       <Suspense fallback={<PageLoader />}>
         <BlogPostPage />
       </Suspense>
     );
-  } else if (currentPath === "/catalog" || currentPath === "/collection") {
+  } else if (route === "/catalog" || route === "/collection") {
     content = <CatalogPage />;
-  } else if (currentPath === "/size-guide" || currentPath === "/sizes" || currentPath === "/ring-size") {
+  } else if (route === "/size-guide" || route === "/sizes" || route === "/ring-size") {
     content = (
       <Suspense fallback={<PageLoader />}>
         <SizeGuidePage />
       </Suspense>
     );
-  } else if (currentPath === "/product" || currentPath.startsWith("/product/") || currentPath.startsWith("/product?")) {
-    content = <ProductPage key={currentPath} />;
-  } else if (currentPath === "/login") {
+  } else if (route === "/product" || route.startsWith("/product/") || route.startsWith("/product?")) {
+    content = <ProductPage key={window.location.pathname} />;
+  } else if (route === "/login") {
     content = (
       <Suspense fallback={<PageLoader />}>
         <LoginPage initialMode="login" />
       </Suspense>
     );
-  } else if (currentPath === "/forgot-password") {
+  } else if (route === "/forgot-password") {
     content = (
       <Suspense fallback={<PageLoader />}>
         <LoginPage initialMode="forgot" />
       </Suspense>
     );
-  } else if (currentPath === "/reset-password" || currentPath === "/__/auth/action") {
+  } else if (route === "/reset-password" || route === "/__/auth/action") {
     content = (
       <Suspense fallback={<PageLoader />}>
         <LoginPage initialMode="new-password" />
       </Suspense>
     );
-  } else if (currentPath === "/register") {
+  } else if (route === "/register") {
     content = (
       <Suspense fallback={<PageLoader />}>
         <RegisterPage />
       </Suspense>
     );
-  } else if (currentPath === "/add" || currentPath === "/my-items" || currentPath === "/my-products") {
+  } else if (route === "/add" || route === "/my-items" || route === "/my-products") {
     // ნივთების მართვა და დამატება მხოლოდ ადმინ პანელშია
     window.location.replace("/admin");
     return null;

@@ -23,10 +23,11 @@ import ProductSpecsTable from '../components/store/ProductSpecsTable';
 import ProductActionButtons from '../components/store/ProductActionButtons';
 
 export default function ProductPage({ skuProp }) {
-  // ვიღებთ პროდუქტის კოდს URL-იდან (მაგ: /product/AUR-102)
+  // ვიღებთ პროდუქტის კოდს URL-იდან (მაგ: /product/AUR-102 ან /en/product/AUR-102)
   const rawPath = window.location.pathname;
-  const skuFromUrl = rawPath.startsWith('/product/')
-    ? rawPath.replace('/product/', '').replace(/\/$/, '')
+  const match = rawPath.match(/\/product\/([^/?#]+)/);
+  const skuFromUrl = match
+    ? decodeURIComponent(match[1])
     : new URLSearchParams(window.location.search).get('item') || '';
 
   const currentSku = skuProp || skuFromUrl;
@@ -101,7 +102,8 @@ export default function ProductPage({ skuProp }) {
       : (selectedProduct.descriptionEn || `${prodName} — handcrafted fine jewelry by ${brand}.`);
 
     const numericPrice = (selectedProduct.price || "").toString().replace(/[^0-9.]/g, "") || "0";
-    const productUrl = `https://www.matare.store/product/${encodeURIComponent(selectedProduct.sku || selectedProduct.id)}`;
+    const langPrefix = lang === "en" ? "/en" : "";
+    const productUrl = `https://www.matare.store${langPrefix}/product/${encodeURIComponent(selectedProduct.sku || selectedProduct.id)}`;
     const mainImage = (selectedProduct.images && selectedProduct.images[0]) || "https://www.matare.store/brand-logo.jpg";
 
     // 1. სათაური & Meta Description
@@ -191,11 +193,12 @@ export default function ProductPage({ skuProp }) {
   }, [selectedProduct, lang, siteSettings.brandName]);
 
   const goToHome = () => {
-    navigateTo("/");
+    navigateTo(lang === 'en' ? '/en' : '/');
   };
 
   const goToProduct = (code) => {
-    navigateTo(`/product/${encodeURIComponent(code)}`);
+    const prefix = lang === 'en' ? '/en' : '';
+    navigateTo(`${prefix}/product/${encodeURIComponent(code)}`);
   };
 
   if (!settingsLoaded && !selectedProduct) {

@@ -42,7 +42,8 @@ export default function BlogPage() {
   const remainingArticles = filteredArticles.slice(1);
 
   const openArticle = (art) => {
-    navigateTo(`/blog/${encodeURIComponent(art.slug || art.id)}`);
+    const prefix = lang === "en" ? "/en" : "";
+    navigateTo(`${prefix}/blog/${encodeURIComponent(art.slug || art.id)}`);
   };
 
   return (
@@ -264,7 +265,8 @@ export default function BlogPage() {
         isOpen={showFavoritesModal}
         onClose={() => setShowFavoritesModal(false)}
         onSelectProduct={(product) => {
-          navigateTo(`/product/${encodeURIComponent(product.sku || product.id)}`);
+          const prefix = lang === "en" ? "/en" : "";
+          navigateTo(`${prefix}/product/${encodeURIComponent(product.sku || product.id)}`);
         }}
       />
     </div>

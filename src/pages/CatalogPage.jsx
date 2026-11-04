@@ -200,7 +200,8 @@ export default function CatalogPage() {
 
   const openProduct = (item) => {
     const code = item.sku || item.id;
-    navigateTo(`/product/${encodeURIComponent(code)}`);
+    const prefix = lang === "en" ? "/en" : "";
+    navigateTo(`${prefix}/product/${encodeURIComponent(code)}`);
   };
 
   const hasActiveFilters =
@@ -243,7 +244,7 @@ export default function CatalogPage() {
             aria-label="Breadcrumbs"
             className="flex items-center gap-2 text-xs opacity-60 mb-6"
           >
-            <a href="/" className="hover:text-amber-500 transition-colors flex items-center gap-1">
+            <a href={lang === "en" ? "/en" : "/"} className="hover:text-amber-500 transition-colors flex items-center gap-1">
               <Home className="w-3.5 h-3.5" />
               <span>{lang === "ka" ? "მთავარი" : "Home"}</span>
             </a>

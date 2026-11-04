@@ -79,7 +79,15 @@ const writeCache = (key, value) => {
 
 export function StoreProvider({ children }) {
   const [darkMode, setDarkMode] = useState(true);
-  const [lang, setLang] = useState("ka");
+  const [lang, setLang] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      if (path === '/en' || path.startsWith('/en/')) {
+        return 'en';
+      }
+    }
+    return 'ka';
+  });
 
   const [siteSettings, setSiteSettings] = useState(() => {
     const cached = readCache(KEYS.settings);
@@ -112,14 +120,7 @@ export function StoreProvider({ children }) {
     }
   }, [darkMode]);
 
-  // ენის დამახსოვრება
-  useEffect(() => {
-    const savedLang = localStorage.getItem("aurelia_lang");
-    if (savedLang) {
-      setLang(savedLang);
-    }
-  }, []);
-
+  // ენის სინქრონიზაცია HTML ატრიბუტთან და შენახვა
   useEffect(() => {
     localStorage.setItem("aurelia_lang", lang);
     document.documentElement.lang = lang;

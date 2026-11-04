@@ -51,32 +51,32 @@ export default function Footer({ darkMode, lang, siteSettings }) {
             </h4>
             <ul className={`space-y-2 text-xs ${textColor}`}>
               <li>
-                <a href="/" className={`${linkHover} transition-colors`}>
+                <a href={lang === "en" ? "/en" : "/"} className={`${linkHover} transition-colors`}>
                   {lang === "ka" ? "მთავარი" : "Home"}
                 </a>
               </li>
               <li>
-                <a href="/catalog" className={`${linkHover} transition-colors`}>
+                <a href={lang === "en" ? "/en/catalog" : "/catalog"} className={`${linkHover} transition-colors`}>
                   {lang === "ka" ? "კოლექცია" : "Collection"}
                 </a>
               </li>
               <li>
-                <a href="/about" className={`${linkHover} transition-colors`}>
+                <a href={lang === "en" ? "/en/about" : "/about"} className={`${linkHover} transition-colors`}>
                   {lang === "ka" ? "ჩვენ შესახებ" : "About Us"}
                 </a>
               </li>
               <li>
-                <a href="/blog" className={`${linkHover} transition-colors`}>
+                <a href={lang === "en" ? "/en/blog" : "/blog"} className={`${linkHover} transition-colors`}>
                   {lang === "ka" ? "ბლოგი / რჩევები" : "Blog / Journal"}
                 </a>
               </li>
               <li>
-                <a href="/size-guide" className={`${linkHover} transition-colors`}>
+                <a href={lang === "en" ? "/en/size-guide" : "/size-guide"} className={`${linkHover} transition-colors`}>
                   {lang === "ka" ? "ზომის გზამკვლევი" : "Size Guide"}
                 </a>
               </li>
               <li>
-                <a href="/#faq" className={`${linkHover} transition-colors`}>
+                <a href={lang === "en" ? "/en/#faq" : "/#faq"} className={`${linkHover} transition-colors`}>
                   {lang === "ka" ? "კითხვა-პასუხი (FAQ)" : "FAQ"}
                 </a>
               </li>

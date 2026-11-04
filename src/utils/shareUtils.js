@@ -1,7 +1,8 @@
 export const getWhatsAppLink = (product, siteSettings, lang, selectedSize = "", promoCode = "") => {
   const cleanPhone = (siteSettings?.whatsapp || "995555000000").replace(/[^0-9]/g, "");
   const code = product.sku || product.id;
-  const itemUrl = `${window.location.origin}/product/${encodeURIComponent(code)}`;
+  const langPrefix = lang === "en" ? "/en" : "";
+  const itemUrl = `${window.location.origin}${langPrefix}/product/${encodeURIComponent(code)}`;
   const priceText = product.oldPrice ? `${product.price} (ძველი ფასი: ${product.oldPrice})` : product.price;
   const priceTextEn = product.oldPrice ? `${product.price} (Was: ${product.oldPrice})` : product.price;
 
@@ -17,7 +18,8 @@ export const getWhatsAppLink = (product, siteSettings, lang, selectedSize = "", 
 
 export const shareProductLink = async (product, lang, onCopySuccess) => {
   const code = product.sku || product.id;
-  const shareUrl = `${window.location.origin}/product/${encodeURIComponent(code)}`;
+  const langPrefix = lang === "en" ? "/en" : "";
+  const shareUrl = `${window.location.origin}${langPrefix}/product/${encodeURIComponent(code)}`;
   const title = lang === "ka" ? product.name : (product.nameEn || product.name);
   const text = `${title} (${product.sku}) - ${product.price}`;
   const imageUrl = product.images?.[0];
