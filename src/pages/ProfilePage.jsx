@@ -12,6 +12,8 @@ import { navigateTo } from '../utils/navigation';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import FavoritesModal from '../components/modals/FavoritesModal';
+import PasswordStrengthIndicator from '../components/auth/PasswordStrengthIndicator';
+import { isStrongPassword, getPasswordValidationMessage } from '../utils/passwordValidation';
 
 export default function ProfilePage() {
   const { darkMode, setDarkMode, lang, setLang, siteSettings, favorites, inquiries } = useStore();
@@ -145,11 +147,12 @@ export default function ProfilePage() {
       return;
     }
 
-    if (!newPassword || newPassword.length < 6) {
+    if (!isStrongPassword(newPassword)) {
       setPasswordErrorMsg(
-        lang === 'ka'
-          ? 'ახალი პაროლი უნდა შეიცავდეს მინიმუმ 6 სიმბოლოს.'
-          : 'Password must be at least 6 characters.'
+        getPasswordValidationMessage(newPassword, lang) ||
+        (lang === 'ka'
+          ? 'ახალი პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს, დიდ და პატარა ასოებს, და ციფრს ან სიმბოლოს.'
+          : 'Password must be at least 8 characters and contain uppercase, lowercase letters, and a number or symbol.')
       );
       return;
     }
@@ -623,7 +626,7 @@ export default function ProfilePage() {
                     {/* New Password */}
                     <div className="space-y-1.5">
                       <label className="text-xs uppercase tracking-wider font-medium opacity-70 block">
-                        {lang === 'ka' ? 'ახალი პაროლი (მინ. 6 სიმბოლო):' : 'New Password (min. 6 chars):'}
+                        {lang === 'ka' ? 'ახალი პაროლი (მინ. 8 სიმბოლო):' : 'New Password (min. 8 chars):'}
                       </label>
                       <div className="relative">
                         <input
@@ -647,6 +650,8 @@ export default function ProfilePage() {
                           {showNewPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
                       </div>
+
+                      <PasswordStrengthIndicator password={newPassword} lang={lang} darkMode={darkMode} />
                     </div>
 
                     {/* Confirm New Password */}

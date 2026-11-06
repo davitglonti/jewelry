@@ -1,6 +1,7 @@
 // src/context/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getLazyAuth } from '../lib/firebase';
+import { isStrongPassword, getPasswordValidationMessage } from '../utils/passwordValidation';
 
 const AuthContext = createContext(null);
 
@@ -34,9 +35,12 @@ export const getAuthErrorMessage = (error, lang = 'ka', action = 'login') => {
         ? 'ეს ელფოსტა უკვე დარეგისტრირებულია სისტემაში.'
         : 'This email is already registered.';
     case 'auth/weak-password':
+      if (error?.message && !error.message.startsWith('auth/')) {
+        return error.message;
+      }
       return lang === 'ka'
-        ? 'პაროლი ძალიან სუსტია. შეიყვანეთ მინიმუმ 6 სიმბოლო.'
-        : 'Password is too weak. Please use at least 6 characters.';
+        ? 'პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს, დიდ და პატარა ასოებს, და ციფრს ან სიმბოლოს.'
+        : 'Password must contain at least 8 characters, uppercase and lowercase letters, and a number or symbol.';
     case 'auth/invalid-email':
       return lang === 'ka'
         ? 'გთხოვთ მიუთითოთ სწორი ელფოსტის ფორმატი (მაგ: mail@example.com).'
@@ -153,6 +157,12 @@ export function AuthProvider({ children }) {
   }, []);
 
   const register = async (email, password, displayName = '') => {
+    if (!isStrongPassword(password)) {
+      const msg = getPasswordValidationMessage(password, 'ka');
+      const err = new Error(msg || 'auth/weak-password');
+      err.code = 'auth/weak-password';
+      throw err;
+    }
     const auth = await getLazyAuth();
     if (!auth) throw new Error('Firebase Auth არ არის ინიციალიზებული');
     const { createUserWithEmailAndPassword, updateProfile } = await import('firebase/auth');
@@ -220,8 +230,9 @@ export function AuthProvider({ children }) {
   const confirmReset = async (actionCode, newPassword) => {
     const auth = await getLazyAuth();
     if (!auth) throw new Error('Firebase Auth არ არის ინიციალიზებული');
-    if (!newPassword || newPassword.length < 6) {
-      const err = new Error('auth/weak-password');
+    if (!isStrongPassword(newPassword)) {
+      const msg = getPasswordValidationMessage(newPassword, 'ka');
+      const err = new Error(msg || 'auth/weak-password');
       err.code = 'auth/weak-password';
       throw err;
     }
@@ -249,8 +260,9 @@ export function AuthProvider({ children }) {
       err.code = 'auth/missing-current-password';
       throw err;
     }
-    if (!newPassword || newPassword.length < 6) {
-      const err = new Error('auth/weak-password');
+    if (!isStrongPassword(newPassword)) {
+      const msg = getPasswordValidationMessage(newPassword, 'ka');
+      const err = new Error(msg || 'auth/weak-password');
       err.code = 'auth/weak-password';
       throw err;
     }

@@ -6,6 +6,8 @@ import { useStore } from '../context/StoreContext';
 import { navigateTo } from '../utils/navigation';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
+import PasswordStrengthIndicator from '../components/auth/PasswordStrengthIndicator';
+import { isStrongPassword, getPasswordValidationMessage } from '../utils/passwordValidation';
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -32,11 +34,12 @@ export default function RegisterPage() {
       return;
     }
 
-    if (password.length < 6) {
+    if (!isStrongPassword(password)) {
       setErrorMessage(
-        lang === 'ka'
-          ? 'პაროლი უნდა შედგებოდეს მინიმუმ 6 სიმბოლოსგან'
-          : 'Password must be at least 6 characters long'
+        getPasswordValidationMessage(password, lang) ||
+        (lang === 'ka'
+          ? 'პაროლი უნდა შედგებოდეს მინიმუმ 8 სიმბოლოსგან და შეიცავდეს დიდ ასოს, პატარა ასოს და ციფრს ან სიმბოლოს.'
+          : 'Password must be at least 8 characters and contain uppercase, lowercase letters, and a number or symbol.')
       );
       return;
     }
@@ -150,7 +153,7 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-xs uppercase tracking-wider font-semibold opacity-80 mb-1.5">
-                {lang === 'ka' ? 'პაროლი (მინ. 6 სიმბოლო)' : 'Password (min. 6 chars)'}
+                {lang === 'ka' ? 'პაროლი (მინ. 8 სიმბოლო)' : 'Password (min. 8 chars)'}
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500" />
@@ -176,6 +179,9 @@ export default function RegisterPage() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+
+              {/* Real-time strong password criteria & strength indicator */}
+              <PasswordStrengthIndicator password={password} lang={lang} darkMode={darkMode} />
             </div>
 
             <div>

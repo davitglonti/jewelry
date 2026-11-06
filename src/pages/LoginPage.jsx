@@ -6,6 +6,8 @@ import { useStore } from '../context/StoreContext';
 import { navigateTo } from '../utils/navigation';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
+import PasswordStrengthIndicator from '../components/auth/PasswordStrengthIndicator';
+import { isStrongPassword, getPasswordValidationMessage } from '../utils/passwordValidation';
 
 export default function LoginPage({ initialMode = 'login' }) {
   const { login, resetPassword, verifyResetCode, confirmReset } = useAuth();
@@ -101,8 +103,13 @@ export default function LoginPage({ initialMode = 'login' }) {
     e.preventDefault();
     setErrorMessage('');
 
-    if (!newPassword || newPassword.length < 6) {
-      setErrorMessage(lang === 'ka' ? 'პაროლი უნდა შედგებოდეს მინიმუმ 6 სიმბოლოსგან' : 'Password must be at least 6 characters');
+    if (!isStrongPassword(newPassword)) {
+      setErrorMessage(
+        getPasswordValidationMessage(newPassword, lang) ||
+        (lang === 'ka'
+          ? 'ახალი პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს, დიდ და პატარა ასოებს, და ციფრს ან სიმბოლოს.'
+          : 'Password must contain at least 8 characters, uppercase and lowercase letters, and a number or symbol.')
+      );
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -531,7 +538,7 @@ export default function LoginPage({ initialMode = 'login' }) {
                 <form onSubmit={handleConfirmNewPassword} className="space-y-4">
                   <div>
                     <label className="block text-xs uppercase tracking-wider font-semibold opacity-80 mb-1.5">
-                      {lang === 'ka' ? 'ახალი პაროლი (მინ. 6 სიმბოლო)' : 'New Password (min 6 chars)'}
+                      {lang === 'ka' ? 'ახალი პაროლი (მინ. 8 სიმბოლო)' : 'New Password (min 8 chars)'}
                     </label>
                     <div className="relative">
                       <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500" />
@@ -556,6 +563,8 @@ export default function LoginPage({ initialMode = 'login' }) {
                         {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
+
+                    <PasswordStrengthIndicator password={newPassword} lang={lang} darkMode={darkMode} />
                   </div>
 
                   <div>
