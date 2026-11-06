@@ -9,9 +9,18 @@ export const getAuthErrorMessage = (error, lang = 'ka', action = 'login') => {
   switch (code) {
     case 'auth/invalid-credential':
     case 'auth/wrong-password':
+      if (action === 'change-password') {
+        return lang === 'ka'
+          ? 'მიმდინარე (ძველი) პაროლი არასწორია.'
+          : 'Current password is incorrect.';
+      }
       return lang === 'ka'
         ? 'ელფოსტა ან პაროლი არასწორია.'
         : 'Invalid email or password.';
+    case 'auth/missing-current-password':
+      return lang === 'ka'
+        ? 'გთხოვთ შეიყვანოთ მიმდინარე (ძველი) პაროლი.'
+        : 'Please enter your current password.';
     case 'auth/user-not-found':
       return action === 'reset'
         ? (lang === 'ka' ? 'ამ ელფოსტით დარეგისტრირებული მომხმარებელი ვერ მოიძებნა.' : 'No user found with this email address.')
@@ -232,15 +241,22 @@ export function AuthProvider({ children }) {
     setUser({ ...auth.currentUser, ...updates });
   };
 
-  const changePassword = async (newPassword) => {
+  const changePassword = async (newPassword, currentPassword = '') => {
     const auth = await getLazyAuth();
     if (!auth || !auth.currentUser) throw new Error('ავტორიზაცია არ მოიძებნა');
+    if (!currentPassword || !currentPassword.trim()) {
+      const err = new Error('auth/missing-current-password');
+      err.code = 'auth/missing-current-password';
+      throw err;
+    }
     if (!newPassword || newPassword.length < 6) {
       const err = new Error('auth/weak-password');
       err.code = 'auth/weak-password';
       throw err;
     }
-    const { updatePassword } = await import('firebase/auth');
+    const { EmailAuthProvider, reauthenticateWithCredential, updatePassword } = await import('firebase/auth');
+    const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPassword.trim());
+    await reauthenticateWithCredential(auth.currentUser, credential);
     await updatePassword(auth.currentUser, newPassword);
   };
 

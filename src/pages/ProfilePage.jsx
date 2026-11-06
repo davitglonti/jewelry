@@ -31,8 +31,10 @@ export default function ProfilePage() {
   const [profileErrorMsg, setProfileErrorMsg] = useState('');
 
   // Password Change State
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
@@ -128,11 +130,20 @@ export default function ProfilePage() {
     }
   };
 
-  // Change password
+  // Change password with required current password verification
   const handleChangePassword = async (e) => {
     if (e) e.preventDefault();
     setPasswordErrorMsg('');
     setPasswordSuccessMsg('');
+
+    if (!currentPassword || !currentPassword.trim()) {
+      setPasswordErrorMsg(
+        lang === 'ka'
+          ? 'გთხოვთ შეიყვანოთ მიმდინარე (ძველი) პაროლი.'
+          : 'Please enter your current password.'
+      );
+      return;
+    }
 
     if (!newPassword || newPassword.length < 6) {
       setPasswordErrorMsg(
@@ -146,26 +157,36 @@ export default function ProfilePage() {
     if (newPassword !== confirmPassword) {
       setPasswordErrorMsg(
         lang === 'ka'
-          ? 'შეყვანილი პაროლები ერთმანეთს არ ემთხვევა.'
-          : 'Passwords do not match.'
+          ? 'შეყვანილი ახალი პაროლები ერთმანეთს არ ემთხვევა.'
+          : 'New passwords do not match.'
+      );
+      return;
+    }
+
+    if (newPassword === currentPassword) {
+      setPasswordErrorMsg(
+        lang === 'ka'
+          ? 'ახალი პაროლი უნდა განსხვავდებოდეს ძველი პაროლისგან.'
+          : 'New password must be different from current password.'
       );
       return;
     }
 
     setSavingPassword(true);
     try {
-      await changePassword(newPassword);
+      await changePassword(newPassword, currentPassword);
       setPasswordSuccessMsg(
         lang === 'ka'
-          ? 'თქვენი პაროლი წარმატებით შეიცვალა.'
+          ? 'თქვენი პაროლი წარმატებით განახლდა.'
           : 'Your password has been updated successfully.'
       );
+      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
       setTimeout(() => setPasswordSuccessMsg(''), 4500);
     } catch (err) {
       console.error(err);
-      setPasswordErrorMsg(getAuthErrorMessage(err, lang));
+      setPasswordErrorMsg(getAuthErrorMessage(err, lang, 'change-password'));
     } finally {
       setSavingPassword(false);
     }
@@ -570,10 +591,39 @@ export default function ProfilePage() {
                   )}
 
                   <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
+                    {/* Current / Old Password */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs uppercase tracking-wider font-medium opacity-70 block">
+                        {lang === 'ka' ? 'მიმდინარე (ძველი) პაროლი:' : 'Current Password:'}
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showCurrentPassword ? 'text' : 'password'}
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          placeholder="••••••••"
+                          required
+                          className={`w-full px-4 py-2.5 pr-11 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
+                            darkMode
+                              ? 'bg-stone-900/60 border-stone-800 text-white focus:border-stone-500'
+                              : 'bg-stone-50 border-stone-300 text-stone-900 focus:border-stone-600'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-white p-1"
+                          aria-label="Toggle current password visibility"
+                        >
+                          {showCurrentPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+
                     {/* New Password */}
                     <div className="space-y-1.5">
                       <label className="text-xs uppercase tracking-wider font-medium opacity-70 block">
-                        {lang === 'ka' ? 'ახალი პაროლი:' : 'New Password:'}
+                        {lang === 'ka' ? 'ახალი პაროლი (მინ. 6 სიმბოლო):' : 'New Password (min. 6 chars):'}
                       </label>
                       <div className="relative">
                         <input
@@ -581,6 +631,7 @@ export default function ProfilePage() {
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                           placeholder="••••••••"
+                          required
                           className={`w-full px-4 py-2.5 pr-11 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
                             darkMode
                               ? 'bg-stone-900/60 border-stone-800 text-white focus:border-stone-500'
@@ -591,6 +642,7 @@ export default function ProfilePage() {
                           type="button"
                           onClick={() => setShowNewPassword(!showNewPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-white p-1"
+                          aria-label="Toggle new password visibility"
                         >
                           {showNewPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
@@ -600,7 +652,7 @@ export default function ProfilePage() {
                     {/* Confirm New Password */}
                     <div className="space-y-1.5">
                       <label className="text-xs uppercase tracking-wider font-medium opacity-70 block">
-                        {lang === 'ka' ? 'გაიმეორეთ პაროლი:' : 'Confirm Password:'}
+                        {lang === 'ka' ? 'გაიმეორეთ ახალი პაროლი:' : 'Confirm New Password:'}
                       </label>
                       <div className="relative">
                         <input
@@ -608,6 +660,7 @@ export default function ProfilePage() {
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           placeholder="••••••••"
+                          required
                           className={`w-full px-4 py-2.5 pr-11 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
                             darkMode
                               ? 'bg-stone-900/60 border-stone-800 text-white focus:border-stone-500'
@@ -618,6 +671,7 @@ export default function ProfilePage() {
                           type="button"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-white p-1"
+                          aria-label="Toggle confirm password visibility"
                         >
                           {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
@@ -627,7 +681,7 @@ export default function ProfilePage() {
                     <div className="pt-2">
                       <button
                         type="submit"
-                        disabled={savingPassword || !newPassword || !confirmPassword}
+                        disabled={savingPassword || !currentPassword || !newPassword || !confirmPassword}
                         className={`px-7 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-40 ${
                           darkMode
                             ? 'bg-stone-100 hover:bg-white text-stone-950 shadow-sm'
@@ -635,7 +689,7 @@ export default function ProfilePage() {
                         }`}
                       >
                         <Key className="w-3.5 h-3.5" />
-                        <span>{savingPassword ? (lang === 'ka' ? 'იცვლება...' : 'Updating...') : (lang === 'ka' ? 'პაროლის განახლება' : 'Update Password')}</span>
+                        <span>{savingPassword ? (lang === 'ka' ? 'მოწმდება...' : 'Verifying...') : (lang === 'ka' ? 'პაროლის განახლება' : 'Update Password')}</span>
                       </button>
                     </div>
                   </form>
