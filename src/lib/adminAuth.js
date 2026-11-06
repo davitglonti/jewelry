@@ -66,10 +66,31 @@ export async function checkUserIsAdmin(user, db) {
         const data = snap.data();
         if (data && data.isActive !== false) {
           const role = data.role === 'moderator' ? 'moderator' : 'admin';
+
+          // თუ მომხმარებელი პირველად შემოვიდა (მოლოდინში იყო), სტატუსი აქტიურზე გადავიყვანოთ
+          if (data.status !== 'active' || !data.hasJoined) {
+            try {
+              const { updateDoc } = await import('firebase/firestore');
+              await updateDoc(docRef, {
+                status: 'active',
+                hasJoined: true,
+                joinedAt: Date.now()
+              });
+            } catch {
+              fetch('/api/activate-admin-account', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+              }).catch(() => {});
+            }
+          }
+
           return {
             isAdmin: true,
             isSuperAdmin: false,
             role,
+            status: 'active',
+            hasJoined: true,
             mustChangePassword: Boolean(data.mustChangePassword),
             email,
             addedBy: data.addedBy || '',
@@ -122,6 +143,8 @@ export async function getAdminsList(db) {
       role: 'superadmin',
       isSuperAdmin: true,
       isActive: true,
+      status: 'active',
+      hasJoined: true,
       mustChangePassword: false,
       addedAt: null,
       addedBy: 'სისტემის მფლობელი'
@@ -137,12 +160,19 @@ export async function getAdminsList(db) {
       const data = d.data();
       const docEmail = (data.email || d.id).toLowerCase();
       if (docEmail !== SUPER_ADMIN_EMAIL.toLowerCase()) {
+        const hasJoined = Boolean(data.hasJoined || data.joinedAt || data.passwordChangedAt);
+        const status = data.status ? data.status : (hasJoined ? 'active' : 'pending');
+
         list.push({
           id: d.id,
           email: docEmail,
           role: data.role === 'moderator' ? 'moderator' : 'admin',
           isSuperAdmin: false,
           isActive: data.isActive !== false,
+          status,
+          hasJoined,
+          joinedAt: data.joinedAt || null,
+          invitedAt: data.invitedAt || data.addedAt || null,
           mustChangePassword: Boolean(data.mustChangePassword),
           addedAt: data.addedAt || null,
           addedBy: data.addedBy || 'ადმინი'

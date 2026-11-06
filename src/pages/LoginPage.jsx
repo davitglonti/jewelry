@@ -113,6 +113,17 @@ export default function LoginPage({ initialMode = 'login' }) {
     setLoading(true);
     try {
       await confirmReset(oobCode, newPassword);
+      if (verifiedEmail) {
+        try {
+          await fetch('/api/activate-admin-account', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: verifiedEmail })
+          });
+        } catch (actErr) {
+          console.warn('Admin activation check error:', actErr);
+        }
+      }
       setPasswordResetSuccess(true);
       setLoading(false);
     } catch (err) {

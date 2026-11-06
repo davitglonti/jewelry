@@ -89,17 +89,25 @@ export default async function handler(req, res) {
       });
     }
 
-    // 4. Firestore-ში როლის შენახვა
+    // 4. Firestore-ში როლის შენახვა (მოლოდინში, სანამ პაროლს არ დააყენებს / არ შევა)
     const firestore = admin.firestore();
-    await firestore.collection('admins').doc(email).set({
+    const docRef = firestore.collection('admins').doc(email);
+    const existingSnap = await docRef.get();
+    const existingData = existingSnap.exists ? existingSnap.data() : {};
+    const alreadyJoined = Boolean(existingData.hasJoined || existingData.joinedAt || existingData.status === 'active');
+
+    await docRef.set({
       email,
       role, // 'admin' ან 'moderator'
       isActive: true,
+      status: alreadyJoined ? 'active' : 'pending',
+      hasJoined: alreadyJoined,
+      joinedAt: existingData.joinedAt || null,
       mustChangePassword: false,
       invitedBy: callerEmail,
       invitedAt: Date.now(),
-      addedBy: callerEmail,
-      addedAt: Date.now()
+      addedBy: existingData.addedBy || callerEmail,
+      addedAt: existingData.addedAt || Date.now()
     }, { merge: true });
 
     // 5. Firebase Admin-ით პაროლის დაყენების/აღდგენის ბმულის გენერირება

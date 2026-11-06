@@ -48,13 +48,12 @@ service cloud.firestore {
         isModerator() ||
         (request.auth.token.email != null && request.auth.token.email.lower() == adminEmail.lower())
       );
-      // update: საკუთარ ჩანაწერზე mustChangePassword-ის განახლება პირველი შესვლისას, ან Super Admin-ს
+      // update: საკუთარ ჩანაწერზე სტატუსის (status, joinedAt) ან mustChangePassword-ის განახლება, ან Super Admin-ს
       allow update: if isSuperAdmin() || (
         request.auth != null &&
         request.auth.token.email != null &&
         request.auth.token.email.lower() == adminEmail.lower() &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mustChangePassword', 'passwordChangedAt']) &&
-        request.resource.data.mustChangePassword == false
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mustChangePassword', 'passwordChangedAt', 'status', 'hasJoined', 'joinedAt', 'lastLoginAt'])
       );
       // list: სრული სიის ნახვა შეუძლია მხოლოდ სრულ ადმინს
       allow list: if isFullAdmin();

@@ -458,20 +458,31 @@ export default function AdminManagementTab({
                         )}
 
                         {!isOwner && (
-                          <span
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-medium border ${
-                              adm.isActive
-                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                                : 'bg-red-500/10 text-red-400 border-red-500/30'
-                            }`}
-                          >
-                            {adm.isActive ? 'აქტიური' : 'შეჩერებული'}
-                          </span>
+                          !adm.isActive ? (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-red-500/10 text-red-400 border border-red-500/30 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                              შეჩერებული
+                            </span>
+                          ) : adm.status === 'pending' || !adm.hasJoined ? (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1.5 animate-pulse">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                              მოლოდინში (მოწვეული)
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                              აქტიური
+                            </span>
+                          )
                         )}
                       </div>
 
                       <div className="flex items-center gap-3 text-[11px] opacity-60 mt-0.5 flex-wrap">
-                        <span>დამატებულია: {adm.addedAt ? new Date(adm.addedAt).toLocaleDateString('ka-GE') : 'სისტემური'}</span>
+                        <span>
+                          {adm.hasJoined || adm.status === 'active'
+                            ? `დამატებულია: ${adm.addedAt ? new Date(adm.addedAt).toLocaleDateString('ka-GE') : 'სისტემური'}`
+                            : `მოწვეულია: ${adm.invitedAt || adm.addedAt ? new Date(adm.invitedAt || adm.addedAt).toLocaleDateString('ka-GE') : ''} • ელოდება შემოერთებას`}
+                        </span>
                         {adm.addedBy && <span>• დაამატა: {adm.addedBy}</span>}
                       </div>
                     </div>
@@ -486,21 +497,23 @@ export default function AdminManagementTab({
                       </span>
                     ) : isSuperAdmin ? (
                       <>
-                        {/* Resend invite link */}
-                        <button
-                          type="button"
-                          onClick={() => handleResendInvite(adm.email, adm.role)}
-                          disabled={actionLoading}
-                          title="მოწვევის / პაროლის აღდგენის ბმულის ხელახლა გაგზავნა მეილზე"
-                          className={`p-2 rounded-xl border text-xs font-medium flex items-center gap-1.5 transition-all ${
-                            darkMode
-                              ? 'border-stone-800 bg-stone-900/60 text-stone-300 hover:text-amber-400 hover:border-amber-500/40'
-                              : 'border-stone-200 bg-stone-100 text-stone-700 hover:text-amber-600 hover:border-amber-500'
-                          }`}
-                        >
-                          <Send className="w-3.5 h-3.5 text-amber-500" />
-                          <span className="hidden lg:inline text-[11px]">მოწვევის გაგზავნა</span>
-                        </button>
+                        {/* Resend invite button ONLY when user is pending / not joined yet */}
+                        {(!adm.hasJoined || adm.status === 'pending') && (
+                          <button
+                            type="button"
+                            onClick={() => handleResendInvite(adm.email, adm.role)}
+                            disabled={actionLoading}
+                            title="მოწვევის წერილის ხელახლა გაგზავნა მეილზე"
+                            className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs ${
+                              darkMode
+                                ? 'border-amber-500/40 bg-amber-500/15 text-amber-400 hover:bg-amber-500 hover:text-black'
+                                : 'border-amber-500/50 bg-amber-50 text-amber-700 hover:bg-amber-500 hover:text-black'
+                            }`}
+                          >
+                            <Send className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline text-[11px]">ხელახლა გაგზავნა</span>
+                          </button>
+                        )}
 
                         {/* Role switcher */}
                         <select
