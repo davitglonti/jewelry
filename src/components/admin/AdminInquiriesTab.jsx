@@ -239,21 +239,32 @@ export default function AdminInquiriesTab({
       ? selProd.price
       : parseFloat(String(selProd?.price || '0').replace(/[^0-9.]/g, '')) || 0;
 
+    const parseRate = (val, fallback) => {
+      if (val === null || val === undefined || val === '') return fallback;
+      const num = Number(val);
+      return Number.isFinite(num) ? num : fallback;
+    };
+
+    const deliveryPriceTbilisi = parseRate(siteSettings?.deliveryPriceTbilisi, 6);
+    const deliveryPriceRegional = parseRate(siteSettings?.deliveryPriceRegional, 10);
+    const giftPackagingPrice = parseRate(siteSettings?.giftPackagingPrice, 5);
+
+    const shippingFee = newOrderForm.city === 'თბილისი' ? deliveryPriceTbilisi : deliveryPriceRegional;
+    const giftFee = newOrderForm.isGift ? giftPackagingPrice : 0;
+    const finalAmount = pPrice + shippingFee + giftFee;
+
     const newOrder = {
       id: orderId,
       date: new Date().toLocaleString('ka-GE'),
       clientName: newOrderForm.clientName.trim(),
       clientPhone: newOrderForm.clientPhone.trim(),
       clientEmail: newOrderForm.clientEmail.trim(),
-      deliveryMethod: newOrderForm.deliveryMethod === 'courier' ? `კურიერით (${newOrderForm.city})` : 'შოურუმში გატანა',
+      deliveryMethod: `კურიერით (${newOrderForm.city})`,
       city: newOrderForm.city,
-      address: newOrderForm.deliveryMethod === 'courier' ? `${newOrderForm.city}, ${newOrderForm.address.trim()}` : 'შოურუმი (მ. კოსტავას 75)',
-      paymentMethod:
-        newOrderForm.paymentMethod === 'card'
-          ? 'ონლაინ ბარათით'
-          : newOrderForm.paymentMethod === 'cod'
-          ? 'კურიერთან გადახდა'
-          : 'შოურუმში გადახდა',
+      address: `${newOrderForm.city}, ${newOrderForm.address.trim()}`,
+      shippingFee,
+      giftFee,
+      paymentMethod: newOrderForm.paymentMethod === 'card' ? 'ონლაინ ბარათით' : 'კურიერთან გადახდა',
       paymentStatus: newOrderForm.paymentMethod === 'card' ? 'გადახდილია' : 'გადასახდელია',
       isGift: newOrderForm.isGift,
       notes: newOrderForm.notes.trim(),
@@ -269,7 +280,7 @@ export default function AdminInquiriesTab({
         }
       ],
       productName: `${selProd?.name || 'სამკაული'} (ზომა: ${newOrderForm.size || 'სტანდარტული'})`,
-      totalPrice: pPrice,
+      totalPrice: finalAmount,
       rawSubtotal: pPrice,
       discountAmount: 0
     };
@@ -986,63 +997,37 @@ export default function AdminInquiriesTab({
                 </div>
               </div>
 
-              {/* Delivery Method, City & Address */}
-              <div className="space-y-3 pt-1">
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setNewOrderForm((prev) => ({ ...prev, deliveryMethod: 'courier' }))}
-                    className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 ${
-                      newOrderForm.deliveryMethod === 'courier'
-                        ? 'bg-amber-500 text-black border-amber-500'
-                        : 'border-stone-700 opacity-70'
+              {/* Delivery City & Address */}
+              <div className="space-y-2 pt-1">
+                <label className="text-[11px] uppercase font-semibold opacity-75 block">
+                  საკურიერო მიწოდება & მისამართი *
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <select
+                    value={newOrderForm.city}
+                    onChange={(e) => setNewOrderForm((prev) => ({ ...prev, city: e.target.value }))}
+                    className={`px-3 py-2.5 rounded-xl border outline-none ${
+                      darkMode ? 'bg-stone-900 border-stone-700 text-white' : 'bg-stone-50 border-stone-300'
                     }`}
                   >
-                    <Truck className="w-4 h-4" />
-                    <span>კურიერით</span>
-                  </button>
+                    <option value="თბილისი">თბილისი ({formatPrice(siteSettings.deliveryPriceTbilisi ?? 6)})</option>
+                    <option value="ბათუმი">ბათუმი ({formatPrice(siteSettings.deliveryPriceRegional ?? 10)})</option>
+                    <option value="ქუთაისი">ქუთაისი ({formatPrice(siteSettings.deliveryPriceRegional ?? 10)})</option>
+                    <option value="რუსთავი">რუსთავი ({formatPrice(siteSettings.deliveryPriceRegional ?? 10)})</option>
+                    <option value="სხვა">სხვა რეგიონი ({formatPrice(siteSettings.deliveryPriceRegional ?? 10)})</option>
+                  </select>
 
-                  <button
-                    type="button"
-                    onClick={() => setNewOrderForm((prev) => ({ ...prev, deliveryMethod: 'pickup' }))}
-                    className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 ${
-                      newOrderForm.deliveryMethod === 'pickup'
-                        ? 'bg-amber-500 text-black border-amber-500'
-                        : 'border-stone-700 opacity-70'
+                  <input
+                    type="text"
+                    required
+                    value={newOrderForm.address}
+                    onChange={(e) => setNewOrderForm((prev) => ({ ...prev, address: e.target.value }))}
+                    placeholder="ქუჩა, კორპუსი, ბინა"
+                    className={`sm:col-span-2 px-3.5 py-2.5 rounded-xl border outline-none ${
+                      darkMode ? 'bg-stone-900 border-stone-700 text-white' : 'bg-stone-50 border-stone-300'
                     }`}
-                  >
-                    <Store className="w-4 h-4" />
-                    <span>შოურუმიდან</span>
-                  </button>
+                  />
                 </div>
-
-                {newOrderForm.deliveryMethod === 'courier' && (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <select
-                      value={newOrderForm.city}
-                      onChange={(e) => setNewOrderForm((prev) => ({ ...prev, city: e.target.value }))}
-                      className={`px-3 py-2 rounded-xl border outline-none ${
-                        darkMode ? 'bg-stone-900 border-stone-700 text-white' : 'bg-stone-50 border-stone-300'
-                      }`}
-                    >
-                      <option value="თბილისი">თბილისი</option>
-                      <option value="ბათუმი">ბათუმი</option>
-                      <option value="ქუთაისი">ქუთაისი</option>
-                      <option value="რუსთავი">რუსთავი</option>
-                      <option value="სხვა">სხვა რეგიონი</option>
-                    </select>
-
-                    <input
-                      type="text"
-                      value={newOrderForm.address}
-                      onChange={(e) => setNewOrderForm((prev) => ({ ...prev, address: e.target.value }))}
-                      placeholder="ქუჩა, კორპუსი, ბინა"
-                      className={`sm:col-span-2 px-3 py-2 rounded-xl border outline-none ${
-                        darkMode ? 'bg-stone-900 border-stone-700 text-white' : 'bg-stone-50 border-stone-300'
-                      }`}
-                    />
-                  </div>
-                )}
               </div>
 
               {/* Payment Method & Gift Packaging */}
@@ -1054,13 +1039,12 @@ export default function AdminInquiriesTab({
                   <select
                     value={newOrderForm.paymentMethod}
                     onChange={(e) => setNewOrderForm((prev) => ({ ...prev, paymentMethod: e.target.value }))}
-                    className={`w-full px-3 py-2 rounded-xl border outline-none ${
+                    className={`w-full px-3 py-2.5 rounded-xl border outline-none ${
                       darkMode ? 'bg-stone-900 border-stone-700 text-white' : 'bg-stone-50 border-stone-300'
                     }`}
                   >
                     <option value="card">ონლაინ ბარათით</option>
                     <option value="cod">კურიერთან გადახდა (ნაღდი/ტერმინალი)</option>
-                    <option value="boutique">შოურუმში გადახდა</option>
                   </select>
                 </div>
 
@@ -1072,7 +1056,7 @@ export default function AdminInquiriesTab({
                       onChange={(e) => setNewOrderForm((prev) => ({ ...prev, isGift: e.target.checked }))}
                       className="w-4 h-4 accent-amber-500 rounded"
                     />
-                    <span>სასაჩუქრე ექსკლუზიური შეფუთვა</span>
+                    <span>სასაჩუქრე ექსკლუზიური შეფუთვა (+{formatPrice(siteSettings.giftPackagingPrice ?? 5)})</span>
                   </label>
                 </div>
               </div>

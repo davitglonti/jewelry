@@ -123,6 +123,10 @@ export const DEFAULT_SETTINGS = {
   footerDescEn: "Showroom of certified fine jewelry in Tbilisi.",
   copyright: "© 2026 AURELIA Jewelry House. ყველა უფლება დაცულია.",
 
+  deliveryPriceTbilisi: 6,
+  deliveryPriceRegional: 10,
+  giftPackagingPrice: 5,
+
   aboutHeroTitle: "ჩვენი ისტორია და მემკვიდრეობა",
   aboutHeroTitleEn: "Our Story & Heritage",
   aboutHeroSubtitle: "მრავალსაუკუნოვანი ქართული საიუველირო ტრადიცია და თანამედროვე ელეგანტურობა.",

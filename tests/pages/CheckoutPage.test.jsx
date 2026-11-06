@@ -35,7 +35,9 @@ describe('CheckoutPage', () => {
     siteSettings: {
       brandName: 'MATARE',
       whatsapp: '+995599000000',
-      showroomAddress: 'მ. კოსტავას 75, თბილისი'
+      deliveryPriceTbilisi: 6,
+      deliveryPriceRegional: 10,
+      giftPackagingPrice: 5
     },
     products: dummyProducts,
     favorites: ['aur-101'],
@@ -117,15 +119,23 @@ describe('CheckoutPage', () => {
       syncData: handleSyncData
     });
 
+    // Verify showroom options are completely removed
+    expect(screen.queryByText(/შოურუმში გატანა/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/შოურუმში გადახდა/i)).not.toBeInTheDocument();
+
+    // Verify courier delivery rate in Tbilisi
+    expect(screen.getByText(/თბილისის მასშტაბით/i)).toBeInTheDocument();
+
     const phoneInput = screen.getByPlaceholderText(/5XX XX XX XX/i);
     const addressInput = screen.getByPlaceholderText(/ჭავჭავაძის/i);
 
     fireEvent.change(phoneInput, { target: { value: '599 11 22 33' } });
     fireEvent.change(addressInput, { target: { value: 'ჭავჭავაძის გამზ. 15' } });
 
-    // Select courier delivery
-    const courierRadio = screen.getByRole('button', { name: /საკურიერო მიწოდება/i });
-    fireEvent.click(courierRadio);
+    // Gift packaging selection (+5 GEL)
+    const giftCheckbox = screen.getByRole('checkbox');
+    expect(screen.getByText(/სასაჩუქრე ექსკლუზიური შეფუთვა ბრენდირებული ყუთით \(\+5 ₾\)/i)).toBeInTheDocument();
+    fireEvent.click(giftCheckbox);
 
     const submitBtn = screen.getByRole('button', { name: /შეკვეთის დადასტურება/i });
     const form = submitBtn.closest('form');
@@ -140,6 +150,9 @@ describe('CheckoutPage', () => {
     expect(orderData.clientName).toBe('დავით გლონტი');
     expect(orderData.clientPhone).toBe('599112233');
     expect(orderData.items[0].size).toBe('16.5');
+    expect(orderData.shippingFee).toBe(6);
+    expect(orderData.giftFee).toBe(5);
+    expect(orderData.totalPrice).toBe(2500 + 6 + 5);
 
     // Shows order confirmation screen
     expect(screen.getByText(/მადლობას გიხდით არჩევანისთვის/i)).toBeInTheDocument();

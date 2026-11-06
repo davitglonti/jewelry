@@ -85,7 +85,7 @@ export default function Navbar({
               {lang === "ka" ? "ზომის გიდი" : "Size Guide"}
             </a>
             <a href={lang === "en" ? "/en/#contact" : "/#contact"} className="hover:text-amber-500 transition-colors whitespace-nowrap">
-              {lang === "ka" ? "შოურუმი" : "Showroom"}
+              {lang === "ka" ? "კონტაქტი" : "Contact"}
             </a>
           </nav>
 
@@ -359,7 +359,7 @@ export default function Navbar({
                 {lang === "ka" ? "ზომის გზამკვლევი" : "Size Guide"}
               </a>
               <a href={lang === "en" ? "/en/#contact" : "/#contact"} onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
-                {lang === "ka" ? "შოურუმი" : "Showroom"}
+                {lang === "ka" ? "კონტაქტი" : "Contact"}
               </a>
               {user && (
                 <a

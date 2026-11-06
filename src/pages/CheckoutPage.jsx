@@ -40,10 +40,9 @@ export default function CheckoutPage() {
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [clientEmail, setClientEmail] = useState('');
-  const [deliveryMethod, setDeliveryMethod] = useState('courier'); // 'courier' | 'pickup'
   const [city, setCity] = useState('თბილისი');
   const [address, setAddress] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('card'); // 'card' | 'cod' | 'boutique'
+  const [paymentMethod, setPaymentMethod] = useState('card'); // 'card' | 'cod'
   const [isGift, setIsGift] = useState(false);
   const [notes, setNotes] = useState('');
 
@@ -123,6 +122,21 @@ export default function CheckoutPage() {
     setOrderItems((prev) => prev.filter((item) => item.id !== itemId));
   };
 
+  // Configurable Delivery & Packaging Rates from siteSettings
+  const parseRate = (val, fallback) => {
+    if (val === null || val === undefined || val === '') return fallback;
+    const num = Number(val);
+    return Number.isFinite(num) ? num : fallback;
+  };
+
+  const deliveryPriceTbilisi = parseRate(siteSettings?.deliveryPriceTbilisi, 6);
+  const deliveryPriceRegional = parseRate(siteSettings?.deliveryPriceRegional, 10);
+  const giftPackagingPrice = parseRate(siteSettings?.giftPackagingPrice, 5);
+
+  const isTbilisi = city === 'თბილისი';
+  const shippingFee = isTbilisi ? deliveryPriceTbilisi : deliveryPriceRegional;
+  const giftFee = isGift ? giftPackagingPrice : 0;
+
   // Price Calculations
   const rawSubtotal = useMemo(() => {
     return orderItems.reduce((sum, item) => {
@@ -138,7 +152,7 @@ export default function CheckoutPage() {
     return Math.round(rawSubtotal * appliedPromo.percent);
   }, [rawSubtotal, appliedPromo]);
 
-  const finalTotal = Math.max(0, rawSubtotal - discountAmount);
+  const finalTotal = Math.max(0, rawSubtotal - discountAmount) + shippingFee + giftFee;
 
   // Apply Promo Code
   const handleApplyPromo = (e) => {
@@ -186,7 +200,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (deliveryMethod === 'courier' && !address.trim()) {
+    if (!address.trim()) {
       setFormError(lang === 'ka' ? 'გთხოვთ მიუთითოთ მიწოდების მისამართი' : 'Please enter delivery address');
       return;
     }
@@ -201,15 +215,14 @@ export default function CheckoutPage() {
       clientName: clientName.trim(),
       clientPhone: cleanedPhone,
       clientEmail: clientEmail.trim(),
-      deliveryMethod: deliveryMethod === 'courier' ? `კურიერით (${city})` : 'შოურუმში გატანა',
-      address: deliveryMethod === 'courier' ? `${city}, ${address.trim()}` : 'შოურუმი (მ. კოსტავას 75, თბილისი)',
-      paymentMethod:
-        paymentMethod === 'card'
-          ? 'ონლაინ ბარათით'
-          : paymentMethod === 'cod'
-          ? 'კურიერთან გადახდა'
-          : 'შოურუმში გადახდა',
+      deliveryMethod: `კურიერით (${city})`,
+      city,
+      address: `${city}, ${address.trim()}`,
+      paymentMethod: paymentMethod === 'card' ? 'ონლაინ ბარათით' : 'კურიერთან გადახდა',
+      paymentStatus: paymentMethod === 'card' ? 'გადახდილია' : 'გადასახდელია',
       isGift,
+      giftFee,
+      shippingFee,
       notes: notes.trim(),
       items: orderItems.map((p) => {
         const itemSize = itemSizes[p.id] || (p.sizes && p.sizes.length > 0 ? p.sizes[0] : '') || 'სტანდარტული';
@@ -496,105 +509,80 @@ export default function CheckoutPage() {
                     </h2>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setDeliveryMethod('courier')}
-                      className={`p-4 rounded-2xl border text-left flex items-start gap-3 transition-all ${
-                        deliveryMethod === 'courier'
-                          ? darkMode
-                            ? 'border-amber-500 bg-amber-500/15 text-stone-100 ring-2 ring-amber-400/30'
-                            : 'border-amber-500 bg-amber-50 text-stone-900 ring-2 ring-amber-400/40'
-                          : darkMode
-                          ? 'border-stone-800 bg-stone-900/40 text-stone-400 hover:border-stone-700'
-                          : 'border-stone-300 bg-stone-50 text-stone-700 hover:border-stone-400'
-                      }`}
-                    >
-                      <div className={`p-2.5 rounded-xl ${deliveryMethod === 'courier' ? 'bg-amber-500 text-black font-bold' : 'bg-stone-800 text-stone-400'}`}>
+                  {/* Courier delivery banner */}
+                  <div
+                    className={`p-4 sm:p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                      darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 rounded-xl bg-amber-500 text-black font-bold shrink-0">
                         <Truck className="w-5 h-5" />
                       </div>
                       <div>
                         <div className="font-semibold text-xs sm:text-sm">
-                          {lang === 'ka' ? 'საკურიერო მიწოდება' : 'Courier Delivery'}
+                          {lang === 'ka' ? 'საკურიერო მიწოდება' : 'Express Courier Delivery'}
                         </div>
-                        <p className="text-[11px] opacity-70 mt-0.5">
-                          {lang === 'ka' ? 'სრულიად უფასო მთელ საქართველოში' : 'Free delivery across Georgia'}
+                        <p className="text-[11px] opacity-75 mt-0.5">
+                          {isTbilisi
+                            ? (lang === 'ka'
+                                ? `თბილისის მასშტაბით: ${formatPrice(deliveryPriceTbilisi)} (1-2 სამუშაო დღე)`
+                                : `Tbilisi area: ${formatPrice(deliveryPriceTbilisi)} (1-2 business days)`)
+                            : (lang === 'ka'
+                                ? `ქალაქგარეთ / რეგიონებში: ${formatPrice(deliveryPriceRegional)} (2-3 სამუშაო დღე)`
+                                : `Regions across Georgia: ${formatPrice(deliveryPriceRegional)} (2-3 business days)`)}
                         </p>
                       </div>
-                    </button>
+                    </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setDeliveryMethod('pickup')}
-                      className={`p-4 rounded-2xl border text-left flex items-start gap-3 transition-all ${
-                        deliveryMethod === 'pickup'
-                          ? darkMode
-                            ? 'border-amber-500 bg-amber-500/15 text-stone-100 ring-2 ring-amber-400/30'
-                            : 'border-amber-500 bg-amber-50 text-stone-900 ring-2 ring-amber-400/40'
-                          : darkMode
-                          ? 'border-stone-800 bg-stone-900/40 text-stone-400 hover:border-stone-700'
-                          : 'border-stone-300 bg-stone-50 text-stone-700 hover:border-stone-400'
-                      }`}
-                    >
-                      <div className={`p-2.5 rounded-xl ${deliveryMethod === 'pickup' ? 'bg-amber-500 text-black font-bold' : 'bg-stone-800 text-stone-400'}`}>
-                        <Store className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-xs sm:text-sm">
-                          {lang === 'ka' ? 'შოურუმში გატანა' : 'Boutique Pickup'}
-                        </div>
-                        <p className="text-[11px] opacity-70 mt-0.5">
-                          {lang === 'ka' ? 'მ. კოსტავას 75, თბილისი' : 'Kostava St. 75, Tbilisi'}
-                        </p>
-                      </div>
-                    </button>
+                    <div className="font-mono font-bold text-sm sm:text-base text-amber-500 self-end sm:self-center shrink-0">
+                      {formatPrice(shippingFee)}
+                    </div>
                   </div>
 
-                  {deliveryMethod === 'courier' && (
-                    <div className="space-y-3 pt-2 animate-fadeIn">
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                          <label className="text-[11px] uppercase tracking-wider font-semibold opacity-75 block mb-1.5">
-                            {lang === 'ka' ? 'ქალაქი' : 'City'}
-                          </label>
-                          <select
-                            value={city}
-                            onChange={(e) => setCity(e.target.value)}
-                            className={`w-full px-3.5 py-3 rounded-xl text-xs sm:text-sm border outline-none cursor-pointer transition-all ${
-                              darkMode ? 'bg-stone-900 border-stone-700 text-white' : 'bg-white border-stone-300 text-stone-900'
-                            }`}
-                          >
-                            <option value="თბილისი">თბილისი (Tbilisi)</option>
-                            <option value="ბათუმი">ბათუმი (Batumi)</option>
-                            <option value="ქუთაისი">ქუთაისი (Kutaisi)</option>
-                            <option value="რუსთავი">რუსთავი (Rustavi)</option>
-                            <option value="სხვა რეგიონი">სხვა რეგიონი (Other Region)</option>
-                          </select>
-                        </div>
+                  <div className="space-y-3 pt-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="text-[11px] uppercase tracking-wider font-semibold opacity-75 block mb-1.5">
+                          {lang === 'ka' ? 'ქალაქი / რეგიონი' : 'City / Region'}
+                        </label>
+                        <select
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                          className={`w-full px-3.5 py-3 rounded-xl text-xs sm:text-sm border outline-none cursor-pointer transition-all ${
+                            darkMode ? 'bg-stone-900 border-stone-700 text-white' : 'bg-white border-stone-300 text-stone-900'
+                          }`}
+                        >
+                          <option value="თბილისი">თბილისი (Tbilisi) — {formatPrice(deliveryPriceTbilisi)}</option>
+                          <option value="ბათუმი">ბათუმი (Batumi) — {formatPrice(deliveryPriceRegional)}</option>
+                          <option value="ქუთაისი">ქუთაისი (Kutaisi) — {formatPrice(deliveryPriceRegional)}</option>
+                          <option value="რუსთავი">რუსთავი (Rustavi) — {formatPrice(deliveryPriceRegional)}</option>
+                          <option value="სხვა რეგიონი">სხვა რეგიონი (Other Region) — {formatPrice(deliveryPriceRegional)}</option>
+                        </select>
+                      </div>
 
-                        <div className="sm:col-span-2">
-                          <label className="text-[11px] uppercase tracking-wider font-semibold opacity-75 block mb-1.5">
-                            {lang === 'ka' ? 'ზუსტი მისამართი (ქუჩა, კორპუსი, ბინა) *' : 'Delivery Address *'}
-                          </label>
-                          <div className="relative">
-                            <MapPin className="w-4 h-4 text-stone-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                            <input
-                              type="text"
-                              value={address}
-                              onChange={(e) => setAddress(e.target.value)}
-                              placeholder={lang === 'ka' ? 'მაგ: ჭავჭავაძის გამზ. 24, ბინა 15' : 'Street address'}
-                              required={deliveryMethod === 'courier'}
-                              className={`w-full pl-10 pr-4 py-3 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
-                                darkMode
-                                  ? 'bg-stone-900/90 border-stone-700 text-white placeholder-stone-500 focus:border-amber-500'
-                                  : 'bg-white border-stone-300 text-stone-900 placeholder-stone-400 focus:border-amber-600'
-                              }`}
-                            />
-                          </div>
+                      <div className="sm:col-span-2">
+                        <label className="text-[11px] uppercase tracking-wider font-semibold opacity-75 block mb-1.5">
+                          {lang === 'ka' ? 'ზუსტი მისამართი (ქუჩა, კორპუსი, ბინა) *' : 'Delivery Address *'}
+                        </label>
+                        <div className="relative">
+                          <MapPin className="w-4 h-4 text-stone-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="text"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            placeholder={lang === 'ka' ? 'მაგ: ჭავჭავაძის გამზ. 24, ბინა 15' : 'Street address'}
+                            required
+                            className={`w-full pl-10 pr-4 py-3 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
+                              darkMode
+                                ? 'bg-stone-900/90 border-stone-700 text-white placeholder-stone-500 focus:border-amber-500'
+                                : 'bg-white border-stone-300 text-stone-900 placeholder-stone-400 focus:border-amber-600'
+                            }`}
+                          />
                         </div>
                       </div>
                     </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* 3. Payment Method Card */}
@@ -610,11 +598,11 @@ export default function CheckoutPage() {
                     </h2>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('card')}
-                      className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between gap-3 transition-all ${
+                      className={`p-3.5 rounded-2xl border text-left flex items-start gap-3 transition-all ${
                         paymentMethod === 'card'
                           ? darkMode
                             ? 'border-amber-500 bg-amber-500/15 text-stone-100 ring-2 ring-amber-400/30'
@@ -624,7 +612,7 @@ export default function CheckoutPage() {
                           : 'border-stone-300 bg-stone-50 text-stone-700 hover:border-stone-400'
                       }`}
                     >
-                      <CreditCard className="w-5 h-5 text-amber-500" />
+                      <CreditCard className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                       <div>
                         <div className="font-semibold text-xs sm:text-sm">
                           {lang === 'ka' ? 'ონლაინ ბარათით' : 'Online Card'}
@@ -636,7 +624,7 @@ export default function CheckoutPage() {
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('cod')}
-                      className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between gap-3 transition-all ${
+                      className={`p-3.5 rounded-2xl border text-left flex items-start gap-3 transition-all ${
                         paymentMethod === 'cod'
                           ? darkMode
                             ? 'border-amber-500 bg-amber-500/15 text-stone-100 ring-2 ring-amber-400/30'
@@ -646,37 +634,13 @@ export default function CheckoutPage() {
                           : 'border-stone-300 bg-stone-50 text-stone-700 hover:border-stone-400'
                       }`}
                     >
-                      <Banknote className="w-5 h-5 text-amber-500" />
+                      <Banknote className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                       <div>
                         <div className="font-semibold text-xs sm:text-sm">
                           {lang === 'ka' ? 'კურიერთან გადახდა' : 'Cash / Courier'}
                         </div>
                         <span className="text-[10px] opacity-65">
-                          {lang === 'ka' ? 'მიღებისას (ნაღდი/ტერმინალი)' : 'Upon delivery'}
-                        </span>
-                      </div>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('boutique')}
-                      className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between gap-3 transition-all ${
-                        paymentMethod === 'boutique'
-                          ? darkMode
-                            ? 'border-amber-500 bg-amber-500/15 text-stone-100 ring-2 ring-amber-400/30'
-                            : 'border-amber-500 bg-amber-50 text-stone-900 ring-2 ring-amber-400/40'
-                          : darkMode
-                          ? 'border-stone-800 bg-stone-900/40 text-stone-400 hover:border-stone-700'
-                          : 'border-stone-300 bg-stone-50 text-stone-700 hover:border-stone-400'
-                      }`}
-                    >
-                      <Store className="w-5 h-5 text-amber-500" />
-                      <div>
-                        <div className="font-semibold text-xs sm:text-sm">
-                          {lang === 'ka' ? 'შოურუმში გადახდა' : 'In Boutique'}
-                        </div>
-                        <span className="text-[10px] opacity-65">
-                          {lang === 'ka' ? 'ადგილზე შემოწმებით' : 'Pay at salon'}
+                          {lang === 'ka' ? 'მიღებისას (ნაღდი ან ტერმინალი)' : 'Upon delivery'}
                         </span>
                       </div>
                     </button>
@@ -697,11 +661,11 @@ export default function CheckoutPage() {
                       className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
                     />
                     <div className="flex items-center gap-2 text-xs sm:text-sm">
-                      <Gift className="w-4 h-4 text-amber-500" />
+                      <Gift className="w-4 h-4 text-purple-400 shrink-0" />
                       <span className="font-medium">
                         {lang === 'ka'
-                          ? 'სასაჩუქრე ექსკლუზიური შეფუთვა ბრენდირებული ყუთით (უფასო)'
-                          : 'Exclusive gift packaging with signature boutique box (Free)'}
+                          ? `სასაჩუქრე ექსკლუზიური შეფუთვა ბრენდირებული ყუთით (+${giftPackagingPrice} ₾)`
+                          : `Exclusive signature gift packaging with boutique box (+${formatPrice(giftPackagingPrice)})`}
                       </span>
                     </div>
                   </label>
@@ -874,10 +838,23 @@ export default function CheckoutPage() {
                       </div>
                     )}
 
-                    <div className="flex justify-between items-center opacity-70">
-                      <span>{lang === 'ka' ? 'მიწოდება:' : 'Delivery:'}</span>
-                      <span className="text-emerald-400 font-semibold">{lang === 'ka' ? 'უფასო' : 'Free'}</span>
+                    <div className="flex justify-between items-center opacity-75">
+                      <span>
+                        {lang === 'ka'
+                          ? `მიწოდება (${isTbilisi ? 'თბილისი' : 'რეგიონი'}):`
+                          : `Delivery (${isTbilisi ? 'Tbilisi' : 'Regions'}):`}
+                      </span>
+                      <span className="font-mono font-semibold text-stone-200 dark:text-stone-200">
+                        {formatPrice(shippingFee)}
+                      </span>
                     </div>
+
+                    {isGift && (
+                      <div className="flex justify-between items-center text-purple-400 font-medium">
+                        <span>{lang === 'ka' ? 'სასაჩუქრე შეფუთვა:' : 'Gift Box:'}</span>
+                        <span className="font-mono font-semibold">+{formatPrice(giftFee)}</span>
+                      </div>
+                    )}
 
                     <div className="pt-2 border-t border-stone-500/15 flex justify-between items-baseline">
                       <span className="font-serif text-sm sm:text-base font-semibold">

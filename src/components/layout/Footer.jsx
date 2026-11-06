@@ -85,7 +85,7 @@ export default function Footer({ darkMode, lang, siteSettings }) {
 
           <div className="space-y-3 text-sm">
             <h4 className="font-serif text-base text-amber-400 uppercase tracking-wider">
-              {lang === "ka" ? "შოურუმი და კონტაქტი" : "Showroom & Contact"}
+              {lang === "ka" ? "საკონტაქტო ინფორმაცია" : "Contact Information"}
             </h4>
             <p className={`flex items-center gap-2.5 ${textColor}`}>
               <MapPin className="w-4 h-4 text-amber-400 shrink-0" />

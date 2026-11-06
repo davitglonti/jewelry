@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Phone, Globe, ImageIcon, Tag, Upload, Save, HelpCircle,
-  Truck, ShieldCheck, Sparkles, Plus, Edit3, X, Trash2
+  Truck, ShieldCheck, Sparkles, Plus, Edit3, X, Trash2, Gift, CreditCard
 } from 'lucide-react';
 import { handleFileUpload } from '../../utils/imageUtils';
 import ValueCardsEditor, { DEFAULT_VALUE_CARDS } from './ValueCardsEditor';
@@ -36,6 +36,7 @@ export default function AdminSettingsTab({
         {[
           { id: 'contacts', label: 'საკონტაქტო & სოციალური' },
           { id: 'branding', label: 'ბრენდინგი & ლოგო' },
+          { id: 'shipping', label: 'მიწოდება & შეკვეთის ტარიფები 🚚' },
           { id: 'about', label: 'ჩვენს შესახებ (About)' },
           { id: 'faq', label: 'FAQ & გარანტიები' }
         ].map((sub) => (
@@ -251,6 +252,125 @@ export default function AdminSettingsTab({
         </div>
       )}
 
+      {/* SUBTAB: SHIPPING & PACKAGING RATES */}
+      {siteSubTab === 'shipping' && (
+        <div className="space-y-6 max-w-3xl text-xs sm:text-sm">
+          <div>
+            <h4 className="font-serif text-lg sm:text-xl text-amber-500 font-bold flex items-center gap-2">
+              <Truck className="w-5 h-5 text-amber-500" />
+              <span>მიწოდებისა და შეფუთვის ტარიფების მართვა</span>
+            </h4>
+            <p className="text-xs opacity-70 mt-1">
+              აქედან შეგიძლიათ განსაზღვროთ და შეცვალოთ საკურიერო მიწოდებისა და ექსკლუზიური შეფუთვის ფასები. ცვლილებები მომენტალურად აისახება ონლაინ შეკვეთის გვერდზე.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Delivery Tbilisi */}
+            <div className={`p-5 rounded-2xl border space-y-3 ${
+              darkMode ? 'bg-[#141210] border-stone-800' : 'bg-white border-stone-200 shadow-sm'
+            }`}>
+              <div className="flex items-center gap-2 text-amber-500 font-semibold">
+                <Truck className="w-4 h-4" />
+                <span>საკურიერო მიწოდება (თბილისი)</span>
+              </div>
+              <p className="text-xs opacity-70">
+                სტანდარტული მიწოდების საფასური თბილისის მასშტაბით.
+              </p>
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={siteSettings.deliveryPriceTbilisi ?? 6}
+                  onChange={(e) =>
+                    setSiteSettings({
+                      ...siteSettings,
+                      deliveryPriceTbilisi: parseFloat(e.target.value) || 0
+                    })
+                  }
+                  className={`w-32 px-3.5 py-2.5 rounded-xl border text-sm font-bold font-mono outline-none ${
+                    darkMode ? 'bg-stone-900 border-stone-700 text-amber-400' : 'bg-stone-50 border-stone-300 text-stone-900'
+                  }`}
+                />
+                <span className="font-bold text-sm">₾ (ლარი)</span>
+              </div>
+            </div>
+
+            {/* Delivery Regions */}
+            <div className={`p-5 rounded-2xl border space-y-3 ${
+              darkMode ? 'bg-[#141210] border-stone-800' : 'bg-white border-stone-200 shadow-sm'
+            }`}>
+              <div className="flex items-center gap-2 text-blue-400 font-semibold">
+                <Truck className="w-4 h-4" />
+                <span>საკურიერო მიწოდება (ქალაქგარეთ / რეგიონები)</span>
+              </div>
+              <p className="text-xs opacity-70">
+                მიწოდების საფასური რეგიონებში (ბათუმი, ქუთაისი, რუსთავი და სხვ.).
+              </p>
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={siteSettings.deliveryPriceRegional ?? 10}
+                  onChange={(e) =>
+                    setSiteSettings({
+                      ...siteSettings,
+                      deliveryPriceRegional: parseFloat(e.target.value) || 0
+                    })
+                  }
+                  className={`w-32 px-3.5 py-2.5 rounded-xl border text-sm font-bold font-mono outline-none ${
+                    darkMode ? 'bg-stone-900 border-stone-700 text-blue-400' : 'bg-stone-50 border-stone-300 text-stone-900'
+                  }`}
+                />
+                <span className="font-bold text-sm">₾ (ლარი)</span>
+              </div>
+            </div>
+
+            {/* Gift Packaging Fee */}
+            <div className={`p-5 rounded-2xl border space-y-3 sm:col-span-2 ${
+              darkMode ? 'bg-[#141210] border-stone-800' : 'bg-white border-stone-200 shadow-sm'
+            }`}>
+              <div className="flex items-center gap-2 text-purple-400 font-semibold">
+                <Gift className="w-4 h-4" />
+                <span>ექსკლუზიური სასაჩუქრე შეფუთვის საფასური</span>
+              </div>
+              <p className="text-xs opacity-70">
+                ბრენდირებული ხავერდის ყუთი, ოქროსფერი ლენტი და ხელნაწერი საიუველირო მისალოცი ბარათი.
+              </p>
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={siteSettings.giftPackagingPrice ?? 5}
+                  onChange={(e) =>
+                    setSiteSettings({
+                      ...siteSettings,
+                      giftPackagingPrice: parseFloat(e.target.value) || 0
+                    })
+                  }
+                  className={`w-32 px-3.5 py-2.5 rounded-xl border text-sm font-bold font-mono outline-none ${
+                    darkMode ? 'bg-stone-900 border-stone-700 text-purple-400' : 'bg-stone-50 border-stone-300 text-stone-900'
+                  }`}
+                />
+                <span className="font-bold text-sm">₾ (ლარი)</span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => syncData(siteSettings, products, inquiries)}
+            className="w-full py-3.5 sm:py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm flex items-center justify-center gap-2 shadow-xl shadow-amber-500/20 transition-all active:scale-[0.99]"
+          >
+            <Save className="w-4 h-4" />
+            <span>ტარიფების შენახვა & სინქრონიზაცია</span>
+          </button>
+        </div>
+      )}
+
       {/* SUBTAB 2: BRANDING & LOGO */}
       {siteSubTab === 'branding' && (
         <div className="space-y-6">
@@ -373,6 +493,125 @@ export default function AdminSettingsTab({
           >
             <Save className="w-4 h-4" />
             <span>ცვლილებების შენახვა</span>
+          </button>
+        </div>
+      )}
+
+      {/* SUBTAB: SHIPPING & PACKAGING RATES */}
+      {siteSubTab === 'shipping' && (
+        <div className="space-y-6 max-w-3xl text-xs sm:text-sm">
+          <div>
+            <h4 className="font-serif text-lg sm:text-xl text-amber-500 font-bold flex items-center gap-2">
+              <Truck className="w-5 h-5 text-amber-500" />
+              <span>მიწოდებისა და შეფუთვის ტარიფების მართვა</span>
+            </h4>
+            <p className="text-xs opacity-70 mt-1">
+              აქედან შეგიძლიათ განსაზღვროთ და შეცვალოთ საკურიერო მიწოდებისა და ექსკლუზიური შეფუთვის ფასები. ცვლილებები მომენტალურად აისახება ონლაინ შეკვეთის გვერდზე.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Delivery Tbilisi */}
+            <div className={`p-5 rounded-2xl border space-y-3 ${
+              darkMode ? 'bg-[#141210] border-stone-800' : 'bg-white border-stone-200 shadow-sm'
+            }`}>
+              <div className="flex items-center gap-2 text-amber-500 font-semibold">
+                <Truck className="w-4 h-4" />
+                <span>საკურიერო მიწოდება (თბილისი)</span>
+              </div>
+              <p className="text-xs opacity-70">
+                სტანდარტული მიწოდების საფასური თბილისის მასშტაბით.
+              </p>
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={siteSettings.deliveryPriceTbilisi ?? 6}
+                  onChange={(e) =>
+                    setSiteSettings({
+                      ...siteSettings,
+                      deliveryPriceTbilisi: parseFloat(e.target.value) || 0
+                    })
+                  }
+                  className={`w-32 px-3.5 py-2.5 rounded-xl border text-sm font-bold font-mono outline-none ${
+                    darkMode ? 'bg-stone-900 border-stone-700 text-amber-400' : 'bg-stone-50 border-stone-300 text-stone-900'
+                  }`}
+                />
+                <span className="font-bold text-sm">₾ (ლარი)</span>
+              </div>
+            </div>
+
+            {/* Delivery Regions */}
+            <div className={`p-5 rounded-2xl border space-y-3 ${
+              darkMode ? 'bg-[#141210] border-stone-800' : 'bg-white border-stone-200 shadow-sm'
+            }`}>
+              <div className="flex items-center gap-2 text-blue-400 font-semibold">
+                <Truck className="w-4 h-4" />
+                <span>საკურიერო მიწოდება (ქალაქგარეთ / რეგიონები)</span>
+              </div>
+              <p className="text-xs opacity-70">
+                მიწოდების საფასური რეგიონებში (ბათუმი, ქუთაისი, რუსთავი და სხვ.).
+              </p>
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={siteSettings.deliveryPriceRegional ?? 10}
+                  onChange={(e) =>
+                    setSiteSettings({
+                      ...siteSettings,
+                      deliveryPriceRegional: parseFloat(e.target.value) || 0
+                    })
+                  }
+                  className={`w-32 px-3.5 py-2.5 rounded-xl border text-sm font-bold font-mono outline-none ${
+                    darkMode ? 'bg-stone-900 border-stone-700 text-blue-400' : 'bg-stone-50 border-stone-300 text-stone-900'
+                  }`}
+                />
+                <span className="font-bold text-sm">₾ (ლარი)</span>
+              </div>
+            </div>
+
+            {/* Gift Packaging Fee */}
+            <div className={`p-5 rounded-2xl border space-y-3 sm:col-span-2 ${
+              darkMode ? 'bg-[#141210] border-stone-800' : 'bg-white border-stone-200 shadow-sm'
+            }`}>
+              <div className="flex items-center gap-2 text-purple-400 font-semibold">
+                <Gift className="w-4 h-4" />
+                <span>ექსკლუზიური სასაჩუქრე შეფუთვის საფასური</span>
+              </div>
+              <p className="text-xs opacity-70">
+                ბრენდირებული ხავერდის ყუთი, ოქროსფერი ლენტი და ხელნაწერი საიუველირო მისალოცი ბარათი.
+              </p>
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={siteSettings.giftPackagingPrice ?? 5}
+                  onChange={(e) =>
+                    setSiteSettings({
+                      ...siteSettings,
+                      giftPackagingPrice: parseFloat(e.target.value) || 0
+                    })
+                  }
+                  className={`w-32 px-3.5 py-2.5 rounded-xl border text-sm font-bold font-mono outline-none ${
+                    darkMode ? 'bg-stone-900 border-stone-700 text-purple-400' : 'bg-stone-50 border-stone-300 text-stone-900'
+                  }`}
+                />
+                <span className="font-bold text-sm">₾ (ლარი)</span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => syncData(siteSettings, products, inquiries)}
+            className="w-full py-3.5 sm:py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm flex items-center justify-center gap-2 shadow-xl shadow-amber-500/20 transition-all active:scale-[0.99]"
+          >
+            <Save className="w-4 h-4" />
+            <span>ტარიფების შენახვა & სინქრონიზაცია</span>
           </button>
         </div>
       )}
