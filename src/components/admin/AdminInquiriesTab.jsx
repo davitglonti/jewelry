@@ -707,12 +707,24 @@ export default function AdminInquiriesTab({
                   </div>
 
                   {/* Delivery Information */}
-                  <div className={`p-4 rounded-2xl border space-y-2 ${
+                  <div className={`p-4 rounded-2xl border space-y-2.5 ${
                     darkMode ? 'bg-stone-900/40 border-stone-800/80' : 'bg-stone-50/80 border-stone-200/80'
                   }`}>
-                    <span className="text-[10px] uppercase font-bold tracking-wider opacity-60 block">
-                      მიწოდების მეთოდი & მისამართი
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] uppercase font-bold tracking-wider opacity-60 block">
+                        მიწოდების მეთოდი & მისამართი
+                      </span>
+                      <a
+                        href={`/track?id=${order.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[10px] font-semibold text-amber-500 hover:underline flex items-center gap-1"
+                        title="კლიენტის თრექინგის ეკრანის ნახვა"
+                      >
+                        <span>თრექინგი 🚚</span>
+                        <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    </div>
                     <div className="flex items-center gap-2 font-semibold text-xs sm:text-sm">
                       {order.deliveryMethod?.includes('შოურუმ') ? (
                         <>
@@ -751,6 +763,55 @@ export default function AdminInquiriesTab({
                         💬 „{order.notes}“
                       </div>
                     )}
+
+                    {/* Delivery ETA & Courier Controls for Customer Tracking */}
+                    <div className="pt-2 border-t border-stone-500/10 space-y-1.5 text-[11px]">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-amber-500 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          <span>მიწოდების დრო (ETA):</span>
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateOrder(order.id, { estimatedDelivery: 'დღეს 18:00-მდე' })}
+                            className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-400 hover:bg-amber-500 hover:text-black transition-all"
+                          >
+                            დღესვე
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateOrder(order.id, { estimatedDelivery: 'ხვალ 14:00 - 18:00' })}
+                            className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-400 hover:bg-amber-500 hover:text-black transition-all"
+                          >
+                            ხვალ
+                          </button>
+                        </div>
+                      </div>
+
+                      <input
+                        type="text"
+                        defaultValue={order.estimatedDelivery || ''}
+                        onBlur={(e) => handleUpdateOrder(order.id, { estimatedDelivery: e.target.value.trim() })}
+                        placeholder="მაგ: დღეს 18:00-მდე ან ხვალ..."
+                        className={`w-full px-2.5 py-1.5 rounded-lg border text-xs outline-none transition-colors ${
+                          darkMode ? 'bg-stone-900 border-stone-700 text-stone-200 focus:border-amber-500' : 'bg-white border-stone-300'
+                        }`}
+                      />
+
+                      <div className="pt-1">
+                        <span className="font-semibold text-stone-400 block mb-0.5">კურიერის ინფო კლიენტისთვის:</span>
+                        <input
+                          type="text"
+                          defaultValue={order.courierNote || ''}
+                          onBlur={(e) => handleUpdateOrder(order.id, { courierNote: e.target.value.trim() })}
+                          placeholder="მაგ: კურიერი: გიორგი, 599 12 34 56"
+                          className={`w-full px-2.5 py-1.5 rounded-lg border text-xs outline-none transition-colors ${
+                            darkMode ? 'bg-stone-900 border-stone-700 text-stone-200 focus:border-amber-500' : 'bg-white border-stone-300'
+                          }`}
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   {/* Payment & Grand Total */}

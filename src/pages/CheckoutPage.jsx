@@ -11,6 +11,7 @@ import { formatPrice, pick } from '../utils/i18n';
 import { navigateTo } from '../utils/navigation';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
+import OrderTrackingTimeline from '../components/order/OrderTrackingTimeline';
 
 export default function CheckoutPage() {
   const {
@@ -378,6 +379,14 @@ export default function CheckoutPage() {
               </div>
             </div>
 
+            {/* LIVE ORDER TRACKER TIMELINE */}
+            <OrderTrackingTimeline
+              order={completedOrder}
+              darkMode={darkMode}
+              lang={lang}
+              siteSettings={siteSettings}
+            />
+
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <a
                 href={whatsappUrl}
@@ -389,6 +398,18 @@ export default function CheckoutPage() {
                 <span>{lang === 'ka' ? 'WhatsApp-ით დაკავშირება' : 'Chat on WhatsApp'}</span>
               </a>
 
+              <a
+                href={`/track?id=${completedOrder.id}`}
+                className={`py-3.5 px-6 rounded-2xl border text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 transition-all ${
+                  darkMode
+                    ? 'border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-black'
+                    : 'border-amber-500 bg-amber-50 text-amber-900 hover:bg-amber-500 hover:text-black'
+                }`}
+              >
+                <Truck className="w-4 h-4" />
+                <span>{lang === 'ka' ? 'თრექინგის გვერდი' : 'Track Order Page'}</span>
+              </a>
+
               <button
                 type="button"
                 onClick={() => navigateTo('/catalog')}
@@ -398,7 +419,7 @@ export default function CheckoutPage() {
                     : 'border-stone-300 bg-stone-100 text-stone-800 hover:bg-stone-200'
                 }`}
               >
-                {lang === 'ka' ? 'კოლექციის დათვალიერება' : 'Continue Shopping'}
+                {lang === 'ka' ? 'კოლექცია' : 'Collection'}
               </button>
             </div>
           </div>

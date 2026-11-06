@@ -3,7 +3,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   User, ShieldCheck, Heart, Key, LogOut,
   Save, AlertCircle, CheckCircle2, Eye, EyeOff, ArrowLeft,
-  ExternalLink, Calendar, Mail, Phone, MessageCircle, ChevronRight, Check, Gem, ShoppingBag
+  ExternalLink, Calendar, Mail, Phone, MessageCircle, ChevronRight, Check, Gem, ShoppingBag,
+  Truck, Package
 } from 'lucide-react';
 import { useAuth, getAuthErrorMessage } from '../context/AuthContext';
 import { useStore } from '../context/StoreContext';
@@ -15,6 +16,7 @@ import FavoritesModal from '../components/modals/FavoritesModal';
 import QuickBuyModal from '../components/modals/QuickBuyModal';
 import ProductCard from '../components/store/ProductCard';
 import PasswordStrengthIndicator from '../components/auth/PasswordStrengthIndicator';
+import OrderTrackingTimeline from '../components/order/OrderTrackingTimeline';
 import { isStrongPassword, getPasswordValidationMessage } from '../utils/passwordValidation';
 
 export default function ProfilePage() {
@@ -26,8 +28,14 @@ export default function ProfilePage() {
   const [buyModalOpen, setBuyModalOpen] = useState(false);
   const [selectedForBuy, setSelectedForBuy] = useState([]);
 
-  // Active navigation tab: 'profile' | 'security' | 'favorites' | 'concierge'
-  const [activeTab, setActiveTab] = useState('profile');
+  // Active navigation tab: 'profile' | 'orders' | 'security' | 'favorites' | 'concierge'
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search).get('tab');
+      if (p && ['profile', 'orders', 'security', 'favorites', 'concierge'].includes(p)) return p;
+    }
+    return 'profile';
+  });
 
   // Profile Edit State
   const [displayName, setDisplayName] = useState('');
@@ -214,13 +222,43 @@ export default function ProfilePage() {
     }
   };
 
-  // User's own inquiries
-  const userInquiries = (inquiries || []).filter((inq) => {
-    if (!user) return false;
-    if (inq.clientEmail && inq.clientEmail.toLowerCase() === user.email?.toLowerCase()) return true;
-    if (user.displayName && inq.clientName && inq.clientName.toLowerCase() === user.displayName.toLowerCase()) return true;
-    return false;
-  });
+  // User's own inquiries & orders (merged with local storage for instant access)
+  const userInquiries = useMemo(() => {
+    return (inquiries || []).filter((inq) => {
+      if (!user) return false;
+      if (inq.clientEmail && inq.clientEmail.toLowerCase() === user.email?.toLowerCase()) return true;
+      if (user.displayName && inq.clientName && inq.clientName.toLowerCase() === user.displayName.toLowerCase()) return true;
+      return false;
+    });
+  }, [inquiries, user]);
+
+  const userOrders = useMemo(() => {
+    let local = [];
+    try {
+      if (typeof window !== 'undefined') {
+        local = JSON.parse(localStorage.getItem('matare_orders') || '[]');
+      }
+    } catch {
+      local = [];
+    }
+
+    const map = new Map();
+    // Live inquiries from Firestore first
+    userInquiries.forEach((item) => {
+      if (item && item.id) map.set(item.id, item);
+    });
+    // Merge with local storage orders
+    local.forEach((item) => {
+      if (item && item.id) {
+        if (!map.has(item.id)) {
+          const liveMatch = (inquiries || []).find((inq) => inq.id === item.id);
+          map.set(item.id, liveMatch || item);
+        }
+      }
+    });
+
+    return Array.from(map.values());
+  }, [inquiries, user, userInquiries]);
 
   return (
     <div className={`min-h-screen w-full overflow-x-hidden transition-colors duration-300 ${
@@ -384,6 +422,21 @@ export default function ProfilePage() {
                 >
                   <User className="w-3.5 h-3.5 opacity-70" />
                   <span>{lang === 'ka' ? 'პროფილი & ავატარი' : 'Profile & Avatar'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('orders')}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-medium tracking-wide transition-all whitespace-nowrap flex items-center gap-2 ${
+                    activeTab === 'orders'
+                      ? darkMode
+                        ? 'bg-white/10 text-stone-100 font-semibold'
+                        : 'bg-stone-200 text-stone-900 font-semibold'
+                      : 'text-stone-400 hover:text-stone-200'
+                  }`}
+                >
+                  <Truck className="w-3.5 h-3.5 opacity-70" />
+                  <span>{lang === 'ka' ? `შეკვეთები & თრექინგი (${userOrders.length})` : `Orders (${userOrders.length})`}</span>
                 </button>
 
                 <button
@@ -568,6 +621,78 @@ export default function ProfilePage() {
                       </button>
                     </div>
                   </form>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: MY ORDERS & LIVE TRACKING */}
+            {activeTab === 'orders' && (
+              <div className="space-y-6 animate-fadeIn">
+                <div className={`p-6 sm:p-8 rounded-3xl border space-y-6 ${
+                  darkMode ? 'bg-[#151413] border-white/5' : 'bg-white border-stone-200 shadow-sm'
+                }`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-500/10">
+                    <div>
+                      <h3 className="font-serif text-lg sm:text-xl font-normal flex items-center gap-2">
+                        <Truck className="w-5 h-5 text-amber-500" />
+                        <span>{lang === 'ka' ? 'ჩემი შეკვეთები & თრექინგი' : 'My Orders & Tracking'}</span>
+                      </h3>
+                      <p className="text-xs opacity-50 mt-0.5">
+                        {lang === 'ka'
+                          ? 'აკონტროლეთ ნაკეთობის დამზადების ეტაპი, კონდიცია, კურიერის სტატუსი და მიწოდების სავარაუდო დრო რეალურ დროში.'
+                          : 'Monitor atelier craftsmanship, item condition inspection, and live delivery status.'}
+                      </p>
+                    </div>
+
+                    <a
+                      href={lang === 'en' ? '/en/track' : '/track'}
+                      className={`px-3.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all self-start sm:self-auto ${
+                        darkMode
+                          ? 'border-stone-800 bg-stone-900/60 text-stone-300 hover:border-amber-500/50'
+                          : 'border-stone-200 bg-stone-100 text-stone-700 hover:border-amber-500'
+                      }`}
+                    >
+                      <Package className="w-3.5 h-3.5 text-amber-500" />
+                      <span>{lang === 'ka' ? 'კოდით ძებნა / თრექინგი' : 'Track by Code'}</span>
+                    </a>
+                  </div>
+
+                  {userOrders.length === 0 ? (
+                    <div className="text-center py-12 space-y-4">
+                      <div className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-stone-400">
+                        <Package className="w-7 h-7" />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="font-serif text-base font-normal">
+                          {lang === 'ka' ? 'აქტიური შეკვეთები არ გაქვთ' : 'No Active Orders Yet'}
+                        </h4>
+                        <p className="text-xs opacity-50 max-w-sm mx-auto">
+                          {lang === 'ka'
+                            ? 'თქვენ მიერ შეძენილი სამკაულების სრული ისტორია და მიწოდების სტატუსი გამოჩნდება აქ.'
+                            : 'All your jewelry orders and their delivery progress will appear here.'}
+                        </p>
+                      </div>
+                      <a
+                        href={lang === 'en' ? '/en/catalog' : '/catalog'}
+                        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-bold uppercase tracking-wider shadow-md shadow-amber-500/20 active:scale-95 transition-all"
+                      >
+                        <ShoppingBag className="w-3.5 h-3.5" />
+                        <span>{lang === 'ka' ? 'კოლექციის დათვალიერება' : 'Explore Collection'}</span>
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {userOrders.map((order) => (
+                        <OrderTrackingTimeline
+                          key={order.id}
+                          order={order}
+                          darkMode={darkMode}
+                          lang={lang}
+                          siteSettings={siteSettings}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}

@@ -18,6 +18,7 @@ const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
+const OrderTrackingPage = lazy(() => import('./pages/OrderTrackingPage'));
 const AddProductPage = lazy(() => import('./pages/AddProductPage'));
 const MyItemsPage = lazy(() => import('./pages/MyItemsPage'));
 
@@ -131,6 +132,12 @@ export default function App() {
     content = (
       <Suspense fallback={<PageLoader />}>
         <CheckoutPage />
+      </Suspense>
+    );
+  } else if (route === "/track" || route === "/tracking" || route.startsWith("/track?")) {
+    content = (
+      <Suspense fallback={<PageLoader />}>
+        <OrderTrackingPage />
       </Suspense>
     );
   } else if (route === "/add" || route === "/my-items" || route === "/my-products") {

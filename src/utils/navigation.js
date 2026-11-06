@@ -14,6 +14,7 @@ const routePreloaders = {
   '/reset-password': () => import('../pages/LoginPage'),
   '/checkout': () => import('../pages/CheckoutPage'),
   '/buy': () => import('../pages/CheckoutPage'),
+  '/track': () => import('../pages/OrderTrackingPage'),
 };
 
 /**

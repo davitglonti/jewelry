@@ -87,6 +87,9 @@ export default function Navbar({
             <a href={lang === "en" ? "/en/#contact" : "/#contact"} className="hover:text-amber-500 transition-colors whitespace-nowrap">
               {lang === "ka" ? "კონტაქტი" : "Contact"}
             </a>
+            <a href={lang === "en" ? "/en/track" : "/track"} className="hover:text-amber-500 transition-colors whitespace-nowrap text-amber-500/90 font-medium flex items-center gap-1">
+              <span>{lang === "ka" ? "თრექინგი" : "Track Order"}</span>
+            </a>
           </nav>
 
           {/* Desktop Action Icons (visible on lg: 1024px and up) */}
@@ -360,6 +363,9 @@ export default function Navbar({
               </a>
               <a href={lang === "en" ? "/en/#contact" : "/#contact"} onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
                 {lang === "ka" ? "კონტაქტი" : "Contact"}
+              </a>
+              <a href={lang === "en" ? "/en/track" : "/track"} onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1 text-amber-500 font-medium flex items-center justify-between">
+                <span>{lang === "ka" ? "შეკვეთის თრექინგი 🚚" : "Track Order 🚚"}</span>
               </a>
               {user && (
                 <a

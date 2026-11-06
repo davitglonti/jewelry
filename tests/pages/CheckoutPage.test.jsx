@@ -154,9 +154,10 @@ describe('CheckoutPage', () => {
     expect(orderData.giftFee).toBe(5);
     expect(orderData.totalPrice).toBe(2500 + 6 + 5);
 
-    // Shows order confirmation screen
+    // Shows order confirmation screen & live tracking timeline
     expect(screen.getByText(/მადლობას გიხდით არჩევანისთვის/i)).toBeInTheDocument();
-    expect(screen.getByText(/#MTR-/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/#MTR-/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/შეკვეთის ლაივ-თრექინგი/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /WhatsApp-ით დაკავშირება/i })).toBeInTheDocument();
   });
 });

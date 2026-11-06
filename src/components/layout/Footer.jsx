@@ -80,6 +80,11 @@ export default function Footer({ darkMode, lang, siteSettings }) {
                   {lang === "ka" ? "კითხვა-პასუხი (FAQ)" : "FAQ"}
                 </a>
               </li>
+              <li>
+                <a href={lang === "en" ? "/en/track" : "/track"} className={`${linkHover} transition-colors flex items-center gap-1.5 text-amber-500/90 font-medium`}>
+                  <span>{lang === "ka" ? "შეკვეთის თრექინგი 🚚" : "Track Order 🚚"}</span>
+                </a>
+              </li>
             </ul>
           </div>
 
