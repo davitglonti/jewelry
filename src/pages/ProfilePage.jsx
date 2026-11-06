@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   User, ShieldCheck, Heart, Key, LogOut,
   Save, AlertCircle, CheckCircle2, Eye, EyeOff, ArrowLeft,
-  ExternalLink, Calendar, Mail, Phone, MessageCircle, ChevronRight, Check, Gem
+  ExternalLink, Calendar, Mail, Phone, MessageCircle, ChevronRight, Check, Gem, ShoppingBag
 } from 'lucide-react';
 import { useAuth, getAuthErrorMessage } from '../context/AuthContext';
 import { useStore } from '../context/StoreContext';
@@ -12,6 +12,7 @@ import { navigateTo } from '../utils/navigation';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import FavoritesModal from '../components/modals/FavoritesModal';
+import QuickBuyModal from '../components/modals/QuickBuyModal';
 import ProductCard from '../components/store/ProductCard';
 import PasswordStrengthIndicator from '../components/auth/PasswordStrengthIndicator';
 import { isStrongPassword, getPasswordValidationMessage } from '../utils/passwordValidation';
@@ -22,6 +23,8 @@ export default function ProfilePage() {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showFavoritesModal, setShowFavoritesModal] = useState(false);
+  const [buyModalOpen, setBuyModalOpen] = useState(false);
+  const [selectedForBuy, setSelectedForBuy] = useState([]);
 
   // Active navigation tab: 'profile' | 'security' | 'favorites' | 'concierge'
   const [activeTab, setActiveTab] = useState('profile');
@@ -732,17 +735,33 @@ export default function ProfilePage() {
                       </p>
                     </div>
 
-                    <a
-                      href={lang === 'en' ? '/en/catalog' : '/catalog'}
-                      className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wide flex items-center gap-2 transition-all shadow-xs ${
-                        darkMode
-                          ? 'bg-amber-500 hover:bg-amber-400 text-stone-950 shadow-amber-500/10'
-                          : 'bg-amber-500 hover:bg-amber-400 text-stone-950 shadow-amber-500/20'
-                      }`}
-                    >
-                      <span>{lang === 'ka' ? 'კატალოგის დათვალიერება' : 'Browse Catalog'}</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </a>
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      {favoriteProducts.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedForBuy(favoriteProducts);
+                            setBuyModalOpen(true);
+                          }}
+                          className="px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-md shadow-amber-500/20 active:scale-95 transition-all"
+                        >
+                          <ShoppingBag className="w-3.5 h-3.5" />
+                          <span>{lang === 'ka' ? 'რჩეულების შეძენა' : 'Buy Saved Items'}</span>
+                        </button>
+                      )}
+
+                      <a
+                        href={lang === 'en' ? '/en/catalog' : '/catalog'}
+                        className={`px-4 py-2.5 rounded-full text-xs font-semibold tracking-wide flex items-center gap-2 transition-all ${
+                          darkMode
+                            ? 'bg-stone-800 hover:bg-stone-700 text-stone-200'
+                            : 'bg-stone-100 hover:bg-stone-200 text-stone-800'
+                        }`}
+                      >
+                        <span>{lang === 'ka' ? 'კატალოგი' : 'Catalog'}</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
                   </div>
 
                   {favoriteProducts.length === 0 ? (
@@ -793,13 +812,30 @@ export default function ProfilePage() {
                             ? `სულ: ${favoriteProducts.length} რჩეული სამკაული`
                             : `Total: ${favoriteProducts.length} saved item(s)`}
                         </span>
-                        <a
-                          href={lang === 'en' ? '/en/catalog' : '/catalog'}
-                          className="text-amber-500 hover:text-amber-400 font-semibold inline-flex items-center gap-1 transition-colors"
-                        >
-                          <span>{lang === 'ka' ? '+ სხვა სამკაულების დამატება' : '+ Add more pieces'}</span>
-                          <ChevronRight className="w-3 h-3" />
-                        </a>
+
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedForBuy(favoriteProducts);
+                              setBuyModalOpen(true);
+                            }}
+                            className="text-amber-500 hover:text-amber-400 font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                          >
+                            <ShoppingBag className="w-3.5 h-3.5" />
+                            <span>{lang === 'ka' ? 'შეკვეთის გაფორმება' : 'Checkout Order'}</span>
+                          </button>
+
+                          <span className="opacity-30">•</span>
+
+                          <a
+                            href={lang === 'en' ? '/en/catalog' : '/catalog'}
+                            className="opacity-75 hover:opacity-100 inline-flex items-center gap-1 transition-colors"
+                          >
+                            <span>{lang === 'ka' ? '+ სხვა სამკაულების დამატება' : '+ Add more pieces'}</span>
+                            <ChevronRight className="w-3 h-3" />
+                          </a>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -946,6 +982,13 @@ export default function ProfilePage() {
         isOpen={showFavoritesModal}
         onClose={() => setShowFavoritesModal(false)}
         favorites={favorites}
+      />
+
+      {/* Quick Buy / Checkout Modal */}
+      <QuickBuyModal
+        isOpen={buyModalOpen}
+        onClose={() => setBuyModalOpen(false)}
+        items={selectedForBuy}
       />
     </div>
   );

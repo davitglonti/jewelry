@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { X, Trash2, ArrowUpDown, Filter, Sparkles, ArrowLeftRight } from 'lucide-react';
+import { X, Trash2, ArrowUpDown, Filter, Sparkles, ArrowLeftRight, ShoppingBag } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { useAuth } from '../../context/AuthContext';
 import { formatPrice } from '../../utils/i18n';
+import QuickBuyModal from './QuickBuyModal';
 
 export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
   const { darkMode, lang, products, favorites, toggleFavorite, compareList, toggleCompare } = useStore();
@@ -10,6 +11,19 @@ export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
 
   const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'price-desc' | 'price-asc' | 'name'
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [buyModalOpen, setBuyModalOpen] = useState(false);
+  const [selectedForBuy, setSelectedForBuy] = useState([]);
+
+  const handleBuySingle = (item) => {
+    setSelectedForBuy([item]);
+    setBuyModalOpen(true);
+  };
+
+  const handleBuyAll = () => {
+    if (!favoriteProducts || favoriteProducts.length === 0) return;
+    setSelectedForBuy(favoriteProducts);
+    setBuyModalOpen(true);
+  };
 
   // Filter & sort favorite products
   const favoriteProducts = useMemo(() => {
@@ -189,13 +203,28 @@ export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
                     <ArrowLeftRight className="w-3.5 h-3.5" />
                   </button>
 
+                  {/* ყიდვა */}
+                  <button
+                    type="button"
+                    onClick={() => handleBuySingle(item)}
+                    className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95"
+                  >
+                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <span>{lang === "ka" ? "ყიდვა" : "Buy"}</span>
+                  </button>
+
+                  {/* ნახვა */}
                   <button
                     type="button"
                     onClick={() => {
                       onClose();
                       onSelectProduct(item);
                     }}
-                    className="px-3 py-1.5 rounded-xl bg-amber-500 text-black text-xs font-semibold hover:brightness-110 transition-all shadow-sm"
+                    className={`px-2.5 py-1.5 rounded-xl border text-xs font-medium transition-all ${
+                      darkMode
+                        ? 'border-stone-700 bg-stone-800 text-stone-300 hover:bg-stone-700'
+                        : 'border-stone-300 bg-stone-100 text-stone-700 hover:bg-stone-200'
+                    }`}
                   >
                     {lang === "ka" ? "ნახვა" : "View"}
                   </button>
@@ -214,18 +243,36 @@ export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
           )}
         </div>
 
-        {/* Footer Summary */}
+        {/* Footer Summary with Buy / Checkout Button */}
         {favoriteProducts.length > 0 && (
-          <div className="pt-3.5 border-t border-stone-500/20 flex items-center justify-between text-xs">
-            <span className="opacity-70">
-              {lang === 'ka' ? `ჯამი (${favoriteProducts.length} ნივთი):` : `Total (${favoriteProducts.length} items):`}
-            </span>
-            <span className="font-mono font-bold text-amber-500 text-sm">
-              {formatPrice(totalValue)}
-            </span>
+          <div className="pt-3.5 border-t border-stone-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="opacity-70">
+                {lang === 'ka' ? `ჯამი (${favoriteProducts.length} ნივთი):` : `Total (${favoriteProducts.length} items):`}
+              </span>
+              <span className="font-mono font-bold text-amber-500 text-sm sm:text-base">
+                {formatPrice(totalValue)}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleBuyAll}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-amber-500/20 active:scale-95 transition-all"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span>{lang === 'ka' ? 'შეკვეთის გაფორმება' : 'Checkout Order'}</span>
+            </button>
           </div>
         )}
       </div>
+
+      {/* Quick Buy / Checkout Modal */}
+      <QuickBuyModal
+        isOpen={buyModalOpen}
+        onClose={() => setBuyModalOpen(false)}
+        items={selectedForBuy}
+      />
     </div>
   );
 }
