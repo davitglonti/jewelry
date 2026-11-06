@@ -180,17 +180,25 @@ export default function AdminManagementTab({
         }`}
       >
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 shrink-0">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${
+            darkMode ? 'bg-amber-500/15 border-amber-500/30 text-amber-400' : 'bg-amber-50 border-amber-300 text-amber-600 shadow-xs'
+          }`}>
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-serif text-lg sm:text-xl font-medium">უფლებების მართვა (ადმინები & მოდერატორები)</h3>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-amber-500/15 border border-amber-500/30 text-amber-400">
+              <h3 className={`font-serif text-lg sm:text-xl font-semibold ${darkMode ? 'text-stone-100' : 'text-stone-900'}`}>
+                უფლებების მართვა (ადმინები & მოდერატორები)
+              </h3>
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-bold ${
+                darkMode ? 'bg-amber-500/15 border border-amber-500/30 text-amber-400' : 'bg-amber-100 border border-amber-300 text-amber-900'
+              }`}>
                 RBAC Security
               </span>
             </div>
-            <p className="text-xs opacity-65 mt-1 max-w-2xl leading-relaxed">
+            <p className={`text-xs mt-1 max-w-2xl leading-relaxed ${
+              darkMode ? 'text-stone-400 opacity-80' : 'text-stone-600 font-medium'
+            }`}>
               აქედან შეგიძლიათ მიანიჭოთ წვდომა **მოდერატორებს** (მხოლოდ პროდუქციის და ბლოგის მართვა) ან **ადმინისტრატორებს** (სრული წვდომა).
               საკმარისია მხოლოდ ელ-ფოსტის მითითება — თანამშრომელს მეილზე ავტომატურად გაეგზავნება მოწვევის ბმული, სადაც თვითონ დააყენებს საკუთარ პაროლს.
             </p>
@@ -201,10 +209,10 @@ export default function AdminManagementTab({
           type="button"
           onClick={loadAdmins}
           disabled={loading || actionLoading}
-          className={`px-3.5 py-2 rounded-xl text-xs font-medium border flex items-center gap-2 transition-all shrink-0 ${
+          className={`px-3.5 py-2 rounded-xl text-xs font-semibold border flex items-center gap-2 transition-all shrink-0 ${
             darkMode
               ? 'border-stone-800 bg-stone-900/60 hover:bg-stone-800 text-stone-300'
-              : 'border-stone-200 bg-stone-100 hover:bg-stone-200 text-stone-700'
+              : 'border-stone-300 bg-stone-100 hover:bg-stone-200 text-stone-800 shadow-xs'
           }`}
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-amber-500' : ''}`} />
@@ -228,31 +236,37 @@ export default function AdminManagementTab({
 
       {/* Successfully Sent Invitation Box */}
       {createdInvite && (
-        <div className="p-6 rounded-3xl border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent space-y-4 animate-fadeIn">
+        <div className={`p-6 rounded-3xl border space-y-4 animate-fadeIn ${
+          darkMode
+            ? 'border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent'
+            : 'border-amber-400 bg-gradient-to-br from-amber-50 via-white to-amber-50/50 shadow-md shadow-amber-500/10'
+        }`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold ${
+                darkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-800'
+              }`}>
                 <Check className="w-4 h-4" />
               </div>
-              <h4 className="font-serif text-base font-semibold text-amber-400">
+              <h4 className={`font-serif text-base font-bold ${darkMode ? 'text-amber-400' : 'text-amber-900'}`}>
                 მოწვევის წერილი გაგზავნილია!
               </h4>
             </div>
-            <span className="text-[11px] opacity-60">
+            <span className={`text-[11px] font-medium ${darkMode ? 'text-stone-300 opacity-70' : 'text-stone-600'}`}>
               {createdInvite.emailSent ? '✉️ წერილი მიუვიდა მეილზე' : '🔗 ბმული მზადაა გასაზიარებლად'}
             </span>
           </div>
 
           <div className={`p-4 rounded-2xl border grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs ${
-            darkMode ? 'bg-stone-900/90 border-stone-800' : 'bg-white border-stone-200'
+            darkMode ? 'bg-stone-900/90 border-stone-800' : 'bg-white border-amber-200 shadow-xs'
           }`}>
             <div>
-              <span className="opacity-50 block text-[10px] uppercase font-bold">თანამშრომლის ელ-ფოსტა</span>
-              <span className="font-mono font-semibold text-stone-100">{createdInvite.email}</span>
+              <span className={`block text-[10px] uppercase font-bold ${darkMode ? 'text-stone-400 opacity-60' : 'text-stone-500'}`}>თანამშრომლის ელ-ფოსტა</span>
+              <span className={`font-mono font-semibold ${darkMode ? 'text-stone-100' : 'text-stone-900 font-bold'}`}>{createdInvite.email}</span>
             </div>
             <div>
-              <span className="opacity-50 block text-[10px] uppercase font-bold">მინიჭებული როლი</span>
-              <span className="font-semibold text-emerald-400">
+              <span className={`block text-[10px] uppercase font-bold ${darkMode ? 'text-stone-400 opacity-60' : 'text-stone-500'}`}>მინიჭებული როლი</span>
+              <span className={`font-semibold ${darkMode ? 'text-emerald-400' : 'text-emerald-700 font-bold'}`}>
                 {createdInvite.role === 'moderator' ? 'მოდერატორი (კონტენტი)' : 'სრული ადმინი'}
               </span>
             </div>
@@ -267,7 +281,7 @@ export default function AdminManagementTab({
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               <span>{copied ? 'დაკოპირდა WhatsApp-ისთვის!' : 'მოწვევის ბმულის კოპირება (WhatsApp / Messenger) 📋'}</span>
             </button>
-            <span className="text-[11px] opacity-65">
+            <span className={`text-[11px] ${darkMode ? 'opacity-65 text-stone-300' : 'text-stone-600 font-medium'}`}>
               თანამშრომელი ამ ბმულზე გადასვლით მომენტალურად დააყენებს საკუთარ პირად პაროლს და შემოვა სისტემაში.
             </span>
           </div>
@@ -282,14 +296,18 @@ export default function AdminManagementTab({
           }`}
         >
           <div className="flex items-center gap-2.5">
-            <UserPlus className="w-4 h-4 text-amber-500" />
-            <h4 className="font-serif text-base font-medium">ახალი თანამშრომლის მოწვევა & უფლების მინიჭება</h4>
+            <UserPlus className={`w-4 h-4 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} />
+            <h4 className={`font-serif text-base font-semibold ${darkMode ? 'text-stone-100' : 'text-stone-900'}`}>
+              ახალი თანამშრომლის მოწვევა & უფლების მინიჭება
+            </h4>
           </div>
 
           <form onSubmit={handleCreateAccount} className="space-y-4">
             {/* Role Selection */}
             <div>
-              <label className="text-[11px] uppercase tracking-wider font-semibold opacity-60 block mb-2">
+              <label className={`text-[11px] uppercase tracking-wider font-semibold block mb-2 ${
+                darkMode ? 'text-stone-400 opacity-70' : 'text-stone-700 font-bold'
+              }`}>
                 აირჩიეთ წვდომის დონე (როლი):
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -298,22 +316,38 @@ export default function AdminManagementTab({
                   onClick={() => setSelectedRole('moderator')}
                   className={`p-3.5 rounded-2xl border text-left flex items-start gap-3 transition-all ${
                     selectedRole === 'moderator'
-                      ? 'border-amber-500/60 bg-amber-500/10 text-stone-100 shadow-sm'
+                      ? darkMode
+                        ? 'border-amber-500/70 bg-amber-500/15 text-stone-100 shadow-sm'
+                        : 'border-amber-500 bg-amber-50/90 text-stone-950 ring-2 ring-amber-400/50 shadow-sm'
                       : darkMode
                       ? 'border-stone-800 bg-stone-900/40 text-stone-400 hover:border-stone-700'
-                      : 'border-stone-200 bg-stone-50 text-stone-600 hover:border-stone-300'
+                      : 'border-stone-300 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-50 shadow-xs'
                   }`}
                 >
-                  <div className={`p-2 rounded-xl mt-0.5 ${selectedRole === 'moderator' ? 'bg-amber-500 text-black' : 'bg-stone-800 text-stone-400'}`}>
+                  <div className={`p-2 rounded-xl mt-0.5 shrink-0 ${
+                    selectedRole === 'moderator'
+                      ? 'bg-amber-500 text-stone-950 font-bold shadow-xs'
+                      : darkMode
+                      ? 'bg-stone-800 text-stone-400'
+                      : 'bg-stone-100 border border-stone-200 text-stone-600'
+                  }`}>
                     <Users className="w-4 h-4" />
                   </div>
                   <div>
                     <div className="font-semibold text-xs flex items-center gap-1.5">
-                      <span>მოდერატორი</span>
-                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 font-normal">რეკომენდებული</span>
+                      <span className={selectedRole === 'moderator' && !darkMode ? 'text-stone-950 font-bold' : ''}>მოდერატორი</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                        darkMode
+                          ? 'bg-amber-500/20 text-amber-400'
+                          : 'bg-amber-100 border border-amber-300 text-amber-900 font-semibold'
+                      }`}>
+                        რეკომენდებული
+                      </span>
                     </div>
-                    <p className="text-[11px] opacity-70 mt-1 leading-snug">
-                      შეუძლია **მხოლოდ პროდუქციის** და **ბლოგის** დამატება/შეცვლა. არ აქვს წვდომა მომხმარებლების შეკვეთებზე, სტატისტიკასა და საიტის პარამეტრებზე.
+                    <p className={`text-[11px] mt-1 leading-snug ${
+                      darkMode ? 'text-stone-300 opacity-80' : 'text-stone-600'
+                    }`}>
+                      შეუძლია <strong className={darkMode ? 'text-amber-400' : 'text-stone-900 font-bold'}>მხოლოდ პროდუქციის</strong> და <strong className={darkMode ? 'text-amber-400' : 'text-stone-900 font-bold'}>ბლოგის</strong> დამატება/შეცვლა. არ აქვს წვდომა მომხმარებლების შეკვეთებზე, სტატისტიკასა და საიტის პარამეტრებზე.
                     </p>
                   </div>
                 </button>
@@ -323,18 +357,32 @@ export default function AdminManagementTab({
                   onClick={() => setSelectedRole('admin')}
                   className={`p-3.5 rounded-2xl border text-left flex items-start gap-3 transition-all ${
                     selectedRole === 'admin'
-                      ? 'border-amber-500/60 bg-amber-500/10 text-stone-100 shadow-sm'
+                      ? darkMode
+                        ? 'border-amber-500/70 bg-amber-500/15 text-stone-100 shadow-sm'
+                        : 'border-amber-500 bg-amber-50/90 text-stone-950 ring-2 ring-amber-400/50 shadow-sm'
                       : darkMode
                       ? 'border-stone-800 bg-stone-900/40 text-stone-400 hover:border-stone-700'
-                      : 'border-stone-200 bg-stone-50 text-stone-600 hover:border-stone-300'
+                      : 'border-stone-300 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-50 shadow-xs'
                   }`}
                 >
-                  <div className={`p-2 rounded-xl mt-0.5 ${selectedRole === 'admin' ? 'bg-amber-500 text-black' : 'bg-stone-800 text-stone-400'}`}>
+                  <div className={`p-2 rounded-xl mt-0.5 shrink-0 ${
+                    selectedRole === 'admin'
+                      ? 'bg-amber-500 text-stone-950 font-bold shadow-xs'
+                      : darkMode
+                      ? 'bg-stone-800 text-stone-400'
+                      : 'bg-stone-100 border border-stone-200 text-stone-600'
+                  }`}>
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="font-semibold text-xs">სრული ადმინისტრატორი</div>
-                    <p className="text-[11px] opacity-70 mt-1 leading-snug">
+                    <div className={`font-semibold text-xs ${
+                      selectedRole === 'admin' && !darkMode ? 'text-stone-950 font-bold' : ''
+                    }`}>
+                      სრული ადმინისტრატორი
+                    </div>
+                    <p className={`text-[11px] mt-1 leading-snug ${
+                      darkMode ? 'text-stone-300 opacity-80' : 'text-stone-600'
+                    }`}>
                       სრული წვდომა ყველა ტაბზე: პროდუქცია, კატეგორიები, ბანერები, მომხმარებელთა მოთხოვნები, გაყიდვები, პარამეტრები.
                     </p>
                   </div>
@@ -344,11 +392,13 @@ export default function AdminManagementTab({
 
             {/* Email Field Only */}
             <div>
-              <label className="text-[11px] uppercase tracking-wider font-semibold opacity-60 block mb-1.5">
+              <label className={`text-[11px] uppercase tracking-wider font-semibold block mb-1.5 ${
+                darkMode ? 'text-stone-400 opacity-70' : 'text-stone-700 font-bold'
+              }`}>
                 თანამშრომლის ელ-ფოსტა:
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-stone-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
                   value={newEmail}
@@ -357,12 +407,14 @@ export default function AdminManagementTab({
                   required
                   className={`w-full pl-10 pr-4 py-3 rounded-xl text-xs border outline-none transition-all ${
                     darkMode
-                      ? 'bg-stone-900/80 border-stone-700 text-white focus:border-amber-500'
-                      : 'bg-stone-50 border-stone-300 text-stone-900 focus:border-amber-600'
+                      ? 'bg-stone-900/80 border-stone-700 text-white placeholder-stone-500 focus:border-amber-500'
+                      : 'bg-white border-stone-300 text-stone-900 placeholder-stone-400 focus:border-amber-600 focus:ring-1 focus:ring-amber-500 shadow-xs'
                   }`}
                 />
               </div>
-              <p className="text-[11px] opacity-60 mt-1.5">
+              <p className={`text-[11px] mt-1.5 ${
+                darkMode ? 'text-stone-400 opacity-70' : 'text-stone-600 font-medium'
+              }`}>
                 მოწვევის გაგზავნისთანავე ამ ელ-ფოსტაზე გაიგზავნება წერილი უსაფრთხო ბმულით, სადაც თანამშრომელი თავად დააყენებს საკუთარ პაროლს.
               </p>
             </div>
@@ -371,7 +423,7 @@ export default function AdminManagementTab({
               <button
                 type="submit"
                 disabled={actionLoading || !newEmail.trim()}
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-md shadow-amber-500/20 active:scale-95 disabled:opacity-50"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-md shadow-amber-500/25 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Send className="w-4 h-4" />
                 <span>{actionLoading ? 'იგზავნება მოწვევა...' : 'უფლების მინიჭება და მოწვევის გაგზავნა'}</span>
@@ -392,22 +444,30 @@ export default function AdminManagementTab({
           darkMode ? 'bg-[#121110] border-stone-800' : 'bg-white border-stone-200 shadow-sm'
         }`}
       >
-        <div className="p-5 border-b border-stone-500/15 flex items-center justify-between">
+        <div className={`p-5 border-b flex items-center justify-between ${
+          darkMode ? 'border-stone-800/80 bg-stone-900/30' : 'border-stone-200 bg-stone-50/70'
+        }`}>
           <div className="flex items-center gap-2">
-            <span className="font-serif text-base font-medium">უფლებამოსილი ანგარიშები</span>
-            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+            <span className={`font-serif text-base font-semibold ${darkMode ? 'text-stone-100' : 'text-stone-900'}`}>
+              უფლებამოსილი ანგარიშები
+            </span>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+              darkMode ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' : 'bg-amber-100 text-amber-900 border border-amber-300'
+            }`}>
               {admins.length}
             </span>
           </div>
-          <span className="text-[11px] opacity-60">
+          <span className={`text-[11px] ${darkMode ? 'text-stone-400 opacity-70' : 'text-stone-600 font-medium'}`}>
             მხოლოდ ეს პირები შეძლებენ /admin პანელზე შესვლას
           </span>
         </div>
 
         {loading ? (
-          <div className="py-12 text-center text-xs opacity-60">იტვირთება სია...</div>
+          <div className={`py-12 text-center text-xs ${darkMode ? 'text-stone-400 opacity-60' : 'text-stone-600 font-medium'}`}>
+            იტვირთება სია...
+          </div>
         ) : (
-          <div className="divide-y divide-stone-500/10">
+          <div className={darkMode ? 'divide-y divide-stone-800/80' : 'divide-y divide-stone-200'}>
             {admins.map((adm) => {
               const isOwner = adm.isSuperAdmin || adm.email === SUPER_ADMIN_EMAIL.toLowerCase();
               const isCurrent = adm.email === (currentUserEmail || '').toLowerCase();
@@ -417,7 +477,9 @@ export default function AdminManagementTab({
                 <div
                   key={adm.email}
                   className={`p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${
-                    !adm.isActive ? 'opacity-50 bg-red-500/5' : ''
+                    !adm.isActive
+                      ? darkMode ? 'opacity-50 bg-red-500/5' : 'opacity-60 bg-red-50/50'
+                      : darkMode ? 'hover:bg-stone-900/30' : 'hover:bg-stone-50/80'
                   }`}
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
@@ -426,8 +488,12 @@ export default function AdminManagementTab({
                         isOwner
                           ? 'bg-gradient-to-br from-amber-500 to-amber-700 text-black border-amber-400/50 shadow-md shadow-amber-500/20'
                           : isMod
-                          ? 'bg-purple-500/15 text-purple-400 border-purple-500/30'
-                          : 'bg-blue-500/15 text-blue-400 border-blue-500/30'
+                          ? darkMode
+                            ? 'bg-purple-500/15 text-purple-400 border-purple-500/30'
+                            : 'bg-purple-100 text-purple-900 border-purple-300'
+                          : darkMode
+                          ? 'bg-blue-500/15 text-blue-400 border-blue-500/30'
+                          : 'bg-blue-100 text-blue-900 border-blue-300'
                       }`}
                     >
                       {adm.email.charAt(0).toUpperCase()}
@@ -435,49 +501,79 @@ export default function AdminManagementTab({
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono text-xs sm:text-sm font-semibold truncate">{adm.email}</span>
+                        <span className={`font-mono text-xs sm:text-sm font-semibold truncate ${
+                          darkMode ? 'text-stone-100' : 'text-stone-900 font-bold'
+                        }`}>
+                          {adm.email}
+                        </span>
 
                         {isOwner ? (
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-500 text-black">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-500 text-black shadow-xs">
                             Super Admin
                           </span>
                         ) : isMod ? (
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-purple-500/15 text-purple-400 border border-purple-500/30">
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider border ${
+                            darkMode
+                              ? 'bg-purple-500/15 text-purple-400 border-purple-500/30'
+                              : 'bg-purple-100 text-purple-900 border-purple-300'
+                          }`}>
                             მოდერატორი (კონტენტი)
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider border ${
+                            darkMode
+                              ? 'bg-blue-500/15 text-blue-400 border-blue-500/30'
+                              : 'bg-blue-100 text-blue-900 border-blue-300'
+                          }`}>
                             ადმინისტრატორი (სრული)
                           </span>
                         )}
 
                         {isCurrent && (
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                            darkMode
+                              ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                              : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                          }`}>
                             თქვენ
                           </span>
                         )}
 
                         {!isOwner && (
                           !adm.isActive ? (
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-red-500/10 text-red-400 border border-red-500/30 flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-medium border flex items-center gap-1 ${
+                              darkMode
+                                ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                                : 'bg-red-100 text-red-800 border-red-300'
+                            }`}>
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
                               შეჩერებული
                             </span>
                           ) : adm.status === 'pending' || !adm.hasJoined ? (
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1.5 animate-pulse">
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border flex items-center gap-1.5 animate-pulse ${
+                              darkMode
+                                ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                                : 'bg-amber-100 text-amber-900 border-amber-300'
+                            }`}>
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                               მოლოდინში (მოწვეული)
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-medium border flex items-center gap-1 ${
+                              darkMode
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                                : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                            }`}>
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                               აქტიური
                             </span>
                           )
                         )}
                       </div>
 
-                      <div className="flex items-center gap-3 text-[11px] opacity-60 mt-0.5 flex-wrap">
+                      <div className={`flex items-center gap-3 text-[11px] mt-1 flex-wrap ${
+                        darkMode ? 'text-stone-400 opacity-70' : 'text-stone-600 font-medium'
+                      }`}>
                         <span>
                           {adm.hasJoined || adm.status === 'active'
                             ? `დამატებულია: ${adm.addedAt ? new Date(adm.addedAt).toLocaleDateString('ka-GE') : 'სისტემური'}`
@@ -491,7 +587,9 @@ export default function AdminManagementTab({
                   {/* Actions (Only Super Admin can modify) */}
                   <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
                     {isOwner ? (
-                      <span className="text-[11px] opacity-40 flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-500/20">
+                      <span className={`text-[11px] flex items-center gap-1.5 px-3 py-1.5 rounded-xl border ${
+                        darkMode ? 'border-stone-800 bg-stone-900/40 text-stone-400' : 'border-stone-300 bg-stone-100 text-stone-600 font-medium'
+                      }`}>
                         <Lock className="w-3.5 h-3.5" />
                         უცვლელი მფლობელი
                       </span>
@@ -507,7 +605,7 @@ export default function AdminManagementTab({
                             className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs ${
                               darkMode
                                 ? 'border-amber-500/40 bg-amber-500/15 text-amber-400 hover:bg-amber-500 hover:text-black'
-                                : 'border-amber-500/50 bg-amber-50 text-amber-700 hover:bg-amber-500 hover:text-black'
+                                : 'border-amber-400 bg-amber-100 text-amber-900 hover:bg-amber-500 hover:text-black font-bold'
                             }`}
                           >
                             <Send className="w-3.5 h-3.5" />
@@ -520,10 +618,10 @@ export default function AdminManagementTab({
                           value={adm.role}
                           onChange={(e) => handleChangeRole(adm.email, e.target.value)}
                           disabled={actionLoading}
-                          className={`px-2.5 py-1.5 rounded-xl text-xs font-medium border outline-none cursor-pointer transition-all ${
+                          className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border outline-none cursor-pointer transition-all shadow-xs ${
                             darkMode
                               ? 'bg-stone-900 border-stone-700 text-stone-200 hover:border-stone-600'
-                              : 'bg-stone-100 border-stone-300 text-stone-800'
+                              : 'bg-white border-stone-300 text-stone-900 hover:border-stone-400'
                           }`}
                         >
                           <option value="moderator">მოდერატორი</option>
@@ -536,10 +634,14 @@ export default function AdminManagementTab({
                           onClick={() => handleToggleStatus(adm.email, adm.isActive)}
                           disabled={actionLoading}
                           title={adm.isActive ? 'წვდომის დროებით შეჩერება' : 'წვდომის აღდგენა'}
-                          className={`p-2 rounded-xl border text-xs font-medium flex items-center gap-1.5 transition-all ${
+                          className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs ${
                             adm.isActive
-                              ? 'border-stone-800 bg-stone-900/60 text-stone-300 hover:text-amber-400 hover:border-amber-500/40'
-                              : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+                              ? darkMode
+                                ? 'border-stone-800 bg-stone-900/60 text-stone-300 hover:text-amber-400 hover:border-amber-500/40'
+                                : 'border-stone-300 bg-stone-100 text-stone-800 hover:border-stone-400 hover:bg-stone-200'
+                              : darkMode
+                              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+                              : 'border-emerald-300 bg-emerald-100 text-emerald-900 hover:bg-emerald-200'
                           }`}
                         >
                           <Power className="w-3.5 h-3.5" />
@@ -552,7 +654,11 @@ export default function AdminManagementTab({
                           onClick={() => handleRemove(adm.email)}
                           disabled={actionLoading}
                           title="ანგარიშის წაშლა"
-                          className="p-2 rounded-xl border border-stone-800 bg-stone-900/60 text-stone-400 hover:text-red-400 hover:border-red-500/40 hover:bg-red-500/10 transition-all"
+                          className={`p-2 rounded-xl border transition-all shadow-xs ${
+                            darkMode
+                              ? 'border-stone-800 bg-stone-900/60 text-stone-400 hover:text-red-400 hover:border-red-500/40 hover:bg-red-500/10'
+                              : 'border-stone-300 bg-stone-100 text-stone-600 hover:text-red-700 hover:border-red-300 hover:bg-red-50'
+                          }`}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
