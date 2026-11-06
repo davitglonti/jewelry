@@ -375,7 +375,7 @@ export default function AdminPage() {
                 { id: 'categories', label: `კატეგორიები & მეტალები (${(siteSettings.categories || []).length})`, minRole: 'admin' },
                 { id: 'home', label: 'მთავარი გვერდი 🌟', minRole: 'admin' },
                 { id: 'blog', label: `ბლოგი & სიახლეები (${(articles || []).length})` },
-                { id: 'inquiries', label: `შემოსული მოთხოვნები (${inquiries.length})`, minRole: 'admin' },
+                { id: 'inquiries', label: `შეკვეთები & გაყიდვები (${inquiries.length}) 🛍️`, minRole: 'admin' },
                 { id: 'stats', label: lang === 'ka' ? 'სტატისტიკა 📊' : 'Statistics 📊', minRole: 'admin' },
                 { id: 'site', label: 'საიტის პარამეტრები', minRole: 'admin' },
                 { id: 'admins', label: 'უფლებების მართვა 🛡️', minRole: 'admin' }
@@ -463,6 +463,8 @@ export default function AdminPage() {
                 siteSettings={siteSettings}
                 products={products}
                 syncData={syncData}
+                darkMode={darkMode}
+                lang={lang}
               />
             )}
 
