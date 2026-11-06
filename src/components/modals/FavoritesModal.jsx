@@ -3,6 +3,7 @@ import { X, Trash2, ArrowUpDown, Filter, Sparkles, ArrowLeftRight, ShoppingBag }
 import { useStore } from '../../context/StoreContext';
 import { useAuth } from '../../context/AuthContext';
 import { formatPrice } from '../../utils/i18n';
+import { navigateTo } from '../../utils/navigation';
 import QuickBuyModal from './QuickBuyModal';
 
 export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
@@ -15,14 +16,16 @@ export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
   const [selectedForBuy, setSelectedForBuy] = useState([]);
 
   const handleBuySingle = (item) => {
-    setSelectedForBuy([item]);
-    setBuyModalOpen(true);
+    onClose?.();
+    const prefix = lang === 'en' ? '/en' : '';
+    navigateTo(`${prefix}/checkout?productId=${encodeURIComponent(item.id || item.sku)}`);
   };
 
   const handleBuyAll = () => {
     if (!favoriteProducts || favoriteProducts.length === 0) return;
-    setSelectedForBuy(favoriteProducts);
-    setBuyModalOpen(true);
+    onClose?.();
+    const prefix = lang === 'en' ? '/en' : '';
+    navigateTo(`${prefix}/checkout?from=favorites`);
   };
 
   // Filter & sort favorite products

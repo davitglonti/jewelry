@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getLazyAuth } from '../lib/firebase';
 import { isStrongPassword, getPasswordValidationMessage } from '../utils/passwordValidation';
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 export const getAuthErrorMessage = (error, lang = 'ka', action = 'login') => {
   const code = error?.code || (typeof error === 'string' ? error : '');

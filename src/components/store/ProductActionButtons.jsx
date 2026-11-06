@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Ruler, MessageCircle, Send, Check, Lock, Tag, Sparkles, Copy } from 'lucide-react';
+import { Ruler, MessageCircle, Send, Check, Lock, Tag, Sparkles, Copy, ShoppingBag, ArrowRight } from 'lucide-react';
 import { getWhatsAppLink } from '../../utils/shareUtils';
 import { useAuth } from '../../context/AuthContext';
 import { formatPrice } from '../../utils/i18n';
+import { navigateTo } from '../../utils/navigation';
 
 export default function ProductActionButtons({
   product,
@@ -152,6 +153,31 @@ export default function ProductActionButtons({
           )}
         </div>
       )}
+
+      {/* Primary BUY NOW Action Button */}
+      <div className="pt-1">
+        <button
+          type="button"
+          onClick={() => {
+            const prefix = lang === 'en' ? '/en' : '';
+            const query = new URLSearchParams();
+            if (product.id) query.set('productId', product.id);
+            else if (product.sku) query.set('sku', product.sku);
+            if (selectedSize) query.set('size', selectedSize);
+            navigateTo(`${prefix}/checkout?${query.toString()}`);
+          }}
+          className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:via-amber-300 hover:to-amber-500 text-black font-bold text-sm sm:text-base tracking-wide flex items-center justify-center gap-3 shadow-xl shadow-amber-500/25 active:scale-[0.99] transition-all cursor-pointer group"
+        >
+          <ShoppingBag className="w-5 h-5 text-black group-hover:scale-110 transition-transform" />
+          <span>{lang === 'ka' ? 'ახლავე შეძენა (ონლაინ შეკვეთა)' : 'Buy Now (Instant Checkout)'}</span>
+          {selectedSize && (
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-black/15 font-mono font-bold">
+              {lang === 'ka' ? `ზომა: ${selectedSize}` : `Size: ${selectedSize}`}
+            </span>
+          )}
+          <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform ml-auto hidden sm:block" />
+        </button>
+      </div>
 
       {/* VIP Promo Code Section */}
       {!user ? (

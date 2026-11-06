@@ -740,8 +740,8 @@ export default function ProfilePage() {
                         <button
                           type="button"
                           onClick={() => {
-                            setSelectedForBuy(favoriteProducts);
-                            setBuyModalOpen(true);
+                            const prefix = lang === 'en' ? '/en' : '';
+                            navigateTo(`${prefix}/checkout?from=favorites`);
                           }}
                           className="px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-md shadow-amber-500/20 active:scale-95 transition-all"
                         >

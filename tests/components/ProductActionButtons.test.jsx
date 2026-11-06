@@ -146,4 +146,28 @@ describe('ProductActionButtons component', () => {
     expect(handleSyncData).toHaveBeenCalledTimes(1);
     expect(screen.getByText(/მოთხოვნა მიღებულია!/i)).toBeInTheDocument();
   });
+
+  it('renders Buy Now button with selected size and navigates to checkout on click', async () => {
+    const navModule = await import('../../src/utils/navigation');
+    const navigateSpy = vi.spyOn(navModule, 'navigateTo').mockImplementation(() => {});
+
+    render(
+      <ProductActionButtons
+        product={dummyProduct}
+        siteSettings={dummySettings}
+        selectedSize="17.0"
+        lang="ka"
+      />
+    );
+
+    const buyBtn = screen.getByRole('button', { name: /ახლავე შეძენა/i });
+    expect(buyBtn).toBeInTheDocument();
+    expect(screen.getByText(/ზომა: 17.0/i)).toBeInTheDocument();
+
+    fireEvent.click(buyBtn);
+    expect(navigateSpy).toHaveBeenCalledWith(
+      expect.stringContaining('/checkout?productId=prod-42&size=17.0')
+    );
+    navigateSpy.mockRestore();
+  });
 });

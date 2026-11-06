@@ -17,6 +17,7 @@ const CompareModal = lazy(() => import('./components/modals/CompareModal'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 const AddProductPage = lazy(() => import('./pages/AddProductPage'));
 const MyItemsPage = lazy(() => import('./pages/MyItemsPage'));
 
@@ -124,6 +125,12 @@ export default function App() {
     content = (
       <Suspense fallback={<PageLoader />}>
         <ProfilePage />
+      </Suspense>
+    );
+  } else if (route === "/checkout" || route === "/buy") {
+    content = (
+      <Suspense fallback={<PageLoader />}>
+        <CheckoutPage />
       </Suspense>
     );
   } else if (route === "/add" || route === "/my-items" || route === "/my-products") {
