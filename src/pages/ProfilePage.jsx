@@ -1,9 +1,9 @@
 // src/pages/ProfilePage.jsx
 import React, { useState, useEffect } from 'react';
 import {
-  User, ShieldCheck, Sparkles, Heart, Lock, Key, LogOut,
+  User, ShieldCheck, Heart, Key, LogOut,
   Save, AlertCircle, CheckCircle2, Eye, EyeOff, ArrowLeft,
-  ExternalLink, Calendar, Mail, Phone, MessageCircle, ChevronRight
+  ExternalLink, Calendar, Mail, Phone, MessageCircle, ChevronRight, Check
 } from 'lucide-react';
 import { useAuth, getAuthErrorMessage } from '../context/AuthContext';
 import { useStore } from '../context/StoreContext';
@@ -20,8 +20,8 @@ export default function ProfilePage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showFavoritesModal, setShowFavoritesModal] = useState(false);
 
-  // Active section tab
-  const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'security' | 'favorites' | 'concierge'
+  // Active navigation tab: 'profile' | 'security' | 'favorites' | 'concierge'
+  const [activeTab, setActiveTab] = useState('profile');
 
   // Profile Edit State
   const [displayName, setDisplayName] = useState('');
@@ -39,7 +39,7 @@ export default function ProfilePage() {
   const [passwordSuccessMsg, setPasswordSuccessMsg] = useState('');
   const [passwordErrorMsg, setPasswordErrorMsg] = useState('');
 
-  // Sync state when user loads
+  // Synchronize state when user loads
   useEffect(() => {
     if (user) {
       setDisplayName(user.displayName || '');
@@ -69,35 +69,38 @@ export default function ProfilePage() {
       return {
         label: lang === 'ka' ? 'მთავარი ადმინისტრატორი' : 'Super Administrator',
         short: 'SUPER ADMIN',
-        badgeClass: 'bg-gradient-to-r from-amber-500 to-amber-600 text-black font-bold shadow-md shadow-amber-500/20',
-        desc: lang === 'ka' ? 'სისტემის სრული და ულიმიტო წვდომა (Root)' : 'Full System Access & Ownership'
+        badgeClass: 'border-amber-400/40 bg-amber-400/10 text-amber-300',
+        desc: lang === 'ka' ? 'სისტემის სრული წვდომა' : 'Full System Access'
       };
     }
     if (userRole === 'admin') {
       return {
         label: lang === 'ka' ? 'ადმინისტრატორი' : 'Store Administrator',
         short: 'ADMIN',
-        badgeClass: 'bg-blue-500/20 text-blue-400 border border-blue-500/40',
-        desc: lang === 'ka' ? 'საიტის მართვა და პარამეტრების რედაქტირება' : 'Catalog, Settings & Inquiries Management'
+        badgeClass: 'border-blue-400/40 bg-blue-400/10 text-blue-300',
+        desc: lang === 'ka' ? 'მაღაზიის მართვა' : 'Store Management'
       };
     }
     if (userRole === 'moderator') {
       return {
-        label: lang === 'ka' ? 'კონტენტ-მოდერატორი' : 'Content Moderator',
+        label: lang === 'ka' ? 'მოდერატორი' : 'Content Moderator',
         short: 'MODERATOR',
-        badgeClass: 'bg-purple-500/20 text-purple-400 border border-purple-500/40',
-        desc: lang === 'ka' ? 'პროდუქციისა და ბლოგების რედაქტირების უფლება' : 'Products & Blog Management Access'
+        badgeClass: 'border-purple-400/40 bg-purple-400/10 text-purple-300',
+        desc: lang === 'ka' ? 'კონტენტის რედაქტორი' : 'Content Management'
       };
     }
     return {
-      label: lang === 'ka' ? 'კლიენტი (VIP წევრი)' : 'VIP Member',
+      label: lang === 'ka' ? 'კლიენტი' : 'Client Member',
       short: 'MEMBER',
-      badgeClass: 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
-      desc: lang === 'ka' ? 'საიუველირო სახლ «მატარეს» რეგისტრირებული წევრი' : 'Registered Member of MATARE Fine Jewelry'
+      badgeClass: 'border-stone-500/30 bg-stone-500/10 text-stone-300',
+      desc: lang === 'ka' ? 'რეგისტრირებული მომხმარებელი' : 'Registered Member'
     };
   };
 
   const roleInfo = getRoleDetails();
+
+  // Selected avatar object
+  const currentSelectedPreset = AVATAR_PRESETS.find((p) => p.url === selectedAvatarUrl) || AVATAR_PRESETS[0];
 
   // Save profile info (Display Name & Avatar)
   const handleSaveProfile = async (e) => {
@@ -113,8 +116,8 @@ export default function ProfilePage() {
       });
       setProfileSuccessMsg(
         lang === 'ka'
-          ? 'პროფილის მონაცემები წარმატებით შეინახა!'
-          : 'Profile details saved successfully!'
+          ? 'პროფილის მონაცემები წარმატებით განახლდა.'
+          : 'Profile details updated successfully.'
       );
       setTimeout(() => setProfileSuccessMsg(''), 3500);
     } catch (err) {
@@ -154,8 +157,8 @@ export default function ProfilePage() {
       await changePassword(newPassword);
       setPasswordSuccessMsg(
         lang === 'ka'
-          ? 'თქვენი პაროლი წარმატებით შეიცვალა!'
-          : 'Your password has been updated successfully!'
+          ? 'თქვენი პაროლი წარმატებით შეიცვალა.'
+          : 'Your password has been updated successfully.'
       );
       setNewPassword('');
       setConfirmPassword('');
@@ -177,7 +180,7 @@ export default function ProfilePage() {
     }
   };
 
-  // User's own inquiries (if any match phone/email)
+  // User's own inquiries
   const userInquiries = (inquiries || []).filter((inq) => {
     if (!user) return false;
     if (inq.clientEmail && inq.clientEmail.toLowerCase() === user.email?.toLowerCase()) return true;
@@ -186,7 +189,9 @@ export default function ProfilePage() {
   });
 
   return (
-    <div className={`min-h-screen w-full overflow-x-hidden transition-colors duration-300 ${darkMode ? 'bg-[#0c0b0a] text-[#f5f0e6]' : 'bg-[#faf7f2] text-[#1c1917]'}`}>
+    <div className={`min-h-screen w-full overflow-x-hidden transition-colors duration-300 ${
+      darkMode ? 'bg-[#0f0e0d] text-[#e6e2dd]' : 'bg-[#faf8f5] text-[#22201e]'
+    }`}>
       <Navbar
         lang={lang}
         setLang={setLang}
@@ -198,250 +203,249 @@ export default function ProfilePage() {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main id="main-content" className="pt-28 sm:pt-36 pb-24 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
-        {/* Navigation Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs opacity-60 mb-6">
+      <main id="main-content" className="pt-28 sm:pt-36 pb-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+        {/* Minimal Breadcrumb */}
+        <div className="flex items-center gap-2 text-xs opacity-50 mb-8">
           <a
             href={lang === 'en' ? '/en' : '/'}
-            className="hover:text-amber-500 transition-colors flex items-center gap-1"
+            className="hover:opacity-100 hover:text-stone-100 transition-colors flex items-center gap-1.5"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>{lang === 'ka' ? 'მთავარი' : 'Home'}</span>
           </a>
-          <span>/</span>
-          <span className="text-amber-500 font-medium">
-            {lang === 'ka' ? 'ჩემი პროფილი' : 'My Profile'}
+          <span className="opacity-30">/</span>
+          <span className="font-medium text-stone-300">
+            {lang === 'ka' ? 'პირადი პროფილი' : 'Account'}
           </span>
         </div>
 
         {/* Auth Check: If not logged in */}
         {!authLoading && !user ? (
-          <div className={`p-8 sm:p-14 rounded-3xl border text-center space-y-6 max-w-xl mx-auto ${
-            darkMode ? 'bg-stone-900/60 border-amber-500/20' : 'bg-white border-stone-200 shadow-xl'
+          <div className={`p-10 sm:p-14 rounded-3xl border text-center space-y-6 max-w-md mx-auto ${
+            darkMode ? 'bg-[#141312] border-white/5 shadow-2xl' : 'bg-white border-stone-200 shadow-xl'
           }`}>
-            <div className="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto border border-amber-500/30">
-              <User className="w-8 h-8" />
+            <div className="w-14 h-14 rounded-full bg-white/5 border border-white/10 text-stone-300 flex items-center justify-center mx-auto">
+              <User className="w-6 h-6" />
             </div>
             <div className="space-y-2">
-              <h2 className="font-serif text-2xl sm:text-3xl font-semibold">
+              <h2 className="font-serif text-2xl font-normal">
                 {lang === 'ka' ? 'ავტორიზაცია აუცილებელია' : 'Authentication Required'}
               </h2>
-              <p className="text-xs sm:text-sm opacity-70 leading-relaxed">
+              <p className="text-xs opacity-60 leading-relaxed">
                 {lang === 'ka'
-                  ? 'თქვენი პირადი პროფილის, ავატარის, პაროლისა და რჩეული სამკაულების სანახავად გთხოვთ გაიაროთ ავტორიზაცია.'
-                  : 'Please sign in to access your profile settings, avatar, password, and saved wishlist.'}
+                  ? 'თქვენი პროფილის, ავატარის და შენახული ნივთების სანახავად გთხოვთ გაიაროთ ავტორიზაცია.'
+                  : 'Please sign in to access your profile, avatar preset, and wishlist.'}
               </p>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <a
                 href={lang === 'en' ? '/en/login?redirect=/en/profile' : '/login?redirect=/profile'}
-                className="w-full sm:w-auto px-6 py-3 rounded-full bg-amber-500 hover:bg-amber-400 text-black font-semibold text-xs tracking-wider uppercase transition-all shadow-md shadow-amber-500/20 text-center"
+                className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-stone-100 hover:bg-white text-stone-950 font-medium text-xs tracking-wider uppercase transition-all shadow-sm"
               >
-                {lang === 'ka' ? 'სისტემაში შესვლა' : 'Sign In'}
+                {lang === 'ka' ? 'შესვლა' : 'Sign In'}
               </a>
               <a
                 href={lang === 'en' ? '/en/register' : '/register'}
-                className="w-full sm:w-auto px-6 py-3 rounded-full border border-stone-500/30 hover:border-amber-500 text-xs font-semibold tracking-wider uppercase transition-all text-center"
+                className="w-full sm:w-auto px-6 py-2.5 rounded-full border border-stone-700 hover:border-stone-500 text-xs font-medium tracking-wider uppercase transition-all"
               >
-                {lang === 'ka' ? 'რეგისტრაცია' : 'Create Account'}
+                {lang === 'ka' ? 'რეგისტრაცია' : 'Register'}
               </a>
             </div>
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Top Luxury Profile Hero Banner */}
-            <section className={`p-6 sm:p-8 rounded-3xl border relative overflow-hidden ${
+            {/* Header: Clean, Elegant, Uncluttered Profile Header */}
+            <section className={`p-6 sm:p-8 rounded-3xl border transition-all ${
               darkMode
-                ? 'bg-gradient-to-br from-[#151413] via-[#121110] to-[#0d0c0b] border-amber-500/30 shadow-2xl'
-                : 'bg-gradient-to-br from-white via-[#faf7f2] to-[#f4eee4] border-amber-500/30 shadow-xl'
+                ? 'bg-[#151413] border-white/5 shadow-lg'
+                : 'bg-white border-stone-200 shadow-md'
             }`}>
-              {/* Background ambient glow */}
-              <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
-
-              <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div className="flex items-center gap-5 sm:gap-6">
-                  {/* Current Avatar with badge */}
+                  {/* Avatar Display */}
                   <div className="relative shrink-0">
                     <img
                       src={selectedAvatarUrl || user?.photoURL || AVATAR_PRESETS[0].url}
                       alt="Avatar"
-                      className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-amber-500 shadow-xl shadow-amber-500/20 bg-stone-900"
+                      className="w-20 h-20 sm:w-22 sm:h-22 rounded-full object-cover border border-white/15 shadow-sm bg-stone-900"
                     />
                     <div
-                      className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-amber-500 text-black flex items-center justify-center shadow-md"
-                      title={lang === 'ka' ? 'საიუველირო ავატარი' : 'Luxury Avatar'}
+                      className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-stone-800 border border-white/20 text-stone-200 flex items-center justify-center text-[11px] shadow-sm"
+                      title={currentSelectedPreset?.nameKa || 'სიმბოლო'}
                     >
-                      <Sparkles className="w-4 h-4" />
+                      💍
                     </div>
                   </div>
 
-                  {/* Name, Email, Role */}
+                  {/* Profile Info */}
                   <div className="space-y-1.5 min-w-0">
                     <div className="flex flex-wrap items-center gap-2.5">
-                      <h1 className="font-serif text-2xl sm:text-3xl font-semibold tracking-wide truncate">
+                      <h1 className="font-serif text-2xl sm:text-3xl font-light tracking-wide truncate">
                         {displayName.trim() || user?.displayName || user?.email?.split('@')[0]}
                       </h1>
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider ${roleInfo.badgeClass}`}>
-                        {roleInfo.label}
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] uppercase font-medium tracking-wider border ${roleInfo.badgeClass}`}>
+                        {roleInfo.short}
                       </span>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-4 text-xs opacity-75">
+                    <div className="flex flex-wrap items-center gap-3.5 text-xs opacity-60">
                       <span className="flex items-center gap-1.5 font-mono">
-                        <Mail className="w-3.5 h-3.5 text-amber-500" />
+                        <Mail className="w-3.5 h-3.5 opacity-70" />
                         {user?.email}
                       </span>
                       {user?.metadata?.creationTime && (
                         <span className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-amber-500" />
+                          <Calendar className="w-3.5 h-3.5 opacity-70" />
                           <span>{lang === 'ka' ? 'წევრი:' : 'Joined:'} {formatCreationDate(user.metadata.creationTime)}</span>
                         </span>
                       )}
                     </div>
-
-                    <p className="text-xs text-amber-500/90 font-serif italic pt-0.5">
-                      {roleInfo.desc}
-                    </p>
                   </div>
                 </div>
 
-                {/* Right Quick Actions */}
-                <div className="flex flex-wrap items-center gap-2.5 self-stretch md:self-auto justify-end">
+                {/* Top Action Buttons (Minimal & Subtle) */}
+                <div className="flex items-center gap-2.5 self-stretch md:self-auto justify-end">
                   {isStaff && (
                     <a
                       href="/admin"
-                      className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-md shadow-amber-500/20 active:scale-95"
+                      className={`px-4 py-2 rounded-xl border text-xs font-medium flex items-center gap-2 transition-all ${
+                        darkMode
+                          ? 'border-white/10 bg-white/5 hover:bg-white/10 text-stone-200 hover:text-white'
+                          : 'border-stone-300 bg-stone-100 hover:bg-stone-200 text-stone-800'
+                      }`}
                     >
-                      <ShieldCheck className="w-4 h-4" />
+                      <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
                       <span>{lang === 'ka' ? 'ადმინ პანელი' : 'Admin Panel'}</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
+                      <ExternalLink className="w-3 h-3 opacity-60" />
                     </a>
                   )}
 
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className={`px-4 py-2.5 rounded-xl border text-xs font-medium flex items-center gap-2 transition-all ${
+                    className={`px-3.5 py-2 rounded-xl border text-xs font-medium flex items-center gap-1.5 transition-all ${
                       darkMode
-                        ? 'border-stone-800 bg-stone-900/80 text-stone-300 hover:text-red-400 hover:border-red-500/40'
-                        : 'border-stone-200 bg-white text-stone-700 hover:text-red-600 hover:border-red-400 shadow-sm'
+                        ? 'border-white/5 bg-transparent text-stone-400 hover:text-red-400 hover:border-red-500/20'
+                        : 'border-stone-200 bg-white text-stone-600 hover:text-red-600'
                     }`}
                   >
-                    <LogOut className="w-4 h-4" />
+                    <LogOut className="w-3.5 h-3.5" />
                     <span>{lang === 'ka' ? 'გასვლა' : 'Sign Out'}</span>
                   </button>
                 </div>
               </div>
 
-              {/* Navigation Tabs */}
-              <div className="flex items-center gap-2 mt-8 pt-5 border-t border-stone-500/15 overflow-x-auto scrollbar-none">
+              {/* Minimal Line Tab Navigation */}
+              <div className="flex items-center gap-1 sm:gap-2 mt-8 pt-4 border-t border-white/5 overflow-x-auto scrollbar-none">
                 <button
                   type="button"
                   onClick={() => setActiveTab('profile')}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap flex items-center gap-2 ${
+                  className={`px-3.5 py-2 rounded-lg text-xs font-medium tracking-wide transition-all whitespace-nowrap flex items-center gap-2 ${
                     activeTab === 'profile'
-                      ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20'
-                      : darkMode
-                      ? 'text-stone-300 hover:bg-stone-800/80'
-                      : 'text-stone-600 hover:bg-stone-100'
+                      ? darkMode
+                        ? 'bg-white/10 text-stone-100 font-semibold'
+                        : 'bg-stone-200 text-stone-900 font-semibold'
+                      : 'text-stone-400 hover:text-stone-200'
                   }`}
                 >
-                  <User className="w-3.5 h-3.5" />
+                  <User className="w-3.5 h-3.5 opacity-70" />
                   <span>{lang === 'ka' ? 'პროფილი & ავატარი' : 'Profile & Avatar'}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setActiveTab('security')}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap flex items-center gap-2 ${
+                  className={`px-3.5 py-2 rounded-lg text-xs font-medium tracking-wide transition-all whitespace-nowrap flex items-center gap-2 ${
                     activeTab === 'security'
-                      ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20'
-                      : darkMode
-                      ? 'text-stone-300 hover:bg-stone-800/80'
-                      : 'text-stone-600 hover:bg-stone-100'
+                      ? darkMode
+                        ? 'bg-white/10 text-stone-100 font-semibold'
+                        : 'bg-stone-200 text-stone-900 font-semibold'
+                      : 'text-stone-400 hover:text-stone-200'
                   }`}
                 >
-                  <Key className="w-3.5 h-3.5" />
-                  <span>{lang === 'ka' ? 'უსაფრთხოება & პაროლი' : 'Security & Password'}</span>
+                  <Key className="w-3.5 h-3.5 opacity-70" />
+                  <span>{lang === 'ka' ? 'უსაფრთხოება & პაროლი' : 'Security'}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setActiveTab('favorites')}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap flex items-center gap-2 ${
+                  className={`px-3.5 py-2 rounded-lg text-xs font-medium tracking-wide transition-all whitespace-nowrap flex items-center gap-2 ${
                     activeTab === 'favorites'
-                      ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20'
-                      : darkMode
-                      ? 'text-stone-300 hover:bg-stone-800/80'
-                      : 'text-stone-600 hover:bg-stone-100'
+                      ? darkMode
+                        ? 'bg-white/10 text-stone-100 font-semibold'
+                        : 'bg-stone-200 text-stone-900 font-semibold'
+                      : 'text-stone-400 hover:text-stone-200'
                   }`}
                 >
-                  <Heart className="w-3.5 h-3.5" />
+                  <Heart className="w-3.5 h-3.5 opacity-70" />
                   <span>{lang === 'ka' ? `რჩეული (${favorites.length})` : `Favorites (${favorites.length})`}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setActiveTab('concierge')}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap flex items-center gap-2 ${
+                  className={`px-3.5 py-2 rounded-lg text-xs font-medium tracking-wide transition-all whitespace-nowrap flex items-center gap-2 ${
                     activeTab === 'concierge'
-                      ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20'
-                      : darkMode
-                      ? 'text-stone-300 hover:bg-stone-800/80'
-                      : 'text-stone-600 hover:bg-stone-100'
+                      ? darkMode
+                        ? 'bg-white/10 text-stone-100 font-semibold'
+                        : 'bg-stone-200 text-stone-900 font-semibold'
+                      : 'text-stone-400 hover:text-stone-200'
                   }`}
                 >
-                  <MessageCircle className="w-3.5 h-3.5" />
-                  <span>{lang === 'ka' ? 'კონსიერჟი & სერვისები' : 'Concierge & Services'}</span>
+                  <MessageCircle className="w-3.5 h-3.5 opacity-70" />
+                  <span>{lang === 'ka' ? 'კონსიერჟი' : 'Concierge'}</span>
                 </button>
               </div>
             </section>
 
-            {/* TAB 1: PROFILE & AVATAR EDIT */}
+            {/* TAB 1: PROFILE & AVATAR ATELIER (Clean, Compact, Airy) */}
             {activeTab === 'profile' && (
               <div className="space-y-6 animate-fadeIn">
                 <div className={`p-6 sm:p-8 rounded-3xl border space-y-7 ${
-                  darkMode ? 'bg-stone-900/50 border-stone-800' : 'bg-white border-stone-200 shadow-md'
+                  darkMode ? 'bg-[#151413] border-white/5' : 'bg-white border-stone-200 shadow-sm'
                 }`}>
-                  <div>
-                    <h3 className="font-serif text-xl sm:text-2xl font-semibold">
-                      {lang === 'ka' ? 'პროფილის რედაქტირება' : 'Edit Profile'}
-                    </h3>
-                    <p className="text-xs opacity-70 mt-1">
-                      {lang === 'ka'
-                        ? 'აირჩიეთ თქვენი საიუველირო ავატარი და განაახლეთ თქვენი სახელი.'
-                        : 'Choose your signature luxury avatar preset and update your display name.'}
-                    </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-serif text-lg sm:text-xl font-normal">
+                        {lang === 'ka' ? 'პროფილის მონაცემები' : 'Personal Details'}
+                      </h3>
+                      <p className="text-xs opacity-50 mt-0.5">
+                        {lang === 'ka'
+                          ? 'აირჩიეთ საიუველირო ავატარი და განაახლეთ თქვენი სახელი.'
+                          : 'Select an atelier symbol preset and customize your name.'}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Feedback toasts */}
                   {profileSuccessMsg && (
-                    <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2.5 animate-fadeIn">
+                    <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2 animate-fadeIn">
                       <CheckCircle2 className="w-4 h-4 shrink-0" />
                       <span>{profileSuccessMsg}</span>
                     </div>
                   )}
                   {profileErrorMsg && (
-                    <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2.5 animate-fadeIn">
+                    <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2 animate-fadeIn">
                       <AlertCircle className="w-4 h-4 shrink-0" />
                       <span>{profileErrorMsg}</span>
                     </div>
                   )}
 
                   <form onSubmit={handleSaveProfile} className="space-y-7">
-                    {/* 8 Luxury Avatar Presets Grid */}
+                    {/* Compact Jewelry Avatar Atelier (Original & Clean) */}
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold uppercase tracking-wider text-amber-500 flex items-center gap-2">
-                          <Sparkles className="w-3.5 h-3.5" />
-                          <span>{lang === 'ka' ? 'აირჩიეთ ფოტო (საიუველირო სიმბოლოები):' : 'Choose Luxury Avatar Preset:'}</span>
+                        <label className="text-xs uppercase tracking-wider font-medium opacity-70 block">
+                          {lang === 'ka' ? 'საიუველირო სიმბოლო (ავატარი):' : 'Atelier Symbol:'}
                         </label>
-                        <span className="text-[11px] opacity-60">
-                          {lang === 'ka' ? '8 ექსკლუზიური სიმბოლო' : '8 Exclusive Icons'}
+                        <span className="text-[11px] opacity-40 font-mono">
+                          {currentSelectedPreset ? (lang === 'ka' ? currentSelectedPreset.nameKa : currentSelectedPreset.nameEn) : ''}
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                      {/* Clean 8-Symbol Tray */}
+                      <div className="grid grid-cols-4 sm:grid-cols-8 gap-2.5 sm:gap-3">
                         {AVATAR_PRESETS.map((preset) => {
                           const isSelected = selectedAvatarUrl === preset.url;
                           return (
@@ -449,28 +453,31 @@ export default function ProfilePage() {
                               key={preset.id}
                               type="button"
                               onClick={() => setSelectedAvatarUrl(preset.url)}
-                              className={`relative p-3.5 sm:p-4 rounded-2xl border text-center transition-all group flex flex-col items-center gap-2.5 ${
+                              title={lang === 'ka' ? preset.nameKa : preset.nameEn}
+                              className={`relative p-2 rounded-2xl border text-center transition-all group flex flex-col items-center gap-1.5 ${
                                 isSelected
-                                  ? 'border-amber-500 bg-amber-500/15 ring-2 ring-amber-500/50 shadow-lg shadow-amber-500/20 scale-[1.02]'
+                                  ? darkMode
+                                    ? 'border-white/50 bg-white/10 ring-1 ring-white/30 scale-105'
+                                    : 'border-stone-800 bg-stone-100 ring-1 ring-stone-800/30 scale-105'
                                   : darkMode
-                                  ? 'border-stone-800 bg-stone-900/60 hover:border-amber-500/40 hover:bg-stone-800/70'
-                                  : 'border-stone-200 bg-stone-50 hover:border-amber-500/50 hover:bg-stone-100'
+                                  ? 'border-white/5 bg-white/2 hover:border-white/20 hover:bg-white/5'
+                                  : 'border-stone-200 bg-stone-50 hover:border-stone-400'
                               }`}
                             >
                               <div className="relative">
                                 <img
                                   src={preset.url}
-                                  alt={lang === 'ka' ? preset.nameKa : preset.nameEn}
-                                  className="w-16 h-16 sm:w-18 sm:h-18 rounded-full object-cover transition-transform group-hover:scale-105"
+                                  alt={preset.nameKa}
+                                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover"
                                 />
                                 {isSelected && (
-                                  <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-black flex items-center justify-center shadow-md">
-                                    <Sparkles className="w-3 h-3" />
+                                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-stone-200 text-stone-900 flex items-center justify-center">
+                                    <Check className="w-2.5 h-2.5 stroke-[3]" />
                                   </div>
                                 )}
                               </div>
-                              <span className="text-xs font-medium line-clamp-1">
-                                {lang === 'ka' ? preset.nameKa : preset.nameEn}
+                              <span className="text-[10px] font-medium opacity-60 line-clamp-1">
+                                {lang === 'ka' ? preset.nameKa.split(' ')[0] : preset.nameEn.split(' ')[0]}
                               </span>
                             </button>
                           );
@@ -479,52 +486,51 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Display Name Input */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold uppercase tracking-wider opacity-80 block">
-                        {lang === 'ka' ? 'თქვენი სახელი (Display Name):' : 'Your Display Name:'}
+                    <div className="space-y-1.5 max-w-md">
+                      <label className="text-xs uppercase tracking-wider font-medium opacity-70 block">
+                        {lang === 'ka' ? 'თქვენი სახელი (Display Name):' : 'Display Name:'}
                       </label>
                       <input
                         type="text"
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
                         placeholder={lang === 'ka' ? 'მაგ: დავით გლონტი' : 'e.g. David Glonti'}
-                        className={`w-full max-w-md px-4 py-3 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
+                        className={`w-full px-4 py-2.5 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
                           darkMode
-                            ? 'bg-stone-900 border-stone-700 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500'
-                            : 'bg-stone-50 border-stone-300 text-stone-900 focus:border-amber-600 focus:ring-1 focus:ring-amber-600'
+                            ? 'bg-stone-900/60 border-stone-800 text-white focus:border-stone-500'
+                            : 'bg-stone-50 border-stone-300 text-stone-900 focus:border-stone-600'
                         }`}
                       />
-                      <p className="text-[11px] opacity-60">
-                        {lang === 'ka'
-                          ? 'ეს სახელი გამოჩნდება საიტის ზედა პანელში და თქვენს პირად შეკვეთებში.'
-                          : 'This name will appear on the navigation bar and your personal inquiries.'}
-                      </p>
                     </div>
 
-                    {/* Email (Readonly) */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold uppercase tracking-wider opacity-80 block">
-                        {lang === 'ka' ? 'ელფოსტის მისამართი (ავტორიზაცია):' : 'Registered Email Address:'}
+                    {/* Readonly Email */}
+                    <div className="space-y-1.5 max-w-md">
+                      <label className="text-xs uppercase tracking-wider font-medium opacity-70 block">
+                        {lang === 'ka' ? 'ელფოსტა:' : 'Registered Email:'}
                       </label>
                       <input
                         type="text"
                         value={user?.email || ''}
                         disabled
-                        className={`w-full max-w-md px-4 py-3 rounded-xl text-xs sm:text-sm border opacity-60 cursor-not-allowed font-mono ${
-                          darkMode ? 'bg-stone-950 border-stone-800 text-stone-400' : 'bg-stone-200 border-stone-300 text-stone-600'
+                        className={`w-full px-4 py-2.5 rounded-xl text-xs sm:text-sm border opacity-50 cursor-not-allowed font-mono ${
+                          darkMode ? 'bg-stone-950 border-white/5 text-stone-400' : 'bg-stone-100 border-stone-300 text-stone-600'
                         }`}
                       />
                     </div>
 
-                    {/* Submit Button */}
+                    {/* Save Button (Refined Luxury Pill) */}
                     <div className="pt-2">
                       <button
                         type="submit"
                         disabled={savingProfile}
-                        className="px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-md shadow-amber-500/20 disabled:opacity-50 active:scale-95"
+                        className={`px-7 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 ${
+                          darkMode
+                            ? 'bg-stone-100 hover:bg-white text-stone-950 shadow-sm'
+                            : 'bg-stone-900 hover:bg-stone-800 text-white shadow-sm'
+                        }`}
                       >
-                        <Save className="w-4 h-4" />
-                        <span>{savingProfile ? (lang === 'ka' ? 'ინახება...' : 'Saving...') : (lang === 'ka' ? 'ცვლილებების შენახვა' : 'Save Changes')}</span>
+                        <Save className="w-3.5 h-3.5" />
+                        <span>{savingProfile ? (lang === 'ka' ? 'ინახება...' : 'Saving...') : (lang === 'ka' ? 'შენახვა' : 'Save')}</span>
                       </button>
                     </div>
                   </form>
@@ -532,42 +538,41 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* TAB 2: SECURITY & PASSWORD CHANGE */}
+            {/* TAB 2: SECURITY & PASSWORD CHANGE (Light, Clean) */}
             {activeTab === 'security' && (
               <div className="space-y-6 animate-fadeIn">
-                <div className={`p-6 sm:p-8 rounded-3xl border space-y-7 ${
-                  darkMode ? 'bg-stone-900/50 border-stone-800' : 'bg-white border-stone-200 shadow-md'
+                <div className={`p-6 sm:p-8 rounded-3xl border space-y-6 ${
+                  darkMode ? 'bg-[#151413] border-white/5' : 'bg-white border-stone-200 shadow-sm'
                 }`}>
                   <div>
-                    <h3 className="font-serif text-xl sm:text-2xl font-semibold flex items-center gap-2">
-                      <Lock className="w-5 h-5 text-amber-500" />
-                      <span>{lang === 'ka' ? 'პაროლის შეცვლა' : 'Change Password'}</span>
+                    <h3 className="font-serif text-lg sm:text-xl font-normal">
+                      {lang === 'ka' ? 'პაროლის შეცვლა' : 'Password & Security'}
                     </h3>
-                    <p className="text-xs opacity-70 mt-1">
+                    <p className="text-xs opacity-50 mt-0.5">
                       {lang === 'ka'
-                        ? 'განაახლეთ თქვენი ანგარიშის პაროლი პირდაპირ ამ გვერდიდან. პაროლი უნდა შედგებოდეს მინიმუმ 6 სიმბოლოსგან.'
-                        : 'Update your account password securely. It must contain at least 6 characters.'}
+                        ? 'განაახლეთ თქვენი ანგარიშის პაროლი (მინიმუმ 6 სიმბოლო).'
+                        : 'Update your account password securely (minimum 6 characters).'}
                     </p>
                   </div>
 
                   {/* Feedback toasts */}
                   {passwordSuccessMsg && (
-                    <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2.5 animate-fadeIn">
+                    <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2 animate-fadeIn">
                       <CheckCircle2 className="w-4 h-4 shrink-0" />
                       <span>{passwordSuccessMsg}</span>
                     </div>
                   )}
                   {passwordErrorMsg && (
-                    <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2.5 animate-fadeIn">
+                    <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2 animate-fadeIn">
                       <AlertCircle className="w-4 h-4 shrink-0" />
                       <span>{passwordErrorMsg}</span>
                     </div>
                   )}
 
-                  <form onSubmit={handleChangePassword} className="space-y-5 max-w-md">
+                  <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
                     {/* New Password */}
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold uppercase tracking-wider opacity-80 block">
+                      <label className="text-xs uppercase tracking-wider font-medium opacity-70 block">
                         {lang === 'ka' ? 'ახალი პაროლი:' : 'New Password:'}
                       </label>
                       <div className="relative">
@@ -576,27 +581,26 @@ export default function ProfilePage() {
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                           placeholder="••••••••"
-                          className={`w-full px-4 py-3 pr-11 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
+                          className={`w-full px-4 py-2.5 pr-11 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
                             darkMode
-                              ? 'bg-stone-900 border-stone-700 text-white focus:border-amber-500'
-                              : 'bg-stone-50 border-stone-300 text-stone-900 focus:border-amber-600'
+                              ? 'bg-stone-900/60 border-stone-800 text-white focus:border-stone-500'
+                              : 'bg-stone-50 border-stone-300 text-stone-900 focus:border-stone-600'
                           }`}
                         />
                         <button
                           type="button"
                           onClick={() => setShowNewPassword(!showNewPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-white p-1"
-                          aria-label="Toggle password visibility"
                         >
-                          {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          {showNewPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
                       </div>
                     </div>
 
                     {/* Confirm New Password */}
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold uppercase tracking-wider opacity-80 block">
-                        {lang === 'ka' ? 'გაიმეორეთ ახალი პაროლი:' : 'Confirm New Password:'}
+                      <label className="text-xs uppercase tracking-wider font-medium opacity-70 block">
+                        {lang === 'ka' ? 'გაიმეორეთ პაროლი:' : 'Confirm Password:'}
                       </label>
                       <div className="relative">
                         <input
@@ -604,106 +608,96 @@ export default function ProfilePage() {
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           placeholder="••••••••"
-                          className={`w-full px-4 py-3 pr-11 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
+                          className={`w-full px-4 py-2.5 pr-11 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
                             darkMode
-                              ? 'bg-stone-900 border-stone-700 text-white focus:border-amber-500'
-                              : 'bg-stone-50 border-stone-300 text-stone-900 focus:border-amber-600'
+                              ? 'bg-stone-900/60 border-stone-800 text-white focus:border-stone-500'
+                              : 'bg-stone-50 border-stone-300 text-stone-900 focus:border-stone-600'
                           }`}
                         />
                         <button
                           type="button"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-white p-1"
-                          aria-label="Toggle password visibility"
                         >
-                          {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
                       </div>
                     </div>
 
-                    <div className="pt-3">
+                    <div className="pt-2">
                       <button
                         type="submit"
                         disabled={savingPassword || !newPassword || !confirmPassword}
-                        className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-md shadow-amber-500/20 disabled:opacity-50 active:scale-95"
+                        className={`px-7 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-40 ${
+                          darkMode
+                            ? 'bg-stone-100 hover:bg-white text-stone-950 shadow-sm'
+                            : 'bg-stone-900 hover:bg-stone-800 text-white shadow-sm'
+                        }`}
                       >
-                        <Key className="w-4 h-4" />
+                        <Key className="w-3.5 h-3.5" />
                         <span>{savingPassword ? (lang === 'ka' ? 'იცვლება...' : 'Updating...') : (lang === 'ka' ? 'პაროლის განახლება' : 'Update Password')}</span>
                       </button>
                     </div>
                   </form>
-
-                  {/* Security Notice */}
-                  <div className={`p-4 rounded-2xl border text-xs leading-relaxed space-y-1.5 ${
-                    darkMode ? 'bg-amber-500/5 border-amber-500/20 text-stone-300' : 'bg-amber-50/70 border-amber-200 text-stone-700'
-                  }`}>
-                    <div className="flex items-center gap-2 font-semibold text-amber-500">
-                      <ShieldCheck className="w-4 h-4" />
-                      <span>{lang === 'ka' ? 'უსაფრთხოების გარანტია' : 'Security Assurance'}</span>
-                    </div>
-                    <p>
-                      {lang === 'ka'
-                        ? 'პაროლები დაცულია Google Cloud Firebase Authentication-ის ენკრიფციით. თუ დიდი ხნის წინ ხართ შესული და სისტემა მოითხოვს თავიდან ავტორიზაციას, გთხოვთ გამოიყენოთ გასვლის ღილაკი და თავიდან შეხვიდეთ.'
-                        : 'Your credentials are encrypted via Google Cloud Firebase Authentication. If required by security policy, you may be asked to log in again.'}
-                    </p>
-                  </div>
                 </div>
               </div>
             )}
 
-            {/* TAB 3: FAVORITES SHORTCUT */}
+            {/* TAB 3: WISHLIST / SAVED */}
             {activeTab === 'favorites' && (
               <div className="space-y-6 animate-fadeIn">
                 <div className={`p-6 sm:p-8 rounded-3xl border space-y-6 ${
-                  darkMode ? 'bg-stone-900/50 border-stone-800' : 'bg-white border-stone-200 shadow-md'
+                  darkMode ? 'bg-[#151413] border-white/5' : 'bg-white border-stone-200 shadow-sm'
                 }`}>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
-                      <h3 className="font-serif text-xl sm:text-2xl font-semibold flex items-center gap-2">
-                        <Heart className="w-5 h-5 text-amber-500 fill-amber-500" />
-                        <span>{lang === 'ka' ? `თქვენი რჩეული სამკაულები (${favorites.length})` : `Your Saved Jewelry (${favorites.length})`}</span>
+                      <h3 className="font-serif text-lg sm:text-xl font-normal flex items-center gap-2">
+                        <span>{lang === 'ka' ? `რჩეული სამკაულები (${favorites.length})` : `Saved Collection (${favorites.length})`}</span>
                       </h3>
-                      <p className="text-xs opacity-70 mt-1">
+                      <p className="text-xs opacity-50 mt-0.5">
                         {lang === 'ka'
-                          ? 'შენახული სამკაულები ხელმისაწვდომია თქვენი ანგარიშიდან ნებისმიერ მოწყობილობაზე.'
-                          : 'Your wishlist is saved with your account and synced across devices.'}
+                          ? 'შენახული სამკაულები სინქრონიზებულია თქვენს ანგარიშთან.'
+                          : 'Your wishlist is saved with your account.'}
                       </p>
                     </div>
 
                     <button
                       type="button"
                       onClick={() => setShowFavoritesModal(true)}
-                      className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-400 text-black font-semibold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-md shadow-amber-500/20"
+                      className={`px-5 py-2 rounded-full text-xs font-medium tracking-wide flex items-center gap-2 transition-all ${
+                        darkMode
+                          ? 'bg-white/10 hover:bg-white/15 text-stone-200'
+                          : 'bg-stone-100 hover:bg-stone-200 text-stone-800'
+                      }`}
                     >
                       <span>{lang === 'ka' ? 'რჩეულების გახსნა' : 'Open Wishlist'}</span>
-                      <ChevronRight className="w-4 h-4" />
+                      <ChevronRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
                   {favorites.length === 0 ? (
-                    <div className="p-10 text-center rounded-2xl border border-dashed border-stone-500/25 space-y-3">
-                      <Heart className="w-10 h-10 opacity-30 mx-auto text-amber-500" />
-                      <p className="text-xs opacity-60">
-                        {lang === 'ka' ? 'თქვენს რჩეულებში ჯერ სამკაულები არ არის დამატებული.' : 'You have no saved jewelry in your wishlist yet.'}
+                    <div className="p-8 text-center rounded-2xl border border-dashed border-white/10 space-y-3">
+                      <p className="text-xs opacity-50">
+                        {lang === 'ka' ? 'თქვენს რჩეულებში ჯერ სამკაულები არ არის დამატებული.' : 'Your wishlist is empty.'}
                       </p>
                       <a
                         href={lang === 'en' ? '/en/catalog' : '/catalog'}
-                        className="inline-block px-5 py-2 rounded-full border border-amber-500/40 text-amber-500 hover:bg-amber-500 hover:text-black text-xs font-semibold uppercase tracking-wider transition-all"
+                        className="inline-block px-5 py-2 rounded-full border border-stone-700 hover:border-stone-500 text-xs font-medium transition-all"
                       >
-                        {lang === 'ka' ? 'კოლექციის დათვალიერება' : 'Browse Collection'}
+                        {lang === 'ka' ? 'კოლექციის ნახვა' : 'Browse Collection'}
                       </a>
                     </div>
                   ) : (
-                    <div className="p-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 text-xs flex items-center justify-between">
-                      <span>
+                    <div className="p-4 rounded-2xl border border-white/5 bg-white/2 text-xs flex items-center justify-between">
+                      <span className="opacity-75">
                         {lang === 'ka'
                           ? `თქვენ მონიშნული გაქვთ ${favorites.length} სამკაული.`
-                          : `You have ${favorites.length} item(s) saved in your collection.`}
+                          : `You have ${favorites.length} saved item(s).`}
                       </span>
                       <button
                         type="button"
                         onClick={() => setShowFavoritesModal(true)}
-                        className="text-amber-500 font-semibold hover:underline"
+                        className="text-stone-300 font-medium hover:underline"
                       >
                         {lang === 'ka' ? 'დათვალიერება →' : 'View →'}
                       </button>
@@ -717,44 +711,45 @@ export default function ProfilePage() {
             {activeTab === 'concierge' && (
               <div className="space-y-6 animate-fadeIn">
                 <div className={`p-6 sm:p-8 rounded-3xl border space-y-6 ${
-                  darkMode ? 'bg-stone-900/50 border-stone-800' : 'bg-white border-stone-200 shadow-md'
+                  darkMode ? 'bg-[#151413] border-white/5' : 'bg-white border-stone-200 shadow-sm'
                 }`}>
                   <div>
-                    <h3 className="font-serif text-xl sm:text-2xl font-semibold flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-amber-500" />
-                      <span>{lang === 'ka' ? 'პერსონალური საიუველირო კონსიერჟი' : 'Bespoke Jewelry Concierge'}</span>
+                    <h3 className="font-serif text-lg sm:text-xl font-normal">
+                      {lang === 'ka' ? 'პერსონალური კონსიერჟი' : 'Concierge & Service'}
                     </h3>
-                    <p className="text-xs opacity-70 mt-1">
+                    <p className="text-xs opacity-50 mt-0.5">
                       {lang === 'ka'
-                        ? 'ინდივიდუალური კონსულტაცია, ზომის მორგება და ექსკლუზიური შეკვეთები ჩვენი ოსტატებისგან.'
-                        : 'Personal consultations, custom ring sizing, and bespoke commissions directly with our master jeweller.'}
+                        ? 'ინდივიდუალური კონსულტაცია და ექსკლუზიური შეკვეთები.'
+                        : 'Direct contact with our jewelry salon consultant.'}
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                     {/* WhatsApp Direct Chat */}
                     {siteSettings.whatsapp && (
                       <a
                         href={`https://wa.me/${siteSettings.whatsapp.replace(/[^0-9]/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`p-5 rounded-2xl border flex items-center justify-between gap-4 transition-all hover:scale-[1.01] ${
-                          darkMode ? 'bg-stone-900/70 border-emerald-500/30 hover:border-emerald-500' : 'bg-emerald-50/50 border-emerald-200 hover:border-emerald-500'
+                        className={`p-4 rounded-2xl border flex items-center justify-between gap-4 transition-all ${
+                          darkMode
+                            ? 'bg-stone-900/40 border-white/5 hover:border-white/20'
+                            : 'bg-stone-50 border-stone-200 hover:border-stone-300'
                         }`}
                       >
-                        <div className="space-y-1">
-                          <span className="text-[10px] uppercase font-bold text-emerald-500 tracking-wider">
-                            WhatsApp VIP Concierge
+                        <div className="space-y-0.5">
+                          <span className="text-[10px] uppercase font-semibold text-emerald-400">
+                            WhatsApp Concierge
                           </span>
-                          <h4 className="font-serif text-base font-semibold">
+                          <h4 className="font-serif text-sm font-medium">
                             {lang === 'ka' ? 'პირადი კონსულტანტი' : 'Personal Consultant'}
                           </h4>
-                          <p className="text-xs opacity-65 font-mono">
+                          <p className="text-xs opacity-50 font-mono">
                             {siteSettings.whatsapp}
                           </p>
                         </div>
-                        <div className="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-md">
-                          <MessageCircle className="w-5 h-5" />
+                        <div className="w-9 h-9 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                          <MessageCircle className="w-4 h-4" />
                         </div>
                       </a>
                     )}
@@ -763,45 +758,47 @@ export default function ProfilePage() {
                     {siteSettings.phone && (
                       <a
                         href={`tel:${siteSettings.phone}`}
-                        className={`p-5 rounded-2xl border flex items-center justify-between gap-4 transition-all hover:scale-[1.01] ${
-                          darkMode ? 'bg-stone-900/70 border-amber-500/30 hover:border-amber-500' : 'bg-amber-50/50 border-amber-200 hover:border-amber-500'
+                        className={`p-4 rounded-2xl border flex items-center justify-between gap-4 transition-all ${
+                          darkMode
+                            ? 'bg-stone-900/40 border-white/5 hover:border-white/20'
+                            : 'bg-stone-50 border-stone-200 hover:border-stone-300'
                         }`}
                       >
-                        <div className="space-y-1">
-                          <span className="text-[10px] uppercase font-bold text-amber-500 tracking-wider">
-                            {lang === 'ka' ? 'პირდაპირი ზარი' : 'Direct Call'}
+                        <div className="space-y-0.5">
+                          <span className="text-[10px] uppercase font-semibold text-stone-400">
+                            {lang === 'ka' ? 'შოურუმი' : 'Showroom'}
                           </span>
-                          <h4 className="font-serif text-base font-semibold">
-                            {lang === 'ka' ? 'შოურუმის ცხელი ხაზი' : 'Showroom Hotline'}
+                          <h4 className="font-serif text-sm font-medium">
+                            {lang === 'ka' ? 'ცხელი ხაზი' : 'Hotline'}
                           </h4>
-                          <p className="text-xs opacity-65 font-mono">
+                          <p className="text-xs opacity-50 font-mono">
                             {siteSettings.phone}
                           </p>
                         </div>
-                        <div className="w-10 h-10 rounded-full bg-amber-500 text-black flex items-center justify-center shrink-0 shadow-md">
-                          <Phone className="w-5 h-5" />
+                        <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 text-stone-300 flex items-center justify-center shrink-0">
+                          <Phone className="w-4 h-4" />
                         </div>
                       </a>
                     )}
                   </div>
 
                   {/* Size guide shortcut */}
-                  <div className={`p-4 sm:p-5 rounded-2xl border flex items-center justify-between gap-4 ${
-                    darkMode ? 'bg-stone-900/40 border-stone-800' : 'bg-stone-50 border-stone-200'
+                  <div className={`p-4 rounded-2xl border flex items-center justify-between gap-4 ${
+                    darkMode ? 'bg-stone-900/30 border-white/5' : 'bg-stone-50 border-stone-200'
                   }`}>
                     <div>
-                      <h4 className="text-sm font-semibold">
-                        {lang === 'ka' ? 'თითის ზომის დადგენა (ინტერაქტიული ხელსაწყო)' : 'Ring Size Calculator'}
+                      <h4 className="text-xs font-medium">
+                        {lang === 'ka' ? 'თითის ზომის დადგენა (კალკულატორი)' : 'Ring Size Guide'}
                       </h4>
-                      <p className="text-xs opacity-60 mt-0.5">
+                      <p className="text-[11px] opacity-50">
                         {lang === 'ka'
-                          ? 'გამოიყენეთ მონეტის ან სახაზავის კალიბრაცია თქვენი ზუსტი ზომის გასაგებად.'
-                          : 'Use screen coin or millimeter calibration to measure your exact ring size.'}
+                          ? 'ეკრანის კალიბრაციით თქვენი ზუსტი ზომის გასაგებად.'
+                          : 'Interactive on-screen ring measuring tool.'}
                       </p>
                     </div>
                     <a
                       href={lang === 'en' ? '/en/size-guide' : '/size-guide'}
-                      className="px-4 py-2 rounded-full border border-amber-500/40 text-amber-500 hover:bg-amber-500 hover:text-black text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap shrink-0"
+                      className="px-3.5 py-1.5 rounded-full border border-stone-700 hover:border-stone-500 text-xs font-medium transition-all shrink-0"
                     >
                       {lang === 'ka' ? 'ზომის გიდი' : 'Size Guide'}
                     </a>
@@ -809,23 +806,23 @@ export default function ProfilePage() {
 
                   {/* User's recent inquiries (if any) */}
                   {userInquiries.length > 0 && (
-                    <div className="space-y-3 pt-3">
-                      <h4 className="text-xs font-semibold uppercase tracking-wider text-amber-500">
-                        {lang === 'ka' ? 'თქვენი გაგზავნილი მოთხოვნები:' : 'Your Consultation Inquiries:'}
+                    <div className="space-y-2.5 pt-2">
+                      <h4 className="text-[11px] font-semibold uppercase tracking-wider opacity-60">
+                        {lang === 'ka' ? 'თქვენი გაგზავნილი მოთხოვნები:' : 'Inquiries History:'}
                       </h4>
                       <div className="space-y-2">
                         {userInquiries.map((inq) => (
                           <div
                             key={inq.id}
-                            className={`p-3.5 rounded-xl border text-xs flex items-center justify-between ${
-                              darkMode ? 'bg-stone-900/80 border-stone-800' : 'bg-stone-50 border-stone-200'
+                            className={`p-3 rounded-xl border text-xs flex items-center justify-between ${
+                              darkMode ? 'bg-stone-900/40 border-white/5' : 'bg-stone-50 border-stone-200'
                             }`}
                           >
                             <div>
-                              <span className="font-semibold">{inq.productName} ({inq.sku})</span>
-                              {inq.size && <span className="opacity-60"> • ზომა: {inq.size}</span>}
+                              <span className="font-medium">{inq.productName} ({inq.sku})</span>
+                              {inq.size && <span className="opacity-50"> • ზომა: {inq.size}</span>}
                             </div>
-                            <span className="opacity-50 text-[11px] font-mono">{inq.date}</span>
+                            <span className="opacity-40 text-[11px] font-mono">{inq.date}</span>
                           </div>
                         ))}
                       </div>
