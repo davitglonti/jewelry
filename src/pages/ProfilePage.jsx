@@ -1,9 +1,9 @@
 // src/pages/ProfilePage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   User, ShieldCheck, Heart, Key, LogOut,
   Save, AlertCircle, CheckCircle2, Eye, EyeOff, ArrowLeft,
-  ExternalLink, Calendar, Mail, Phone, MessageCircle, ChevronRight, Check
+  ExternalLink, Calendar, Mail, Phone, MessageCircle, ChevronRight, Check, Gem
 } from 'lucide-react';
 import { useAuth, getAuthErrorMessage } from '../context/AuthContext';
 import { useStore } from '../context/StoreContext';
@@ -12,11 +12,12 @@ import { navigateTo } from '../utils/navigation';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import FavoritesModal from '../components/modals/FavoritesModal';
+import ProductCard from '../components/store/ProductCard';
 import PasswordStrengthIndicator from '../components/auth/PasswordStrengthIndicator';
 import { isStrongPassword, getPasswordValidationMessage } from '../utils/passwordValidation';
 
 export default function ProfilePage() {
-  const { darkMode, setDarkMode, lang, setLang, siteSettings, favorites, inquiries } = useStore();
+  const { darkMode, setDarkMode, lang, setLang, siteSettings, favorites, inquiries, products } = useStore();
   const { user, userRole, loading: authLoading, updateUserProfile, changePassword, logout } = useAuth();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -42,6 +43,12 @@ export default function ProfilePage() {
   const [savingPassword, setSavingPassword] = useState(false);
   const [passwordSuccessMsg, setPasswordSuccessMsg] = useState('');
   const [passwordErrorMsg, setPasswordErrorMsg] = useState('');
+
+  // Favorite products filtered from all store products
+  const favoriteProducts = useMemo(() => {
+    if (!products || !favorites || favorites.length === 0) return [];
+    return products.filter((p) => favorites.includes(p.id) || (p.sku && favorites.includes(p.sku)));
+  }, [products, favorites]);
 
   // Synchronize state when user loads
   useEffect(() => {
@@ -708,58 +715,92 @@ export default function ProfilePage() {
                 <div className={`p-6 sm:p-8 rounded-3xl border space-y-6 ${
                   darkMode ? 'bg-[#151413] border-white/5' : 'bg-white border-stone-200 shadow-sm'
                 }`}>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-stone-500/10">
                     <div>
-                      <h3 className="font-serif text-lg sm:text-xl font-normal flex items-center gap-2">
-                        <span>{lang === 'ka' ? `რჩეული სამკაულები (${favorites.length})` : `Saved Collection (${favorites.length})`}</span>
+                      <h3 className="font-serif text-lg sm:text-2xl font-normal flex items-center gap-2.5">
+                        <Heart className="w-5 h-5 text-amber-500 fill-amber-500/30" />
+                        <span>
+                          {lang === 'ka'
+                            ? `თქვენი რჩეული სამკაულები (${favoriteProducts.length})`
+                            : `Saved Jewelry (${favoriteProducts.length})`}
+                        </span>
                       </h3>
-                      <p className="text-xs opacity-50 mt-0.5">
+                      <p className="text-xs opacity-60 mt-1">
                         {lang === 'ka'
-                          ? 'შენახული სამკაულები სინქრონიზებულია თქვენს ანგარიშთან.'
-                          : 'Your wishlist is saved with your account.'}
+                          ? 'შენახული სამკაულები სინქრონიზებულია თქვენს ანგარიშთან. აქედანვე შეგიძლიათ დეტალების ნახვა ან შედარება.'
+                          : 'Your wishlist is saved with your account. You can explore or compare directly from here.'}
                       </p>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setShowFavoritesModal(true)}
-                      className={`px-5 py-2 rounded-full text-xs font-medium tracking-wide flex items-center gap-2 transition-all ${
+                    <a
+                      href={lang === 'en' ? '/en/catalog' : '/catalog'}
+                      className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wide flex items-center gap-2 transition-all shadow-xs ${
                         darkMode
-                          ? 'bg-white/10 hover:bg-white/15 text-stone-200'
-                          : 'bg-stone-100 hover:bg-stone-200 text-stone-800'
+                          ? 'bg-amber-500 hover:bg-amber-400 text-stone-950 shadow-amber-500/10'
+                          : 'bg-amber-500 hover:bg-amber-400 text-stone-950 shadow-amber-500/20'
                       }`}
                     >
-                      <span>{lang === 'ka' ? 'რჩეულების გახსნა' : 'Open Wishlist'}</span>
+                      <span>{lang === 'ka' ? 'კატალოგის დათვალიერება' : 'Browse Catalog'}</span>
                       <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
+                    </a>
                   </div>
 
-                  {favorites.length === 0 ? (
-                    <div className="p-8 text-center rounded-2xl border border-dashed border-white/10 space-y-3">
-                      <p className="text-xs opacity-50">
-                        {lang === 'ka' ? 'თქვენს რჩეულებში ჯერ სამკაულები არ არის დამატებული.' : 'Your wishlist is empty.'}
-                      </p>
-                      <a
-                        href={lang === 'en' ? '/en/catalog' : '/catalog'}
-                        className="inline-block px-5 py-2 rounded-full border border-stone-700 hover:border-stone-500 text-xs font-medium transition-all"
-                      >
-                        {lang === 'ka' ? 'კოლექციის ნახვა' : 'Browse Collection'}
-                      </a>
+                  {favoriteProducts.length === 0 ? (
+                    <div className="py-14 px-6 text-center rounded-2xl border border-dashed border-stone-500/20 space-y-4">
+                      <div className="w-14 h-14 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto border border-amber-500/20">
+                        <Gem className="w-6 h-6 opacity-75" />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="font-serif text-base sm:text-lg font-medium">
+                          {lang === 'ka' ? 'თქვენს რჩეულებში ჯერ არაფერია დამატებული' : 'Your wishlist is empty'}
+                        </h4>
+                        <p className="text-xs opacity-60 max-w-md mx-auto leading-relaxed">
+                          {lang === 'ka'
+                            ? 'დაათვალიერეთ ჩვენი ექსკლუზიური კოლექცია და შეინახეთ სასურველი სამკაული გულის ხატულაზე დაჭერით.'
+                            : 'Explore our fine jewelry collection and save your favorite pieces by clicking the heart icon.'}
+                        </p>
+                      </div>
+                      <div className="pt-2">
+                        <a
+                          href={lang === 'en' ? '/en/catalog' : '/catalog'}
+                          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-bold uppercase tracking-wider shadow-md shadow-amber-500/20 transition-all active:scale-95"
+                        >
+                          <span>{lang === 'ka' ? 'კოლექციის ნახვა' : 'Browse Collection'}</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
                     </div>
                   ) : (
-                    <div className="p-4 rounded-2xl border border-white/5 bg-white/2 text-xs flex items-center justify-between">
-                      <span className="opacity-75">
-                        {lang === 'ka'
-                          ? `თქვენ მონიშნული გაქვთ ${favorites.length} სამკაული.`
-                          : `You have ${favorites.length} saved item(s).`}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setShowFavoritesModal(true)}
-                        className="text-stone-300 font-medium hover:underline"
-                      >
-                        {lang === 'ka' ? 'დათვალიერება →' : 'View →'}
-                      </button>
+                    <div className="space-y-6">
+                      {/* Direct Grid of Saved Products */}
+                      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+                        {favoriteProducts.map((product) => (
+                          <ProductCard
+                            key={product.id}
+                            product={product}
+                            onClick={(p) => navigateTo(`/product/${p.id}`)}
+                            showDetailsButton={true}
+                          />
+                        ))}
+                      </div>
+
+                      {/* Footer Info Strip */}
+                      <div className={`p-4 rounded-2xl border text-xs flex flex-col sm:flex-row items-center justify-between gap-3 ${
+                        darkMode ? 'border-white/5 bg-white/2 text-stone-300' : 'border-stone-200 bg-stone-50 text-stone-700'
+                      }`}>
+                        <span className="font-medium">
+                          {lang === 'ka'
+                            ? `სულ: ${favoriteProducts.length} რჩეული სამკაული`
+                            : `Total: ${favoriteProducts.length} saved item(s)`}
+                        </span>
+                        <a
+                          href={lang === 'en' ? '/en/catalog' : '/catalog'}
+                          className="text-amber-500 hover:text-amber-400 font-semibold inline-flex items-center gap-1 transition-colors"
+                        >
+                          <span>{lang === 'ka' ? '+ სხვა სამკაულების დამატება' : '+ Add more pieces'}</span>
+                          <ChevronRight className="w-3 h-3" />
+                        </a>
+                      </div>
                     </div>
                   )}
                 </div>
