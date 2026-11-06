@@ -6,7 +6,9 @@ import {
   generateSecureTempPassword,
   removeAdminAccount,
   toggleAdminAccountStatus,
-  updateAdminRole
+  updateAdminRole,
+  createAdminAccountApi,
+  resendAdminInviteApi
 } from '../../src/lib/adminAuth';
 
 describe('Admin & Moderator RBAC Authorization', () => {
@@ -70,6 +72,17 @@ describe('Admin & Moderator RBAC Authorization', () => {
       const dummyDb = {};
       await expect(toggleAdminAccountStatus(dummyDb, 'datiglonti@gmail.com', false)).rejects.toThrow(
         /მთავარი ადმინისტრატორის სტატუსის შეცვლა შეუძლებელია/
+      );
+    });
+  });
+
+  describe('createAdminAccountApi & resendAdminInviteApi', () => {
+    it('throws when currentUser is null or undefined', async () => {
+      await expect(createAdminAccountApi(null, { email: 'test@example.com' })).rejects.toThrow(
+        /საჭიროა მთავარი ადმინისტრატორის ავტორიზაცია/
+      );
+      await expect(resendAdminInviteApi(null, { email: 'test@example.com' })).rejects.toThrow(
+        /საჭიროა მთავარი ადმინისტრატორის ავტორიზაცია/
       );
     });
   });

@@ -446,16 +446,39 @@ export default function LoginPage({ initialMode = 'login' }) {
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigateTo('/login');
-                    }}
-                    className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold text-sm tracking-wider uppercase flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.99] transition-all"
-                  >
-                    <LogIn className="w-4 h-4" />
-                    <span>{lang === 'ka' ? 'ავტორიზაციაზე გადასვლა' : 'Go to Sign In'}</span>
-                  </button>
+                  <div className="space-y-2.5">
+                    {params.get('from') === 'admin' ? (
+                      <button
+                        type="button"
+                        onClick={() => navigateTo('/admin')}
+                        className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold text-sm tracking-wider uppercase flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.99] transition-all"
+                      >
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>{lang === 'ka' ? 'ადმინ პანელზე შესვლა →' : 'Go to Admin Panel →'}</span>
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigateTo('/login');
+                          }}
+                          className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold text-sm tracking-wider uppercase flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.99] transition-all"
+                        >
+                          <LogIn className="w-4 h-4" />
+                          <span>{lang === 'ka' ? 'ავტორიზაციაზე გადასვლა' : 'Go to Sign In'}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => navigateTo('/admin')}
+                          className="w-full py-2.5 px-4 rounded-xl border border-stone-700/60 hover:border-amber-500/60 text-stone-300 hover:text-white text-xs font-medium tracking-wider uppercase flex items-center justify-center gap-2 transition-all"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
+                          <span>{lang === 'ka' ? 'ადმინ პანელზე შესვლა' : 'Go to Admin Panel'}</span>
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               ) : !codeValid && !oobCode ? (
                 <div className="space-y-5 text-center py-4">

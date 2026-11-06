@@ -157,11 +157,14 @@ export async function getAdminsList(db) {
 }
 
 /**
- * ახალი ანგარიშის შექმნა (Serverless API-ს მეშვეობით Firebase Auth + Firestore)
+ * ახალი თანამშრომლის მოწვევა და უფლების მინიჭება
+ * აგზავნის ელ-წერილს პაროლის დაყენების ბმულით (Serverless API Resend + Firebase Admin)
  */
-export async function createAdminAccountApi(currentUser, { email, password, role = 'admin' }) {
+export async function createAdminAccountApi(currentUser, { email, role = 'admin', origin = '' }) {
   if (!currentUser) throw new Error('საჭიროა მთავარი ადმინისტრატორის ავტორიზაცია');
   const token = await currentUser.getIdToken();
+
+  const clientOrigin = origin || (typeof window !== 'undefined' ? window.location.origin : '');
 
   const response = await fetch('/api/create-admin-account', {
     method: 'POST',
@@ -169,15 +172,22 @@ export async function createAdminAccountApi(currentUser, { email, password, role
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     },
-    body: JSON.stringify({ email, password, role })
+    body: JSON.stringify({ email, role, origin: clientOrigin })
   });
 
   const data = await response.json();
   if (!response.ok) {
-    throw new Error(data.error || 'ანგარიშის შექმნა ვერ მოხერხდა');
+    throw new Error(data.error || 'მოწვევის გაგზავნა ვერ მოხერხდა');
   }
 
   return data;
+}
+
+/**
+ * მოწვევის / პაროლის დაყენების ბმულის ხელახლა გაგზავნა
+ */
+export async function resendAdminInviteApi(currentUser, { email, role = 'admin', origin = '' }) {
+  return createAdminAccountApi(currentUser, { email, role, origin });
 }
 
 /**
