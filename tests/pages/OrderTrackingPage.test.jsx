@@ -145,4 +145,16 @@ describe('OrderTrackingPage & Tracking System', () => {
     const regionalOrder = { city: 'ბათუმი' };
     expect(getDefaultEstimatedDelivery(regionalOrder, 'ka')).toBe('1-3 სამუშაო დღეში');
   });
+
+  it('automatically opens and displays order when accessed via email tracking link (?id=MTR-123456)', () => {
+    delete window.location;
+    window.location = new URL('http://localhost:5173/track?id=MTR-123456');
+
+    renderComponent();
+
+    // Directly renders order from email link without needing manual search button click
+    expect(screen.getByText('#MTR-123456')).toBeInTheDocument();
+    expect(screen.getByText(/დღეს 18:00-მდე/i)).toBeInTheDocument();
+    expect(screen.getByText(/ბრილიანტის ბეჭედი/i)).toBeInTheDocument();
+  });
 });

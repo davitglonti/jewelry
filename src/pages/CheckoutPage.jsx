@@ -262,6 +262,22 @@ export default function CheckoutPage() {
         console.warn('Local storage error:', err);
       }
 
+      // 3. Dispatch order tracking email notification to guest / customer
+      if (newOrder.clientEmail && typeof window !== 'undefined' && window.location?.origin) {
+        try {
+          fetch(`${window.location.origin}/api/send-order-tracking`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              order: newOrder,
+              origin: window.location.origin
+            })
+          }).catch(() => {});
+        } catch {
+          // Ignore network or test errors
+        }
+      }
+
       setCompletedOrder(newOrder);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
@@ -378,6 +394,24 @@ export default function CheckoutPage() {
                 </div>
               </div>
             </div>
+
+            {/* Email notification alert banner */}
+            {completedOrder.clientEmail && (
+              <div
+                className={`p-4 rounded-2xl border flex items-center justify-between gap-3 text-xs ${
+                  darkMode ? 'bg-amber-500/10 border-amber-500/30 text-amber-200' : 'bg-amber-50 border-amber-300 text-amber-900'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Mail className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span>
+                    {lang === 'ka'
+                      ? `შეკვეთის დეტალები & თრექინგის ბმული გაიგზავნა თქვენს ელფოსტაზე: ${completedOrder.clientEmail}`
+                      : `Live order tracking link has been sent to your email: ${completedOrder.clientEmail}`}
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* LIVE ORDER TRACKER TIMELINE */}
             <OrderTrackingTimeline
@@ -500,9 +534,14 @@ export default function CheckoutPage() {
                   </div>
 
                   <div>
-                    <label className="text-[11px] uppercase tracking-wider font-semibold opacity-75 block mb-1.5">
-                      {lang === 'ka' ? 'ელ-ფოსტა (სურვილისამებრ ინვოისისთვის)' : 'Email (Optional for Invoice)'}
-                    </label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-[11px] uppercase tracking-wider font-semibold opacity-75">
+                        {lang === 'ka' ? 'ელ-ფოსტა (თრექინგის ბმულის მისაღებად):' : 'Email (to receive tracking link):'}
+                      </label>
+                      <span className="text-[10px] text-amber-500 font-medium">
+                        {lang === 'ka' ? 'ბმული გამოიგზავნება მეილზე ✉️' : 'Tracking link sent here ✉️'}
+                      </span>
+                    </div>
                     <input
                       type="email"
                       value={clientEmail}

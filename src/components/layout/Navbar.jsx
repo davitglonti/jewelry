@@ -87,9 +87,6 @@ export default function Navbar({
             <a href={lang === "en" ? "/en/#contact" : "/#contact"} className="hover:text-amber-500 transition-colors whitespace-nowrap">
               {lang === "ka" ? "კონტაქტი" : "Contact"}
             </a>
-            <a href={lang === "en" ? "/en/track" : "/track"} className="hover:text-amber-500 transition-colors whitespace-nowrap text-amber-500/90 font-medium flex items-center gap-1">
-              <span>{lang === "ka" ? "თრექინგი" : "Track Order"}</span>
-            </a>
           </nav>
 
           {/* Desktop Action Icons (visible on lg: 1024px and up) */}
@@ -136,6 +133,24 @@ export default function Navbar({
             {/* Desktop Auth Section */}
             {user ? (
               <div className="flex items-center gap-2 pl-2 border-l border-stone-500/20">
+                {/* Direct My Orders Button for logged-in users */}
+                <a
+                  href={lang === "en" ? "/en/profile?tab=orders" : "/profile?tab=orders"}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo(lang === "en" ? "/en/profile?tab=orders" : "/profile?tab=orders");
+                  }}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 ${
+                    darkMode
+                      ? "border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-black"
+                      : "border-amber-400 bg-amber-50 text-amber-900 hover:bg-amber-500 hover:text-black"
+                  }`}
+                  title={lang === "ka" ? "ჩემი შეკვეთები & თრექინგი" : "My Orders & Tracking"}
+                >
+                  <Package className="w-3.5 h-3.5" />
+                  <span className="hidden xl:inline">{lang === "ka" ? "შეკვეთები" : "Orders"}</span>
+                </a>
+
                 <a
                   href={lang === "en" ? "/en/profile" : "/profile"}
                   onClick={(e) => {
@@ -364,22 +379,37 @@ export default function Navbar({
               <a href={lang === "en" ? "/en/#contact" : "/#contact"} onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
                 {lang === "ka" ? "კონტაქტი" : "Contact"}
               </a>
-              <a href={lang === "en" ? "/en/track" : "/track"} onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1 text-amber-500 font-medium flex items-center justify-between">
-                <span>{lang === "ka" ? "შეკვეთის თრექინგი 🚚" : "Track Order 🚚"}</span>
-              </a>
               {user && (
-                <a
-                  href={lang === "en" ? "/en/profile" : "/profile"}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setIsMobileMenuOpen(false);
-                    navigateTo(lang === "en" ? "/en/profile" : "/profile");
-                  }}
-                  className="hover:text-amber-500 py-1 text-amber-500 font-semibold flex items-center justify-between"
-                >
-                  <span>{lang === "ka" ? "ჩემი პროფილი" : "My Profile"}</span>
-                  <span className="text-xs">⚙️</span>
-                </a>
+                <>
+                  <a
+                    href={lang === "en" ? "/en/profile?tab=orders" : "/profile?tab=orders"}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsMobileMenuOpen(false);
+                      navigateTo(lang === "en" ? "/en/profile?tab=orders" : "/profile?tab=orders");
+                    }}
+                    className="hover:text-amber-500 py-1 text-amber-400 font-semibold flex items-center justify-between"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Package className="w-4 h-4 text-amber-500" />
+                      <span>{lang === "ka" ? "ჩემი შეკვეთები (თრექინგი)" : "My Orders & Tracking"}</span>
+                    </span>
+                    <span className="text-xs">📦</span>
+                  </a>
+
+                  <a
+                    href={lang === "en" ? "/en/profile" : "/profile"}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsMobileMenuOpen(false);
+                      navigateTo(lang === "en" ? "/en/profile" : "/profile");
+                    }}
+                    className="hover:text-amber-500 py-1 text-stone-300 font-medium flex items-center justify-between"
+                  >
+                    <span>{lang === "ka" ? "პროფილი & პარამეტრები" : "Profile & Settings"}</span>
+                    <span className="text-xs">⚙️</span>
+                  </a>
+                </>
               )}
             </nav>
 
