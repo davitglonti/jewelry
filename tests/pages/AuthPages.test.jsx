@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import LoginPage from '../../src/pages/LoginPage';
 import RegisterPage from '../../src/pages/RegisterPage';
+import ProfilePage from '../../src/pages/ProfilePage';
 import AdminLoginView from '../../src/components/admin/AdminLoginView';
 import { StoreContext } from '../../src/context/StoreContext';
 import { AuthContext, getAuthErrorMessage } from '../../src/context/AuthContext';
@@ -225,6 +226,64 @@ describe('Google Authentication & Error Handling', () => {
       );
 
       expect(screen.getByRole('button', { name: /Google-ით ავტორიზაცია/i })).toBeDefined();
+    });
+  });
+
+  describe('ProfilePage & Client Suite Navigation', () => {
+    const mockStore = {
+      darkMode: true,
+      setDarkMode: vi.fn(),
+      lang: 'ka',
+      setLang: vi.fn(),
+      siteSettings: {},
+      favorites: ['aur-101'],
+      inquiries: [],
+      products: []
+    };
+
+    const mockAuth = {
+      user: { email: 'client@example.com', displayName: 'David Client', providerData: [{ providerId: 'google.com' }] },
+      userRole: 'member',
+      loading: false,
+      updateUserProfile: vi.fn(),
+      changePassword: vi.fn(),
+      logout: vi.fn()
+    };
+
+    it('renders quiet luxury client suite header and tabs', () => {
+      render(
+        <AuthContext.Provider value={mockAuth}>
+          <StoreContext.Provider value={mockStore}>
+            <ProfilePage />
+          </StoreContext.Provider>
+        </AuthContext.Provider>
+      );
+
+      expect(screen.getAllByText('David Client').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText(/client@example\.com/).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByRole('button', { name: /პირადი პროფილი/i })).toBeDefined();
+      expect(screen.getByRole('button', { name: /ჩემი შეკვეთები/i })).toBeDefined();
+    });
+
+    it('switches tabs and updates history state on tab click', () => {
+      const pushSpy = vi.spyOn(window.history, 'pushState');
+
+      render(
+        <AuthContext.Provider value={mockAuth}>
+          <StoreContext.Provider value={mockStore}>
+            <ProfilePage />
+          </StoreContext.Provider>
+        </AuthContext.Provider>
+      );
+
+      const ordersBtn = screen.getByRole('button', { name: /ჩემი შეკვეთები/i });
+      fireEvent.click(ordersBtn);
+
+      expect(pushSpy).toHaveBeenCalledWith(
+        { tab: 'orders' },
+        '',
+        expect.stringContaining('tab=orders')
+      );
     });
   });
 });

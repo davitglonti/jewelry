@@ -40,9 +40,79 @@ export default function AdminPage() {
   const [authChecked, setAuthChecked] = useState(false);
   const [activeAuth, setActiveAuth] = useState(auth);
   const [currentUserEmail, setCurrentUserEmail] = useState('');
-  const [adminTab, setAdminTab] = useState('catalog');
-  const [homeSubTab, setHomeSubTab] = useState('carousel');
-  const [siteSubTab, setSiteSubTab] = useState('contacts');
+  const getInitialAdminTab = () => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search);
+      const tab = p.get('tab');
+      if (tab && ['catalog', 'categories', 'home', 'blog', 'inquiries', 'stats', 'site', 'admins'].includes(tab)) {
+        return tab;
+      }
+    }
+    return 'catalog';
+  };
+
+  const getInitialHomeSubTab = () => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search);
+      const sub = p.get('sub');
+      if (sub && ['carousel', 'craft'].includes(sub)) return sub;
+    }
+    return 'carousel';
+  };
+
+  const getInitialSiteSubTab = () => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search);
+      const sub = p.get('sub');
+      if (sub && ['contacts', 'branding', 'shipping', 'about', 'faq'].includes(sub)) return sub;
+    }
+    return 'contacts';
+  };
+
+  const [adminTab, setAdminTab] = useState(getInitialAdminTab);
+  const [homeSubTab, setHomeSubTab] = useState(getInitialHomeSubTab);
+  const [siteSubTab, setSiteSubTab] = useState(getInitialSiteSubTab);
+
+  const updateAdminUrl = (newTab, newSub) => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    if (newTab) url.searchParams.set('tab', newTab);
+    else url.searchParams.delete('tab');
+    if (newSub) url.searchParams.set('sub', newSub);
+    else url.searchParams.delete('sub');
+    window.history.pushState({ tab: newTab, sub: newSub }, '', url.toString());
+  };
+
+  const handleSelectTab = (tabId) => {
+    setAdminTab(tabId);
+    let sub = null;
+    if (tabId === 'home') sub = homeSubTab;
+    if (tabId === 'site') sub = siteSubTab;
+    updateAdminUrl(tabId, sub);
+  };
+
+  const handleSelectHomeSubTab = (subId) => {
+    setHomeSubTab(subId);
+    updateAdminUrl(adminTab, subId);
+  };
+
+  const handleSelectSiteSubTab = (subId) => {
+    setSiteSubTab(subId);
+    updateAdminUrl(adminTab, subId);
+  };
+
+  useEffect(() => {
+    const onPopState = () => {
+      const p = new URLSearchParams(window.location.search);
+      const tab = p.get('tab') || 'catalog';
+      const sub = p.get('sub');
+      setAdminTab(tab);
+      if (tab === 'home' && sub) setHomeSubTab(sub);
+      if (tab === 'site' && sub) setSiteSubTab(sub);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
   const [homeWarning, setHomeWarning] = useState('');
 
   const parsePriceNumber = (val) => {
@@ -391,7 +461,7 @@ export default function AdminPage() {
                   <button
                     key={tab.id}
                     type="button"
-                    onClick={() => setAdminTab(tab.id)}
+                    onClick={() => handleSelectTab(tab.id)}
                     className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs transition-all whitespace-nowrap ${
                       isSelected
                         ? 'bg-amber-500 text-stone-950 font-bold shadow-md shadow-amber-500/25 ring-2 ring-amber-400/40'
@@ -434,7 +504,7 @@ export default function AdminPage() {
             {(adminTab === 'home' || ['carousel', 'craft'].includes(adminTab)) && (
               <AdminHomeTab
                 homeSubTab={['carousel', 'craft'].includes(adminTab) ? adminTab : homeSubTab}
-                setHomeSubTab={setHomeSubTab}
+                setHomeSubTab={handleSelectHomeSubTab}
                 siteSettings={siteSettings}
                 setSiteSettings={setSiteSettings}
                 products={products}
@@ -488,7 +558,7 @@ export default function AdminPage() {
                     ? adminTab
                     : siteSubTab
                 }
-                setSiteSubTab={setSiteSubTab}
+                setSiteSubTab={handleSelectSiteSubTab}
                 siteSettings={siteSettings}
                 setSiteSettings={setSiteSettings}
                 products={products}
