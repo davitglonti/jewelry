@@ -160,7 +160,7 @@ export default function Video360Viewer({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-[calc(100vh-155px)] max-h-[700px] min-h-[350px] rounded-3xl overflow-hidden border flex items-center justify-center select-none ${
+      className={`relative w-full h-full min-h-[380px] sm:min-h-[460px] lg:min-h-0 rounded-3xl overflow-hidden border flex items-center justify-center select-none ${
         isDragging ? 'cursor-grabbing' : 'cursor-grab'
       } ${darkMode ? 'bg-[#0f0e0c] border-stone-800' : 'bg-stone-50 border-stone-200 shadow-sm'}`}
       onMouseDown={(e) => handleDragStart(e.clientX)}
@@ -169,23 +169,25 @@ export default function Video360Viewer({
       }}
     >
       {/* Video Element */}
-      <video
-        ref={videoRef}
-        src={videoUrl}
-        playsInline
-        muted
-        loop
-        autoPlay
-        preload="auto"
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => {
-          if (!isDraggingRef.current) {
-            setIsPlaying(false);
-          }
-        }}
-        onTimeUpdate={handleTimeUpdate}
-        className="w-full h-full object-contain pointer-events-none p-4"
-      />
+      <div className="absolute inset-0 p-4 sm:p-6 flex items-center justify-center overflow-hidden pointer-events-none">
+        <video
+          ref={videoRef}
+          src={videoUrl}
+          playsInline
+          muted
+          loop
+          autoPlay
+          preload="auto"
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => {
+            if (!isDraggingRef.current) {
+              setIsPlaying(false);
+            }
+          }}
+          onTimeUpdate={handleTimeUpdate}
+          className="w-full h-full object-contain pointer-events-none"
+        />
+      </div>
 
       {/* Top Left: 360° Badge */}
       <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/60 border border-amber-500/30 text-amber-400 backdrop-blur-md text-xs font-semibold tracking-wider shadow-lg pointer-events-none">

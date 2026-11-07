@@ -30,7 +30,7 @@ export default function ProductMediaGallery({
   const currentImage = images?.[activeImageIndex] || images?.[0] || '';
 
   return (
-    <div className="relative w-full h-full min-h-[480px] max-h-[820px]">
+    <div className="relative w-full h-full min-h-[380px] sm:min-h-[460px] lg:min-h-0">
       {/* Media Viewer: 360° Video Scrubber OR Photo Viewer */}
       {currentMode === '360' && active360Url ? (
         <Video360Viewer
@@ -42,7 +42,7 @@ export default function ProductMediaGallery({
         />
       ) : (
         <div
-          className={`relative w-full h-full min-h-[480px] max-h-[820px] rounded-3xl overflow-hidden border flex items-center justify-center cursor-zoom-in group ${
+          className={`relative w-full h-full min-h-[380px] sm:min-h-[460px] lg:min-h-0 rounded-3xl overflow-hidden border flex items-center justify-center cursor-zoom-in select-none group ${
             darkMode ? 'bg-[#141210] border-stone-800' : 'bg-white border-stone-200/80 shadow-sm'
           }`}
           onMouseEnter={() => setIsZoomed(true)}
@@ -51,22 +51,24 @@ export default function ProductMediaGallery({
           onClick={() => setLightboxImage && setLightboxImage(currentImage)}
         >
           {currentImage ? (
-            <img
-              src={currentImage}
-              alt={productName}
-              loading="eager"
-              fetchPriority="high"
-              decoding="async"
-              className="w-full h-full object-contain transition-transform duration-200 p-4"
-              style={
-                isZoomed
-                  ? {
-                      transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
-                      transform: 'scale(2.35)'
-                    }
-                  : {}
-              }
-            />
+            <div className="absolute inset-0 p-4 sm:p-6 flex items-center justify-center overflow-hidden pointer-events-none">
+              <img
+                src={currentImage}
+                alt={productName}
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
+                className="w-full h-full object-contain transition-transform duration-200 select-none"
+                style={
+                  isZoomed
+                    ? {
+                        transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
+                        transform: 'scale(2.35)'
+                      }
+                    : {}
+                }
+              />
+            </div>
           ) : (
             <div className="text-stone-400 text-sm">
               {lang === 'ka' ? 'ფოტო არ არის' : 'No image available'}
