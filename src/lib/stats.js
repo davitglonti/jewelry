@@ -33,11 +33,7 @@ function shouldSkipTracking() {
 }
 
 /**
- * ნივთის ნახვის აღრიცხვა (Views & Unique Views).
- * - sessionStorage: ამოწმებს, ამ სესიაში უკვე ნახა თუ არა. თუ ნახა, არაფერს ითვლის.
- * - localStorage: ამოწმებს, ამ ბრაუზერმა ოდესმე ნახა თუ არა. თუ არა, uniqueViews +1.
- * - setDoc + merge + increment: ყველაფერი ერთ ატომურ ჩაწერაში, რომელიც დოკუმენტს თავად შექმნის.
- * - UI-ს არ აფერხებს: ჩაწერა ფონზეა და გახვეულია try/catch-ში.
+ * ნივთის ნახვის აღრიცხვა (Views & Unique Views + Daily Breakdown).
  *
  * @param {string|number} productId - ნივთის ID ან SKU
  */
@@ -77,6 +73,7 @@ export async function trackProductView(productId) {
     if (!db) return;
 
     const statRef = doc(db, 'productStats', idStr);
+    const todayKey = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
     // 3. ერთადერთი ატომური ჩაწერა (merge + increment)
     await setDoc(
@@ -85,6 +82,7 @@ export async function trackProductView(productId) {
         views: increment(1),
         uniqueViews: increment(isUnique ? 1 : 0),
         lastViewedAt: serverTimestamp(),
+        [`dailyViews.${todayKey}`]: increment(1),
       },
       { merge: true }
     );
@@ -97,5 +95,60 @@ export async function trackProductView(productId) {
   } catch (err) {
     // UI-ს დაცვა: ჩუმი დაფიქსირება, რათა მომხმარებლის ინტერფეისს არ შეეხოს
     console.debug('Product view tracking skipped/failed:', err?.message || err);
+  }
+}
+
+/**
+ * ნივთის რჩეულებში (Wishlist) დამატების / ამოღების აღრიცხვა.
+ *
+ * @param {string|number} productId - ნივთის ID ან SKU
+ * @param {boolean} isAdded - true თუ დაემატა, false თუ ამოიშალა
+ */
+export async function trackProductFavorite(productId, isAdded = true) {
+  if (!productId || shouldSkipTracking()) return;
+
+  try {
+    if (!db) return;
+    const idStr = String(productId).trim();
+    if (!idStr) return;
+
+    const statRef = doc(db, 'productStats', idStr);
+    await setDoc(
+      statRef,
+      {
+        favoritesCount: increment(isAdded ? 1 : -1),
+        lastFavoritedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  } catch (err) {
+    console.debug('Product favorite tracking skipped/failed:', err?.message || err);
+  }
+}
+
+/**
+ * ნივთის შედარების (Compare) სიაში დამატების აღრიცხვა.
+ *
+ * @param {string|number} productId - ნივთის ID ან SKU
+ */
+export async function trackProductCompare(productId) {
+  if (!productId || shouldSkipTracking()) return;
+
+  try {
+    if (!db) return;
+    const idStr = String(productId).trim();
+    if (!idStr) return;
+
+    const statRef = doc(db, 'productStats', idStr);
+    await setDoc(
+      statRef,
+      {
+        comparesCount: increment(1),
+        lastComparedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  } catch (err) {
+    console.debug('Product compare tracking skipped/failed:', err?.message || err);
   }
 }

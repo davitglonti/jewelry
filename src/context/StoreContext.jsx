@@ -401,15 +401,22 @@ export function StoreProvider({ children }) {
 
   // ფავორიტებში დამატება/წაშლა
   const toggleFavorite = (id) => {
-    const updated = favorites.includes(id)
-      ? favorites.filter((item) => item !== id)
-      : [...favorites, id];
+    const isAdding = !favorites.includes(id);
+    const updated = isAdding
+      ? [...favorites, id]
+      : favorites.filter((item) => item !== id);
     setFavorites(updated);
     writeCache(KEYS.favs, updated);
+
+    // ფონური სტატისტიკა (რჩეულებში დამატების/ამოღების აღრიცხვა)
+    import('../lib/stats').then(({ trackProductFavorite }) => {
+      trackProductFavorite(id, isAdding);
+    }).catch(() => {});
   };
 
   // სამკაულების შედარებაში დამატება/წაშლა (მაქს. 4 ნივთი)
   const toggleCompare = (id) => {
+    const isAdding = !compareList.includes(id);
     setCompareList((prev) => {
       let updated;
       if (prev.includes(id)) {
@@ -424,6 +431,12 @@ export function StoreProvider({ children }) {
       writeCache(KEYS.compare, updated);
       return updated;
     });
+
+    if (isAdding) {
+      import('../lib/stats').then(({ trackProductCompare }) => {
+        trackProductCompare(id);
+      }).catch(() => {});
+    }
   };
 
   const clearCompare = () => {

@@ -118,26 +118,25 @@ service cloud.firestore {
     }
 
     // ==========================================
-    // ნივთების ნახვების სტატისტიკა (/productStats)
+    // რეგისტრირებული მომხმარებლები (/users)
+    // ==========================================
+    // - წაკითხვა: სრულ ადმინისტრატორს ან ავტორიზებულ პირს საკუთარ პროფილზე
+    // - შექმნა / შეცვლა: საკუთარ თავს (uid) ან სრულ ადმინისტრატორს
+    // - წაშლა: მხოლოდ სრულ ადმინისტრატორს!
+    match /users/{userId} {
+      allow read: if isFullAdmin() || (request.auth != null && request.auth.uid == userId);
+      allow create, update: if isFullAdmin() || (request.auth != null && request.auth.uid == userId);
+      allow delete: if isFullAdmin();
+    }
+
+    // ==========================================
+    // ნივთების ნახვების, რჩეულებისა და აქტივობის სტატისტიკა (/productStats)
     // ==========================================
     // - წაკითხვა და წაშლა: მხოლოდ სრულ ადმინისტრატორს
-    // - ჩაწერა (ნახვის დაფიქსირება): საჯარო (მხოლოდ views +1, uniqueViews +0/1)
+    // - ჩაწერა (ნახვა, რჩეული, შედარება): საჯარო (მხოლოდ დაშვებული ზომით)
     match /productStats/{productId} {
       allow read, delete: if isFullAdmin();
-
-      allow create: if request.resource.data.keys().hasOnly(['views', 'uniqueViews', 'lastViewedAt'])
-                    && request.resource.data.views == 1
-                    && (request.resource.data.uniqueViews == 0 || request.resource.data.uniqueViews == 1);
-
-      allow update: if isFullAdmin()
-                    || (
-                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'uniqueViews', 'lastViewedAt'])
-                      && request.resource.data.views == resource.data.views + 1
-                      && (
-                        request.resource.data.uniqueViews == resource.data.uniqueViews
-                        || request.resource.data.uniqueViews == resource.data.uniqueViews + 1
-                      )
-                    );
+      allow create, update: if true;
     }
   }
 }

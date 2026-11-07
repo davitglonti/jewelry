@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { trackProductView } from '../../src/lib/stats';
+import { trackProductView, trackProductFavorite, trackProductCompare } from '../../src/lib/stats';
 
 // Mock firebase/firestore
 const mockSetDoc = vi.fn();
@@ -16,55 +16,89 @@ vi.mock('../../src/lib/firebase', () => ({
   auth: { currentUser: null },
 }));
 
-describe('trackProductView', () => {
+describe('stats.js tracking functions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     sessionStorage.clear();
     localStorage.clear();
   });
 
-  it('tracks view and unique view on first visit', async () => {
-    localStorage.setItem('matare_visitor_id', 'test_user');
-    await trackProductView('p-101');
+  describe('trackProductView', () => {
+    it('tracks view and unique view on first visit', async () => {
+      localStorage.setItem('matare_visitor_id', 'test_user');
+      await trackProductView('p-101');
 
-    expect(mockSetDoc).toHaveBeenCalledTimes(1);
-    const [statRef, data, options] = mockSetDoc.mock.calls[0];
-    expect(statRef.id).toBe('p-101');
-    expect(data.views.value).toBe(1);
-    expect(data.uniqueViews.value).toBe(1);
-    expect(options).toEqual({ merge: true });
+      expect(mockSetDoc).toHaveBeenCalledTimes(1);
+      const [statRef, data, options] = mockSetDoc.mock.calls[0];
+      expect(statRef.id).toBe('p-101');
+      expect(data.views.value).toBe(1);
+      expect(data.uniqueViews.value).toBe(1);
+      expect(options).toEqual({ merge: true });
 
-    // Session and Local flags must be set
-    expect(sessionStorage.getItem('matare_view_session_p-101_test_user')).toBe('1');
-    expect(localStorage.getItem('matare_view_ever_p-101_test_user')).toBe('1');
+      // Session and Local flags must be set
+      expect(sessionStorage.getItem('matare_view_session_p-101_test_user')).toBe('1');
+      expect(localStorage.getItem('matare_view_ever_p-101_test_user')).toBe('1');
+    });
+
+    it('does not re-track if already viewed in same session', async () => {
+      localStorage.setItem('matare_visitor_id', 'test_user');
+      sessionStorage.setItem('matare_view_session_p-101_test_user', '1');
+
+      await trackProductView('p-101');
+
+      expect(mockSetDoc).not.toHaveBeenCalled();
+    });
+
+    it('tracks regular view but not unique view if viewed previously on device but new session', async () => {
+      localStorage.setItem('matare_visitor_id', 'test_user');
+      localStorage.setItem('matare_view_ever_p-101_test_user', '1');
+
+      await trackProductView('p-101');
+
+      expect(mockSetDoc).toHaveBeenCalledTimes(1);
+      const [, data] = mockSetDoc.mock.calls[0];
+      expect(data.views.value).toBe(1);
+      expect(data.uniqueViews.value).toBe(0); // Not unique!
+    });
+
+    it('skips tracking when admin is logged in or on admin route', async () => {
+      localStorage.setItem('isAdmin', 'true');
+
+      await trackProductView('p-101');
+
+      expect(mockSetDoc).not.toHaveBeenCalled();
+    });
   });
 
-  it('does not re-track if already viewed in same session', async () => {
-    localStorage.setItem('matare_visitor_id', 'test_user');
-    sessionStorage.setItem('matare_view_session_p-101_test_user', '1');
+  describe('trackProductFavorite', () => {
+    it('increments favoritesCount when added to favorites', async () => {
+      await trackProductFavorite('p-102', true);
 
-    await trackProductView('p-101');
+      expect(mockSetDoc).toHaveBeenCalledTimes(1);
+      const [statRef, data, options] = mockSetDoc.mock.calls[0];
+      expect(statRef.id).toBe('p-102');
+      expect(data.favoritesCount.value).toBe(1);
+      expect(options).toEqual({ merge: true });
+    });
 
-    expect(mockSetDoc).not.toHaveBeenCalled();
+    it('decrements favoritesCount when removed from favorites', async () => {
+      await trackProductFavorite('p-102', false);
+
+      expect(mockSetDoc).toHaveBeenCalledTimes(1);
+      const [, data] = mockSetDoc.mock.calls[0];
+      expect(data.favoritesCount.value).toBe(-1);
+    });
   });
 
-  it('tracks regular view but not unique view if viewed previously on device but new session', async () => {
-    localStorage.setItem('matare_visitor_id', 'test_user');
-    localStorage.setItem('matare_view_ever_p-101_test_user', '1');
+  describe('trackProductCompare', () => {
+    it('increments comparesCount when added to compare list', async () => {
+      await trackProductCompare('p-103');
 
-    await trackProductView('p-101');
-
-    expect(mockSetDoc).toHaveBeenCalledTimes(1);
-    const [, data] = mockSetDoc.mock.calls[0];
-    expect(data.views.value).toBe(1);
-    expect(data.uniqueViews.value).toBe(0); // Not unique!
-  });
-
-  it('skips tracking when admin is logged in or on admin route', async () => {
-    localStorage.setItem('isAdmin', 'true');
-
-    await trackProductView('p-101');
-
-    expect(mockSetDoc).not.toHaveBeenCalled();
+      expect(mockSetDoc).toHaveBeenCalledTimes(1);
+      const [statRef, data, options] = mockSetDoc.mock.calls[0];
+      expect(statRef.id).toBe('p-103');
+      expect(data.comparesCount.value).toBe(1);
+      expect(options).toEqual({ merge: true });
+    });
   });
 });

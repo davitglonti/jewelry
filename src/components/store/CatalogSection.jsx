@@ -7,12 +7,22 @@ export default function CatalogSection({ openProductModal }) {
   const { lang, products } = useStore();
 
   // Featured pieces for the home page showcase:
-  // Filter products explicitly selected in Admin (showOnHome); fallback to first 5 if none configured
+  // 1. Filter products explicitly selected in Admin (showOnHome); fallback to first 5 if none configured
   const featured = products.filter((p, idx) =>
     typeof p.showOnHome === "boolean" ? p.showOnHome : idx < 5
   );
-  // Strictly cap at maximum 5 pieces so all items sit on 1 single row on desktop
-  const showcaseProducts = featured.slice(0, 5);
+
+  // 2. Sort: exclusive items (exclusive: true) automatically sit first, followed by the rest
+  const isExclusive = (p) => p.exclusive === true || p.exclusive === 'true';
+  const sortedFeatured = [...featured].sort((a, b) => {
+    const aEx = isExclusive(a);
+    const bEx = isExclusive(b);
+    if (aEx === bEx) return 0;
+    return aEx ? -1 : 1;
+  });
+
+  // 3. Strictly cap at maximum 5 pieces so all items sit on 1 single row on desktop
+  const showcaseProducts = sortedFeatured.slice(0, 5);
 
   return (
     <section id="catalog" className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-16 sm:py-20">

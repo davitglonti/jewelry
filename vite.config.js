@@ -17,6 +17,23 @@ export default defineConfig(({ mode }) => {
         configureServer(server) {
           server.middlewares.use(async (req, res, next) => {
             const pathname = req.url ? req.url.split('?')[0] : '';
+            if (pathname === '/api/sync-all-users') {
+              try {
+                res.status = (code) => { res.statusCode = code; return res; };
+                res.json = (data) => {
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify(data));
+                  return res;
+                };
+                const { default: handler } = await import('./api/sync-all-users.js');
+                await handler(req, res);
+              } catch (err) {
+                res.statusCode = 500;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ error: err.message }));
+              }
+              return;
+            }
             if (pathname === '/api/product-popularity') {
               try {
                 res.status = (code) => { res.statusCode = code; return res; };

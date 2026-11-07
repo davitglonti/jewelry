@@ -19,6 +19,7 @@ import AdminSettingsTab from '../components/admin/AdminSettingsTab';
 import AdminManagementTab from '../components/admin/AdminManagementTab';
 import ForcePasswordChangeModal from '../components/admin/ForcePasswordChangeModal';
 import StatsTab from '../components/admin/StatsTab';
+import Admin2FAGate from '../components/admin/Admin2FAGate';
 
 export default function AdminPage() {
   const {
@@ -539,11 +540,13 @@ export default function AdminPage() {
             )}
 
             {adminTab === 'stats' && (
-              <StatsTab
-                products={products}
-                darkMode={darkMode}
-                lang={lang}
-              />
+              <Admin2FAGate darkMode={darkMode} lang={lang}>
+                <StatsTab
+                  products={products}
+                  darkMode={darkMode}
+                  lang={lang}
+                />
+              </Admin2FAGate>
             )}
 
             {(adminTab === 'site' ||

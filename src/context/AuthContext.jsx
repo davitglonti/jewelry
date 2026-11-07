@@ -141,6 +141,14 @@ export function AuthProvider({ children }) {
               else if (check.isAdmin) setUserRole('admin');
               else setUserRole('member');
             }
+
+            // მომხმარებლის პროფილის სინქრონიზაცია Firestore-ში (/users/{uid})
+            if (currentUser && typeof window !== 'undefined' && !sessionStorage.getItem(`user_synced_${currentUser.uid}`)) {
+              sessionStorage.setItem(`user_synced_${currentUser.uid}`, '1');
+              import('../lib/userSync').then(({ syncUserProfileToFirestore }) => {
+                syncUserProfileToFirestore(currentUser);
+              }).catch(() => {});
+            }
           } catch (e) {
             if (!isCancelled) setUserRole('member');
           }
@@ -191,14 +199,25 @@ export function AuthProvider({ children }) {
     if (!auth) throw new Error('Firebase Auth არ არის ინიციალიზებული');
     const { createUserWithEmailAndPassword, updateProfile } = await import('firebase/auth');
     const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
-    if (displayName && displayName.trim()) {
+    const cleanedName = displayName && displayName.trim() ? displayName.trim() : '';
+    if (cleanedName) {
       await updateProfile(userCredential.user, {
-        displayName: displayName.trim()
+        displayName: cleanedName
       });
-      setUser({ ...userCredential.user, displayName: displayName.trim() });
+      setUser({ ...userCredential.user, displayName: cleanedName });
     } else {
       setUser(userCredential.user);
     }
+
+    // ავტომატური სინქრონიზაცია Firestore-ის /users კოლექციაში
+    import('../lib/userSync').then(({ syncUserProfileToFirestore }) => {
+      syncUserProfileToFirestore(userCredential.user, {
+        displayName: cleanedName,
+        isNewUser: true,
+        provider: 'password'
+      });
+    }).catch(() => {});
+
     return userCredential.user;
   };
 
@@ -208,6 +227,12 @@ export function AuthProvider({ children }) {
     const { signInWithEmailAndPassword } = await import('firebase/auth');
     const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
     setUser(userCredential.user);
+
+    // ბოლო შესვლის დროის განახლება Firestore-ში
+    import('../lib/userSync').then(({ syncUserProfileToFirestore }) => {
+      syncUserProfileToFirestore(userCredential.user, { provider: 'password' });
+    }).catch(() => {});
+
     return userCredential.user;
   };
 
@@ -219,6 +244,12 @@ export function AuthProvider({ children }) {
     provider.setCustomParameters({ prompt: 'select_account' });
     const userCredential = await signInWithPopup(auth, provider);
     setUser(userCredential.user);
+
+    // ავტომატური სინქრონიზაცია Google-ით შესვლისას
+    import('../lib/userSync').then(({ syncUserProfileToFirestore }) => {
+      syncUserProfileToFirestore(userCredential.user, { provider: 'google' });
+    }).catch(() => {});
+
     return userCredential.user;
   };
 
