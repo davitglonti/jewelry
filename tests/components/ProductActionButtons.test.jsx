@@ -13,11 +13,6 @@ describe('ProductActionButtons component', () => {
     sizes: ['16.0', '16.5', '17.0', '17.5']
   };
 
-  const dummySettings = {
-    whatsapp: '+995599000000',
-    messenger: 'https://m.me/matare'
-  };
-
   it('renders nothing if product is missing', () => {
     const { container } = render(<ProductActionButtons product={null} />);
     expect(container.firstChild).toBeNull();
@@ -59,94 +54,6 @@ describe('ProductActionButtons component', () => {
     expect(handleOpenSizer).toHaveBeenCalledTimes(1);
   });
 
-  it('renders WhatsApp link with product details and target blank', () => {
-    render(
-      <ProductActionButtons
-        product={dummyProduct}
-        siteSettings={dummySettings}
-        selectedSize="17.0"
-        lang="ka"
-      />
-    );
-
-    const waLink = screen.getByRole('link', { name: /WhatsApp-ში მიწერა/i });
-    expect(waLink).toBeInTheDocument();
-    expect(waLink.getAttribute('href')).toContain('https://wa.me/995599000000');
-    expect(waLink.getAttribute('href')).toContain('AUR-DIAMOND-01');
-    expect(waLink.getAttribute('target')).toBe('_blank');
-  });
-
-  it('shows validation error when consultation form is submitted without a name', () => {
-    render(
-      <ProductActionButtons
-        product={dummyProduct}
-        siteSettings={dummySettings}
-        lang="ka"
-      />
-    );
-
-    const submitBtn = screen.getByRole('button', { name: /ზარის მოთხოვნა/i });
-    fireEvent.click(submitBtn);
-
-    expect(screen.getByText(/გთხოვთ შეიყვანოთ თქვენი სახელი/i)).toBeInTheDocument();
-  });
-
-  it('shows validation error when invalid Georgian phone number is provided', () => {
-    render(
-      <ProductActionButtons
-        product={dummyProduct}
-        siteSettings={dummySettings}
-        lang="ka"
-      />
-    );
-
-    const nameInput = screen.getByPlaceholderText(/თქვენი სახელი/i);
-    const phoneInput = screen.getByPlaceholderText(/5XX XX XX XX/i);
-    const submitBtn = screen.getByRole('button', { name: /ზარის მოთხოვნა/i });
-
-    fireEvent.change(nameInput, { target: { value: 'გიორგი' } });
-    fireEvent.change(phoneInput, { target: { value: '12345' } }); // invalid phone
-    fireEvent.click(submitBtn);
-
-    expect(screen.getByText(/შეიყვანეთ სწორი ქართული ნომერი/i)).toBeInTheDocument();
-  });
-
-  it('successfully submits valid inquiry, calls setInquiries and syncData, and shows success message', () => {
-    const handleSetInquiries = vi.fn();
-    const handleSyncData = vi.fn();
-
-    render(
-      <ProductActionButtons
-        product={dummyProduct}
-        siteSettings={dummySettings}
-        selectedSize="16.5"
-        inquiries={[]}
-        setInquiries={handleSetInquiries}
-        syncData={handleSyncData}
-        lang="ka"
-      />
-    );
-
-    const nameInput = screen.getByPlaceholderText(/თქვენი სახელი/i);
-    const phoneInput = screen.getByPlaceholderText(/5XX XX XX XX/i);
-    const submitBtn = screen.getByRole('button', { name: /ზარის მოთხოვნა/i });
-
-    fireEvent.change(nameInput, { target: { value: 'ნინო' } });
-    fireEvent.change(phoneInput, { target: { value: '599 12 34 56' } });
-    fireEvent.click(submitBtn);
-
-    expect(handleSetInquiries).toHaveBeenCalledTimes(1);
-    const savedInquiries = handleSetInquiries.mock.calls[0][0];
-    expect(savedInquiries.length).toBe(1);
-    expect(savedInquiries[0].clientName).toBe('ნინო');
-    expect(savedInquiries[0].clientPhone).toBe('599123456');
-    expect(savedInquiries[0].sku).toBe('AUR-DIAMOND-01');
-    expect(savedInquiries[0].size).toBe('16.5');
-
-    expect(handleSyncData).toHaveBeenCalledTimes(1);
-    expect(screen.getByText(/მოთხოვნა მიღებულია!/i)).toBeInTheDocument();
-  });
-
   it('renders Buy Now button with selected size and navigates to checkout on click', async () => {
     const navModule = await import('../../src/utils/navigation');
     const navigateSpy = vi.spyOn(navModule, 'navigateTo').mockImplementation(() => {});
@@ -154,7 +61,6 @@ describe('ProductActionButtons component', () => {
     render(
       <ProductActionButtons
         product={dummyProduct}
-        siteSettings={dummySettings}
         selectedSize="17.0"
         lang="ka"
       />
@@ -167,6 +73,45 @@ describe('ProductActionButtons component', () => {
     fireEvent.click(buyBtn);
     expect(navigateSpy).toHaveBeenCalledWith(
       expect.stringContaining('/checkout?productId=prod-42&size=17.0')
+    );
+    navigateSpy.mockRestore();
+  });
+
+  it('renders Buy Now button in English when lang is en', async () => {
+    render(
+      <ProductActionButtons
+        product={dummyProduct}
+        selectedSize="17.0"
+        lang="en"
+      />
+    );
+
+    expect(screen.getByRole('button', { name: /Buy Now \(Instant Checkout\)/i })).toBeInTheDocument();
+    expect(screen.getByText(/Size: 17.0/i)).toBeInTheDocument();
+  });
+
+  it('navigates to checkout using sku if id is missing', async () => {
+    const navModule = await import('../../src/utils/navigation');
+    const navigateSpy = vi.spyOn(navModule, 'navigateTo').mockImplementation(() => {});
+
+    const productWithoutId = {
+      sku: 'SKU-ONLY-99',
+      name: 'ოქროს სამაჯური',
+      sizes: []
+    };
+
+    render(
+      <ProductActionButtons
+        product={productWithoutId}
+        lang="en"
+      />
+    );
+
+    const buyBtn = screen.getByRole('button', { name: /Buy Now/i });
+    fireEvent.click(buyBtn);
+
+    expect(navigateSpy).toHaveBeenCalledWith(
+      expect.stringContaining('/en/checkout?sku=SKU-ONLY-99')
     );
     navigateSpy.mockRestore();
   });

@@ -234,6 +234,57 @@ export default function AdminProductForm({
         />
       </div>
 
+      {/* ატელიეს სტანდარტი და შეფუთვა (ინდივიდუალური პუნქტები) */}
+      <div className={`p-4 rounded-xl border space-y-3 text-xs ${
+        darkMode ? 'bg-stone-800/40 border-stone-700' : 'bg-white border-stone-200'
+      }`}>
+        <div className="flex items-center gap-2 text-amber-500 font-semibold">
+          <Sparkles className="w-4 h-4" />
+          <span>ატელიეს სტანდარტი და შეფუთვა (ინდივიდუალური პუნქტები ამ ნაკეთობაზე):</span>
+        </div>
+        <p className="text-[11px] opacity-70">
+          სურვილისამებრ მიუთითეთ სპეციალური პუნქტები ამ მოდელისთვის. თუ ცარიელს დატოვებთ, ავტომატურად გამოჩნდება სტანდარტული ტექსტები.
+        </p>
+        <div className="space-y-2.5">
+          {[0, 1, 2].map((idx) => {
+            const currentItem = (editingProduct.highlights && editingProduct.highlights[idx]) || {};
+            const defaultPlaceholders = [
+              { title: 'ავთენტური სინჯი და სერტიფიკატი:', desc: 'დამოწმებულია ოფიციალური სინჯის ბეჭდით და თან ახლავს ხარისხის პასპორტი.' },
+              { title: 'ხელით დამუშავებული ოსტატობა:', desc: 'თითოეული ქვა და დეტალი დამაგრებულია ინდივიდუალურად ჩვენს საიუველირო ატელიეში.' },
+              { title: 'სრული სასაჩუქრე კომპლექტი:', desc: 'მოყვება საფირმო ხავერდის ყუთი, აბრეშუმის ლენტი, სასაჩუქრე ჩანთა და მილოცვის ბარათი.' }
+            ];
+            return (
+              <div key={idx} className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <input
+                  type="text"
+                  placeholder={`პუნქტი #${idx + 1} სათაური`}
+                  value={currentItem.title !== undefined ? currentItem.title : ''}
+                  onChange={(e) => {
+                    const base = editingProduct.highlights || defaultPlaceholders.map(p => ({ ...p }));
+                    const updated = [...base];
+                    updated[idx] = { ...updated[idx], title: e.target.value };
+                    setEditingProduct({ ...editingProduct, highlights: updated });
+                  }}
+                  className={`p-2 rounded-lg border ${darkMode ? 'bg-stone-900 border-stone-700 text-white' : 'bg-stone-50 border-stone-300'}`}
+                />
+                <input
+                  type="text"
+                  placeholder={`პუნქტი #${idx + 1} აღწერა (მაგ: ${defaultPlaceholders[idx].desc})`}
+                  value={currentItem.desc !== undefined ? currentItem.desc : ''}
+                  onChange={(e) => {
+                    const base = editingProduct.highlights || defaultPlaceholders.map(p => ({ ...p }));
+                    const updated = [...base];
+                    updated[idx] = { ...updated[idx], desc: e.target.value };
+                    setEditingProduct({ ...editingProduct, highlights: updated });
+                  }}
+                  className={`p-2 rounded-lg border sm:col-span-2 ${darkMode ? 'bg-stone-900 border-stone-700 text-white' : 'bg-stone-50 border-stone-300'}`}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Product Images Upload / URL Section */}
       <div className="space-y-2 text-xs">
         <label className="font-medium text-amber-500 block">

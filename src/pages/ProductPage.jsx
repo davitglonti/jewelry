@@ -20,6 +20,7 @@ import RingSizerModal from '../components/modals/RingSizerModal';
 import ProductCard from '../components/store/ProductCard';
 import ProductMediaGallery from '../components/store/ProductMediaGallery';
 import ProductSpecsTable from '../components/store/ProductSpecsTable';
+import ProductStoryHighlights from '../components/store/ProductStoryHighlights';
 import ProductActionButtons from '../components/store/ProductActionButtons';
 
 export default function ProductPage({ skuProp }) {
@@ -275,8 +276,8 @@ export default function ProductPage({ skuProp }) {
       </div>
 
       {/* ძირითადი კონტენტი */}
-      <main className="w-full max-w-none px-3 sm:px-5 lg:px-6 py-6 sm:py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 xl:gap-12 items-start">
+      <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-stretch">
           
           {/* მარცხენა მხარე: ფოტოების გალერეა + Zoom + 360 */}
           <ProductMediaGallery
@@ -293,7 +294,8 @@ export default function ProductPage({ skuProp }) {
           />
 
           {/* მარჯვენა მხარე: ინფორმაცია და კონტაქტი */}
-          <div className="space-y-5 sm:space-y-6">
+          <div className="flex flex-col justify-between h-full min-h-0 space-y-6 lg:space-y-0">
+            <div className="space-y-5 sm:space-y-6">
             <div>
               {/* Category, SKU & Actions Bar */}
               <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
@@ -389,13 +391,13 @@ export default function ProductPage({ skuProp }) {
                 </div>
               </div>
 
-              <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl mt-3 font-normal leading-tight">
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl mt-3 font-normal leading-tight tracking-wide">
                 {lang === "ka" ? selectedProduct.name : (selectedProduct.nameEn || selectedProduct.name)}
               </h1>
 
               <div className="flex flex-wrap items-center gap-3 mt-3">
                 <div className="flex items-baseline gap-2.5">
-                  <span className="font-serif text-2xl sm:text-3xl text-amber-500 font-semibold">
+                  <span className="font-serif text-3xl sm:text-4xl lg:text-5xl text-amber-500 font-semibold">
                     {formatPrice(selectedProduct.price)}
                   </span>
                   {selectedProduct.oldPrice && (
@@ -435,6 +437,13 @@ export default function ProductPage({ skuProp }) {
             {/* Specifications Cards */}
             <ProductSpecsTable product={selectedProduct} darkMode={darkMode} lang={lang} />
 
+            {/* Atelier Story, 0% Installments & Packaging Highlights */}
+            <ProductStoryHighlights product={selectedProduct} darkMode={darkMode} lang={lang} />
+            </div>
+
+            {/* Actions & Assurances Pinned to the Bottom of the Column */}
+            <div className="pt-6 sm:pt-8 mt-auto">
+
             {/* Actions: Size Selector, WhatsApp/Messenger, Consultation Callback Form */}
             <ProductActionButtons
               product={selectedProduct}
@@ -449,12 +458,13 @@ export default function ProductPage({ skuProp }) {
               syncData={syncData}
               products={products}
             />
+            </div>
           </div>
 
         </div>
 
         {/* PRODUCT ASSURANCE CARDS */}
-        <div className="mt-16 pt-12 border-t border-stone-500/15 w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mt-20 pt-16 border-t border-stone-500/15 w-full mx-auto">
           <div className="text-center mb-8 px-4">
             <span className="text-xs uppercase tracking-widest text-amber-500 font-semibold block mb-1">
               {lang === "ka"
