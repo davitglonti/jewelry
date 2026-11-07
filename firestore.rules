@@ -94,11 +94,27 @@ service cloud.firestore {
     // ==========================================
     // შემოსული მოთხოვნები (/inquiries)
     // ==========================================
-    // - შექმნა: ნებისმიერ სტუმარს/მომხმარებელს
-    // - წაკითხვა, შეცვლა, წაშლა: მხოლოდ სრულ ადმინისტრატორს! (მოდერატორს არ აქვს წვდომა მომხმარებელთა პირად მონაცემებზე)
+    // - შექმნა: ნებისმიერ სტუმარს/მომხმარებელს (სავალდებულო ველებისა და ზომის მკაცრი შემოწმებით)
+    // - წაკითხვა: სრულ ადმინისტრატორს ან ავტორიზებულ შემკვეთს საკუთარ შეკვეთაზე
+    // - შეცვლა, წაშლა: მხოლოდ სრულ ადმინისტრატორს!
     match /inquiries/{inquiryId} {
-      allow create: if true;
-      allow read, update, delete: if isFullAdmin();
+      allow create: if request.resource.data.keys().hasAll(['clientName', 'clientPhone'])
+                    && request.resource.data.clientName is string
+                    && request.resource.data.clientName.size() > 0
+                    && request.resource.data.clientName.size() <= 120
+                    && request.resource.data.clientPhone is string
+                    && request.resource.data.clientPhone.size() >= 4
+                    && request.resource.data.clientPhone.size() <= 40
+                    && request.resource.data.size() <= 30;
+
+      allow read: if isFullAdmin() || (
+        request.auth != null &&
+        resource.data.clientEmail != null &&
+        request.auth.token.email != null &&
+        resource.data.clientEmail.lower() == request.auth.token.email.lower()
+      );
+
+      allow update, delete: if isFullAdmin();
     }
 
     // ==========================================
