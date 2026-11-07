@@ -17,12 +17,48 @@ export default function AdminLoginView({ darkMode = true, auth, signInWithEmailA
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   // Password reset states
   const [resetEmail, setResetEmail] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
   const [resetError, setResetError] = useState('');
+
+  const handleGoogleAdminLogin = async () => {
+    setLoginError('');
+
+    if (!auth) {
+      setLoginError('Firebase Auth არ არის აქტიური!');
+      return;
+    }
+
+    setGoogleLoading(true);
+
+    try {
+      const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const userCred = await signInWithPopup(auth, provider);
+
+      // გადავამოწმოთ, ნამდვილად აქვს თუ არა ამ მომხმარებელს ადმინისტრატორის ან მოდერატორის უფლებები
+      const adminCheck = await checkUserIsAdmin(userCred.user, db);
+      if (!adminCheck.isAdmin) {
+        const { signOut } = await import('firebase/auth');
+        await signOut(auth);
+        setLoginError(`წვდომა შეზღუდულია: Google ანგარიშს (${userCred.user.email}) არ გააჩნია ადმინისტრატორის ან მოდერატორის უფლებები!`);
+        setGoogleLoading(false);
+        return;
+      }
+
+      setLoginError('');
+    } catch (err) {
+      console.error('Admin Google Login Error:', err);
+      setLoginError(getAuthErrorMessage(err, 'ka', 'login'));
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -127,6 +163,53 @@ export default function AdminLoginView({ darkMode = true, auth, signInWithEmailA
           <div className="space-y-1">
             <h3 className="font-serif text-2xl font-medium tracking-wide">ადმინისტრატორის ავტორიზაცია</h3>
             <p className="text-xs opacity-65">შეიყვანეთ ადმინისტრატორის ელ-ფოსტა და პაროლი</p>
+          </div>
+
+          {/* Google Admin Login */}
+          <button
+            type="button"
+            onClick={handleGoogleAdminLogin}
+            disabled={loginLoading || googleLoading}
+            className={`w-full py-3 px-4 rounded-xl border flex items-center justify-center gap-3 text-xs font-semibold tracking-wider transition-all shadow-sm active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed ${
+              darkMode
+                ? 'bg-stone-900 border-stone-700 hover:bg-stone-800 text-stone-200 hover:text-white hover:border-stone-600'
+                : 'bg-stone-50 border-stone-300 hover:bg-stone-100 text-stone-800 hover:text-black hover:border-stone-400'
+            }`}
+          >
+            {googleLoading ? (
+              <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <>
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="#4285F4"
+                    d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.27-2.09 3.66-5.17 3.66-9.12z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.13C3.26 21.36 7.36 24 12 24z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.57H1.26C.46 8.17 0 9.99 0 12s.46 3.83 1.26 5.43l4.02-3.14z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.26 6.57l4.02 3.14c.95-2.83 3.6-4.96 6.72-4.96z"
+                  />
+                </svg>
+                <span>Google-ით ავტორიზაცია</span>
+              </>
+            )}
+          </button>
+
+          <div className="relative my-4 flex items-center justify-center">
+            <div className="border-t border-stone-500/20 w-full absolute" />
+            <span className={`relative px-3 text-[11px] uppercase tracking-wider ${
+              darkMode ? 'bg-[#121110] text-stone-400' : 'bg-white text-stone-500'
+            }`}>
+              ან პაროლით
+            </span>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-3.5 text-left">

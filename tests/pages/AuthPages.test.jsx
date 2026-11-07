@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import LoginPage from '../../src/pages/LoginPage';
 import RegisterPage from '../../src/pages/RegisterPage';
+import AdminLoginView from '../../src/components/admin/AdminLoginView';
 import { StoreContext } from '../../src/context/StoreContext';
 import { AuthContext, getAuthErrorMessage } from '../../src/context/AuthContext';
 import * as navigationModule from '../../src/utils/navigation';
@@ -210,6 +211,20 @@ describe('Google Authentication & Error Handling', () => {
         expect(mockRegisterWithGoogle).toHaveBeenCalledTimes(1);
         expect(navigationModule.navigateTo).toHaveBeenCalledWith('/');
       });
+    });
+  });
+
+  describe('AdminLoginView with Google Authentication', () => {
+    it('renders Google sign-in button for admin authentication', () => {
+      render(
+        <AdminLoginView
+          darkMode={true}
+          auth={{}}
+          signInWithEmailAndPassword={vi.fn()}
+        />
+      );
+
+      expect(screen.getByRole('button', { name: /Google-ით ავტორიზაცია/i })).toBeDefined();
     });
   });
 });
