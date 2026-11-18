@@ -147,11 +147,8 @@ export default function LoginPage({ initialMode = 'login' }) {
     }
   };
 
-  const inputClass =
-    'w-full pl-10 pr-4 py-3 text-sm bg-white border border-[#DCD6CC] focus:border-[#141311] text-[#141311] placeholder-[#9C958B] outline-none transition-colors';
-
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#FAF9F6] text-[#141311]">
+    <div className="min-h-screen flex flex-col justify-between bg-[#F4F1EA] text-[#1F1C18]">
       <Navbar
         lang={lang}
         setLang={setLang}
@@ -163,83 +160,101 @@ export default function LoginPage({ initialMode = 'login' }) {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main className="flex-1 flex items-center justify-center px-4 pt-[108px] pb-24">
-        <div className="w-full max-w-md p-8 sm:p-10 bg-white border border-[#E8E3DB]">
-          {mode === 'login' ? (
-            <>
-              <div className="text-center mb-8 space-y-2">
-                <span className="text-[10px] uppercase tracking-[0.26em] text-[#9D7B48] font-medium block">
-                  {siteSettings?.brandName || 'MATARE'}
+      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 pt-[100px] sm:pt-[110px] pb-16 sm:pb-20">
+        {mode === 'login' ? (
+          <div className="w-full max-w-4xl bg-white rounded-3xl shadow-[0_12px_45px_rgba(31,28,24,0.07)] border border-[#EAE4DB] overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[580px]">
+            {/* Left Image Side (Mockup 1-to-1) */}
+            <div className="md:col-span-5 relative hidden md:block min-h-[580px] bg-[#EAE4DB]">
+              <img
+                src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=1200&q=85"
+                alt="Fine Jewelry Solitaire Diamond Ring"
+                className="w-full h-full object-cover"
+                loading="eager"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
+              <div className="absolute bottom-10 left-8 right-8 text-white space-y-2">
+                <p className="font-serif text-2xl lg:text-[27px] font-normal leading-[1.3] text-white/95 drop-shadow-sm">
+                  {lang === 'ka' ? (
+                    <>
+                      შედით რჩეულების,<br />
+                      შედარებისა<br />
+                      და VIP პრივილეგიებისთვის
+                    </>
+                  ) : (
+                    <>
+                      Sign in for Wishlist,<br />
+                      Comparison<br />
+                      & VIP Privileges
+                    </>
+                  )}
+                </p>
+                <p className="text-xs text-white/70 font-light">
+                  {lang === 'ka' ? 'საიუველირო სახლი „მატარე“' : 'Fine Jewelry Collection'}
+                </p>
+              </div>
+            </div>
+
+            {/* Right Form Side */}
+            <div className="md:col-span-7 p-8 sm:p-12 lg:p-14 flex flex-col justify-center bg-white">
+              <div className="text-center mb-8">
+                <span className="font-serif text-2xl sm:text-3xl tracking-[0.22em] font-medium text-[#1F1C18] uppercase block">
+                  {siteSettings?.brandName || (lang === 'ka' ? 'მატარე' : 'MATARE')}
                 </span>
-                <h1 className="font-serif text-3xl sm:text-4xl font-light text-[#141311]">
-                  {lang === 'ka' ? 'ავტორიზაცია' : 'Sign In'}
+                <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[#1F1C18] mt-4">
+                  {lang === 'ka' ? 'ავტორიზაცია' : 'Welcome Back'}
                 </h1>
-                <p className="text-xs sm:text-sm text-[#5C574F] font-light">
-                  {lang === 'ka'
-                    ? 'შედით თქვენს ანგარიშზე რჩეულების, შედარებისა და VIP ფასდაკლებისთვის'
-                    : 'Sign in to access favorites, comparison & VIP perks'}
+                <p className="text-xs text-[#787168] mt-1 font-light">
+                  {lang === 'ka' ? 'შედით თქვენს ანგარიშზე' : 'Sign in to your account'}
                 </p>
               </div>
 
               {errorMessage && (
-                <div className="mb-5 p-3.5 bg-[#FDF6F6] border border-[#E8C8C8] text-[#8E2424] text-xs flex items-start gap-2.5 animate-fadeIn">
+                <div className="mb-5 p-3.5 bg-[#FDF6F6] border border-[#E8C8C8] text-[#8E2424] text-xs flex items-start gap-2.5 rounded-xl animate-fadeIn">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                   <span className="leading-relaxed">{errorMessage}</span>
                 </div>
               )}
 
-              <button
-                type="button"
-                onClick={handleGoogleLogin}
-                disabled={loading || googleLoading}
-                className="w-full py-3 px-4 border border-[#DCD6CC] bg-white hover:border-[#141311] text-[#141311] flex items-center justify-center gap-3 text-xs tracking-[0.12em] uppercase font-medium transition-colors disabled:opacity-50 mb-5 cursor-pointer"
-              >
-                {googleLoading ? (
-                  <div className="w-4 h-4 border-[1.5px] border-[#141311] border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-                      <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.27-2.09 3.66-5.17 3.66-9.12z" />
-                      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.13C3.26 21.36 7.36 24 12 24z" />
-                      <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.57H1.26C.46 8.17 0 9.99 0 12s.46 3.83 1.26 5.43l4.02-3.14z" />
-                      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.26 6.57l4.02 3.14c.95-2.83 3.6-4.96 6.72-4.96z" />
-                    </svg>
-                    <span>{lang === 'ka' ? 'Google-ით შესვლა' : 'Sign in with Google'}</span>
-                  </>
-                )}
-              </button>
-
-              <div className="relative mb-6 flex items-center justify-center">
-                <div className="border-t border-[#E8E3DB] w-full absolute" />
-                <span className="relative px-3 text-[10px] uppercase tracking-[0.18em] bg-white text-[#847E75]">
-                  {lang === 'ka' ? 'ან ელფოსტით' : 'or with email'}
-                </span>
-              </div>
-
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <label className="block text-[10px] uppercase tracking-[0.16em] text-[#5C574F] font-medium mb-1.5">
+              <form onSubmit={handleLogin} className="space-y-5">
+                <div className="space-y-1">
+                  <label className="block text-xs text-[#787168] font-normal">
                     {lang === 'ka' ? 'ელფოსტა' : 'Email Address'}
                   </label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#847E75] stroke-[1.5]" />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="name@example.com"
-                      autoComplete="email"
-                      required
-                      className={inputClass}
-                    />
-                  </div>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    autoComplete="email"
+                    placeholder=""
+                    className="w-full pb-2 pt-1 text-sm bg-transparent border-b border-[#DCD6CC] focus:border-[#1F1C18] outline-none text-[#1F1C18] transition-colors"
+                  />
                 </div>
 
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[10px] uppercase tracking-[0.16em] text-[#5C574F] font-medium">
-                      {lang === 'ka' ? 'პაროლი' : 'Password'}
-                    </label>
+                <div className="space-y-1">
+                  <label className="block text-xs text-[#787168] font-normal">
+                    {lang === 'ka' ? 'პაროლი' : 'Password'}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      autoComplete="current-password"
+                      placeholder=""
+                      className="w-full pb-2 pt-1 pr-8 text-sm bg-transparent border-b border-[#DCD6CC] focus:border-[#1F1C18] outline-none text-[#1F1C18] transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      className="absolute right-0 bottom-2 text-[#8A8278] hover:text-[#1F1C18] cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <div className="text-right pt-1">
                     <button
                       type="button"
                       onClick={() => {
@@ -247,29 +262,245 @@ export default function LoginPage({ initialMode = 'login' }) {
                         setResetSuccess(false);
                         setMode('forgot');
                       }}
-                      className="text-[11px] text-[#9D7B48] hover:text-[#141311] transition-colors cursor-pointer"
+                      className="text-xs text-[#8A8278] hover:text-[#1F1C18] transition-colors cursor-pointer"
                     >
                       {lang === 'ka' ? 'დაგავიწყდათ პაროლი?' : 'Forgot password?'}
                     </button>
                   </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading || googleLoading}
+                  className="w-full py-3.5 rounded-full bg-[#1F1C18] hover:bg-[#35302A] text-white text-xs tracking-wider uppercase font-semibold transition-all shadow-xs disabled:opacity-50 cursor-pointer mt-2"
+                >
+                  {loading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
+                  ) : (
+                    <span>{lang === 'ka' ? 'შესვლა' : 'SIGN IN'}</span>
+                  )}
+                </button>
+              </form>
+
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  disabled={loading || googleLoading}
+                  aria-label={lang === 'ka' ? 'Google-ით შესვლა' : 'Sign in with Google'}
+                  className="w-full py-3 rounded-full border border-[#DCD6CC] bg-white hover:bg-[#FAF8F4] text-[#1F1C18] text-xs font-medium transition-all flex items-center justify-center gap-2.5 shadow-2xs disabled:opacity-50 cursor-pointer"
+                >
+                  {googleLoading ? (
+                    <div className="w-4 h-4 border-2 border-[#1F1C18] border-t-transparent rounded-full animate-spin mx-auto" />
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.27-2.09 3.66-5.17 3.66-9.12z" />
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.13C3.26 21.36 7.36 24 12 24z" />
+                        <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.57H1.26C.46 8.17 0 9.99 0 12s.46 3.83 1.26 5.43l4.02-3.14z" />
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.26 6.57l4.02 3.14c.95-2.83 3.6-4.96 6.72-4.96z" />
+                      </svg>
+                      <span>{lang === 'ka' ? 'Google-ით შესვლა' : 'Continue with Google'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="mt-8 text-center text-xs text-[#787168]">
+                <span>{lang === 'ka' ? 'არ გაქვთ ანგარიში?' : "Don't have an account?"}</span>
+                <a
+                  href={`/register?redirect=${encodeURIComponent(redirectTarget)}`}
+                  className="font-semibold text-[#1F1C18] hover:underline cursor-pointer ml-1.5"
+                >
+                  {lang === 'ka' ? 'რეგისტრაცია' : 'Register'}
+                </a>
+              </div>
+            </div>
+          </div>
+        ) : mode === 'forgot' ? (
+          <div className="w-full max-w-md p-8 sm:p-10 bg-white rounded-3xl border border-[#EAE4DB] shadow-[0_10px_40px_rgba(31,28,24,0.06)]">
+            <div className="text-center mb-8 space-y-2">
+              <span className="font-serif text-2xl tracking-[0.22em] font-medium text-[#1F1C18] uppercase block">
+                {siteSettings?.brandName || (lang === 'ka' ? 'მატარე' : 'MATARE')}
+              </span>
+              <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[#1F1C18] mt-3">
+                {lang === 'ka' ? 'პაროლის აღდგენა' : 'Reset Password'}
+              </h1>
+              <p className="text-xs text-[#787168]">
+                {lang === 'ka'
+                  ? 'შეიყვანეთ თქვენი ელფოსტა და გამოგიგზავნით აღდგენის ბმულს'
+                  : 'Enter your email to receive a password reset link'}
+              </p>
+            </div>
+
+            {errorMessage && (
+              <div className="mb-5 p-3.5 bg-[#FDF6F6] border border-[#E8C8C8] text-[#8E2424] text-xs flex items-start gap-2.5 rounded-xl animate-fadeIn">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            {resetSuccess ? (
+              <div className="space-y-5 animate-fadeIn">
+                <div className="p-4 bg-[#F4F8F5] border border-[#D4E2D9] text-[#2B5C40] text-xs sm:text-sm rounded-xl flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
+                  <div className="leading-relaxed">
+                    <p className="font-medium mb-1">
+                      {lang === 'ka' ? 'ბმული წარმატებით გაიგზავნა!' : 'Reset link sent successfully!'}
+                    </p>
+                    <p className="opacity-85">
+                      {lang === 'ka'
+                        ? `პაროლის აღდგენის ინსტრუქცია გაიგზავნა მისამართზე: ${email}. შეამოწმეთ Inbox და Spam.`
+                        : `Instructions have been sent to ${email}. Please check your inbox and spam folder.`}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setResetSuccess(false);
+                    setErrorMessage('');
+                    setMode('login');
+                  }}
+                  className="w-full py-3.5 rounded-full bg-[#1F1C18] text-white text-xs tracking-wider uppercase font-semibold transition-all cursor-pointer"
+                >
+                  {lang === 'ka' ? 'ავტორიზაციაზე დაბრუნება' : 'Back to Sign In'}
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleResetPassword} className="space-y-5">
+                <div className="space-y-1">
+                  <label className="block text-xs text-[#787168] font-normal">
+                    {lang === 'ka' ? 'ელფოსტა' : 'Email Address'}
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    autoComplete="email"
+                    className="w-full pb-2 pt-1 text-sm bg-transparent border-b border-[#DCD6CC] focus:border-[#1F1C18] outline-none text-[#1F1C18] transition-colors"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3.5 rounded-full bg-[#1F1C18] hover:bg-[#35302A] text-white text-xs tracking-wider uppercase font-semibold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+                >
+                  {loading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
+                  ) : (
+                    <span>{lang === 'ka' ? 'ბმულის გაგზავნა' : 'Send Reset Link'}</span>
+                  )}
+                </button>
+
+                <div className="text-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setErrorMessage('');
+                      setMode('login');
+                    }}
+                    className="text-xs text-[#787168] hover:text-[#1F1C18] transition-colors cursor-pointer"
+                  >
+                    ← {lang === 'ka' ? 'უკან დაბრუნება' : 'Back to Sign In'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        ) : (
+          <div className="w-full max-w-md p-8 sm:p-10 bg-white rounded-3xl border border-[#EAE4DB] shadow-[0_10px_40px_rgba(31,28,24,0.06)]">
+            <div className="text-center mb-8 space-y-2">
+              <span className="font-serif text-2xl tracking-[0.22em] font-medium text-[#1F1C18] uppercase block">
+                {siteSettings?.brandName || (lang === 'ka' ? 'მატარე' : 'MATARE')}
+              </span>
+              <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[#1F1C18] mt-3">
+                {lang === 'ka' ? 'ახალი პაროლი' : 'Set New Password'}
+              </h1>
+            </div>
+
+            {errorMessage && (
+              <div className="mb-5 p-3.5 bg-[#FDF6F6] border border-[#E8C8C8] text-[#8E2424] text-xs flex items-start gap-2.5 rounded-xl animate-fadeIn">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            {passwordResetSuccess ? (
+              <div className="space-y-5 animate-fadeIn">
+                <div className="p-4 bg-[#F4F8F5] border border-[#D4E2D9] text-[#2B5C40] text-xs sm:text-sm rounded-xl flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium mb-1">
+                      {lang === 'ka' ? 'პაროლი წარმატებით შეიცვალა!' : 'Password updated successfully!'}
+                    </p>
+                    <p className="opacity-85">
+                      {lang === 'ka'
+                        ? 'ახლა შეგიძლიათ გაიაროთ ავტორიზაცია ახალი პაროლით.'
+                        : 'You can now sign in with your new password.'}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPasswordResetSuccess(false);
+                    setMode('login');
+                  }}
+                  className="w-full py-3.5 rounded-full bg-[#1F1C18] text-white text-xs tracking-wider uppercase font-semibold transition-all cursor-pointer"
+                >
+                  {lang === 'ka' ? 'ავტორიზაცია' : 'Sign In'}
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleConfirmNewPassword} className="space-y-5">
+                <div className="space-y-1">
+                  <label className="block text-xs text-[#787168] font-normal">
+                    {lang === 'ka' ? 'ახალი პაროლი' : 'New Password'}
+                  </label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#847E75] stroke-[1.5]" />
                     <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      autoComplete="current-password"
+                      type={showNewPassword ? 'text' : 'password'}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
                       required
-                      className={`${inputClass} pr-11`}
+                      className="w-full pb-2 pt-1 pr-8 text-sm bg-transparent border-b border-[#DCD6CC] focus:border-[#1F1C18] outline-none text-[#1F1C18] transition-colors"
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#847E75] hover:text-[#141311] transition-colors cursor-pointer"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      aria-label="Toggle password"
+                      className="absolute right-0 bottom-2 text-[#8A8278] hover:text-[#1F1C18] cursor-pointer"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4 stroke-[1.5]" /> : <Eye className="w-4 h-4 stroke-[1.5]" />}
+                      {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {newPassword && <PasswordStrengthIndicator password={newPassword} lang={lang} />}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-xs text-[#787168] font-normal">
+                    {lang === 'ka' ? 'გაიმეორეთ პაროლი' : 'Confirm Password'}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      className="w-full pb-2 pt-1 pr-8 text-sm bg-transparent border-b border-[#DCD6CC] focus:border-[#1F1C18] outline-none text-[#1F1C18] transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      aria-label="Toggle confirm password"
+                      className="absolute right-0 bottom-2 text-[#8A8278] hover:text-[#1F1C18] cursor-pointer"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
@@ -277,328 +508,18 @@ export default function LoginPage({ initialMode = 'login' }) {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 px-4 bg-[#141311] hover:bg-[#2C2A26] text-white font-medium text-xs tracking-[0.2em] uppercase flex items-center justify-center gap-2 transition-colors disabled:opacity-50 mt-2 cursor-pointer"
+                  className="w-full py-3.5 rounded-full bg-[#1F1C18] hover:bg-[#35302A] text-white text-xs tracking-wider uppercase font-semibold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
                 >
                   {loading ? (
-                    <div className="w-4 h-4 border-[1.5px] border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
                   ) : (
-                    <>
-                      <LogIn className="w-4 h-4 stroke-[1.5]" />
-                      <span>{lang === 'ka' ? 'შესვლა' : 'Sign In'}</span>
-                    </>
+                    <span>{lang === 'ka' ? 'შენახვა' : 'Save New Password'}</span>
                   )}
                 </button>
               </form>
-
-              <div className="mt-7 pt-5 border-t border-[#E8E3DB] text-center text-xs text-[#5C574F]">
-                <span>{lang === 'ka' ? 'არ გაქვთ ანგარიში? ' : "Don't have an account? "}</span>
-                <a
-                  href={`/register?redirect=${encodeURIComponent(redirectTarget)}`}
-                  className="text-[#141311] hover:text-[#9D7B48] font-medium underline underline-offset-4 ml-1 transition-colors"
-                >
-                  {lang === 'ka' ? 'დარეგისტრირდით' : 'Create an Account'}
-                </a>
-              </div>
-
-              <div className="mt-4 text-center">
-                <a href="/" className="inline-flex items-center gap-1.5 text-xs text-[#847E75] hover:text-[#141311] transition-colors">
-                  <ArrowLeft className="w-3.5 h-3.5 stroke-[1.5]" />
-                  <span>{lang === 'ka' ? 'საიტზე დაბრუნება' : 'Back to Store'}</span>
-                </a>
-              </div>
-            </>
-          ) : mode === 'forgot' ? (
-            <>
-              <div className="text-center mb-8 space-y-2">
-                <span className="text-[10px] uppercase tracking-[0.26em] text-[#9D7B48] font-medium block">
-                  {lang === 'ka' ? 'ანგარიშის აღდგენა' : 'Account Recovery'}
-                </span>
-                <h1 className="font-serif text-3xl font-light text-[#141311]">
-                  {lang === 'ka' ? 'პაროლის აღდგენა' : 'Reset Password'}
-                </h1>
-                <p className="text-xs sm:text-sm text-[#5C574F] font-light">
-                  {lang === 'ka'
-                    ? 'შეიყვანეთ თქვენი ელფოსტა და გამოგიგზავნით პაროლის აღდგენის ბმულს'
-                    : 'Enter your email to receive a password reset link'}
-                </p>
-              </div>
-
-              {errorMessage && (
-                <div className="mb-5 p-3.5 bg-[#FDF6F6] border border-[#E8C8C8] text-[#8E2424] text-xs flex items-start gap-2.5 animate-fadeIn">
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>{errorMessage}</span>
-                </div>
-              )}
-
-              {resetSuccess ? (
-                <div className="space-y-5 animate-fadeIn">
-                  <div className="p-4 bg-[#F4F8F5] border border-[#D4E2D9] text-[#2B5C40] text-xs sm:text-sm flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
-                    <div className="leading-relaxed">
-                      <p className="font-medium mb-1">
-                        {lang === 'ka' ? 'ბმული წარმატებით გაიგზავნა!' : 'Reset link sent successfully!'}
-                      </p>
-                      <p className="opacity-85">
-                        {lang === 'ka'
-                          ? `პაროლის აღდგენის ინსტრუქცია გაიგზავნა მისამართზე: ${email}. შეამოწმეთ Inbox და Spam.`
-                          : `Instructions have been sent to ${email}. Please check your inbox and spam folder.`}
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setResetSuccess(false);
-                      setErrorMessage('');
-                      setMode('login');
-                    }}
-                    className="w-full py-3.5 px-4 bg-[#141311] text-white text-xs tracking-[0.18em] uppercase flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <LogIn className="w-4 h-4 stroke-[1.5]" />
-                    <span>{lang === 'ka' ? 'ავტორიზაციაზე დაბრუნება' : 'Back to Sign In'}</span>
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleResetPassword} className="space-y-4">
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-[0.16em] text-[#5C574F] font-medium mb-1.5">
-                      {lang === 'ka' ? 'თქვენი ელფოსტა' : 'Your Email Address'}
-                    </label>
-                    <div className="relative">
-                      <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#847E75] stroke-[1.5]" />
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="name@example.com"
-                        autoComplete="email"
-                        required
-                        className={inputClass}
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3.5 px-4 bg-[#141311] hover:bg-[#2C2A26] text-white text-xs tracking-[0.18em] uppercase flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
-                  >
-                    {loading ? (
-                      <div className="w-4 h-4 border-[1.5px] border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4 stroke-[1.5]" />
-                        <span>{lang === 'ka' ? 'აღდგენის ბმულის გაგზავნა' : 'Send Reset Link'}</span>
-                      </>
-                    )}
-                  </button>
-
-                  <div className="pt-3 text-center">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setErrorMessage('');
-                        setMode('login');
-                      }}
-                      className="inline-flex items-center gap-1.5 text-xs text-[#9D7B48] hover:text-[#141311] transition-colors cursor-pointer"
-                    >
-                      <ArrowLeft className="w-3.5 h-3.5 stroke-[1.5]" />
-                      <span>{lang === 'ka' ? 'ავტორიზაციაზე დაბრუნება' : 'Back to Sign In'}</span>
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              <div className="mt-6 pt-4 border-t border-[#E8E3DB] text-center">
-                <a href="/" className="inline-flex items-center gap-1.5 text-xs text-[#847E75] hover:text-[#141311] transition-colors">
-                  <ArrowLeft className="w-3.5 h-3.5 stroke-[1.5]" />
-                  <span>{lang === 'ka' ? 'საიტზე დაბრუნება' : 'Back to Store'}</span>
-                </a>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="text-center mb-8 space-y-2">
-                <span className="text-[10px] uppercase tracking-[0.26em] text-[#9D7B48] font-medium block">
-                  {lang === 'ka' ? 'უსაფრთხოება' : 'Security'}
-                </span>
-                <h1 className="font-serif text-3xl font-light text-[#141311]">
-                  {lang === 'ka' ? 'ახალი პაროლის დაყენება' : 'Set New Password'}
-                </h1>
-                {verifiedEmail ? (
-                  <div className="mt-2">
-                    <span className="text-xs px-3 py-1 bg-[#F8F6F2] border border-[#E8E3DB] text-[#4A4640] font-mono inline-flex items-center gap-1.5">
-                      <Mail className="w-3 h-3 text-[#9D7B48]" />
-                      <span>{verifiedEmail}</span>
-                    </span>
-                  </div>
-                ) : (
-                  <p className="text-xs sm:text-sm text-[#5C574F] font-light">
-                    {lang === 'ka' ? 'შეიყვანეთ თქვენი ახალი პაროლი' : 'Enter your new password'}
-                  </p>
-                )}
-              </div>
-
-              {errorMessage && (
-                <div className="mb-5 p-3.5 bg-[#FDF6F6] border border-[#E8C8C8] text-[#8E2424] text-xs flex items-start gap-2.5 animate-fadeIn">
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>{errorMessage}</span>
-                </div>
-              )}
-
-              {verifyingCode ? (
-                <div className="py-12 text-center space-y-3">
-                  <div className="w-7 h-7 border-[1.5px] border-[#9D7B48] border-t-transparent rounded-full animate-spin mx-auto" />
-                  <p className="text-xs text-[#847E75]">
-                    {lang === 'ka' ? 'მოწმდება პაროლის აღდგენის ბმული...' : 'Verifying reset link...'}
-                  </p>
-                </div>
-              ) : passwordResetSuccess ? (
-                <div className="space-y-5 animate-fadeIn">
-                  <div className="p-4 bg-[#F4F8F5] border border-[#D4E2D9] text-[#2B5C40] text-xs sm:text-sm flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
-                    <div className="leading-relaxed">
-                      <p className="font-medium mb-1">
-                        {lang === 'ka' ? 'პაროლი წარმატებით შეიცვალა!' : 'Password updated successfully!'}
-                      </p>
-                      <p className="opacity-85">
-                        {lang === 'ka'
-                          ? 'თქვენი ახალი პაროლი გააქტიურებულია. შეგიძლიათ გაიაროთ ავტორიზაცია.'
-                          : 'Your new password is now active. You can now sign in.'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2.5">
-                    {params.get('from') === 'admin' ? (
-                      <button
-                        type="button"
-                        onClick={() => navigateTo('/admin')}
-                        className="w-full py-3.5 px-4 bg-[#141311] text-white text-xs tracking-[0.18em] uppercase flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        <ShieldCheck className="w-4 h-4 stroke-[1.5]" />
-                        <span>{lang === 'ka' ? 'ადმინ პანელზე შესვლა →' : 'Go to Admin Panel →'}</span>
-                      </button>
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => navigateTo('/login')}
-                          className="w-full py-3.5 px-4 bg-[#141311] text-white text-xs tracking-[0.18em] uppercase flex items-center justify-center gap-2 cursor-pointer"
-                        >
-                          <LogIn className="w-4 h-4 stroke-[1.5]" />
-                          <span>{lang === 'ka' ? 'ავტორიზაციაზე გადასვლა' : 'Go to Sign In'}</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => navigateTo('/admin')}
-                          className="w-full py-3 px-4 border border-[#141311] text-[#141311] hover:bg-[#F8F6F2] text-xs tracking-[0.16em] uppercase flex items-center justify-center gap-2 cursor-pointer"
-                        >
-                          <ShieldCheck className="w-3.5 h-3.5 stroke-[1.5]" />
-                          <span>{lang === 'ka' ? 'ადმინ პანელზე შესვლა' : 'Go to Admin Panel'}</span>
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ) : !codeValid ? (
-                <div className="space-y-5 text-center py-4">
-                  <p className="text-xs text-[#5C574F]">
-                    {!oobCode
-                      ? (lang === 'ka' ? 'აღდგენის კოდი არ მოიძებნა. გთხოვთ გამოიყენოთ ელფოსტაზე მიღებული ბმული.' : 'No reset code found.')
-                      : (lang === 'ka' ? 'ბმულის მოქმედების ვადა ამოიწურა ან უკვე გამოყენებულია.' : 'The link has expired or has already been used.')}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setErrorMessage('');
-                      setMode('forgot');
-                    }}
-                    className="w-full py-3 px-4 bg-[#141311] text-white text-xs tracking-[0.18em] uppercase cursor-pointer"
-                  >
-                    {lang === 'ka' ? 'ახალი ბმულის მოთხოვნა' : 'Request New Link'}
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleConfirmNewPassword} className="space-y-4">
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-[0.16em] text-[#5C574F] font-medium mb-1.5">
-                      {lang === 'ka' ? 'ახალი პაროლი (მინ. 8 სიმბოლო)' : 'New Password (min 8 chars)'}
-                    </label>
-                    <div className="relative">
-                      <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#847E75] stroke-[1.5]" />
-                      <input
-                        type={showNewPassword ? 'text' : 'password'}
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="••••••••"
-                        autoComplete="new-password"
-                        required
-                        className={`${inputClass} pr-10`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#847E75] hover:text-[#141311] cursor-pointer"
-                      >
-                        {showNewPassword ? <EyeOff className="w-4 h-4 stroke-[1.5]" /> : <Eye className="w-4 h-4 stroke-[1.5]" />}
-                      </button>
-                    </div>
-                    <PasswordStrengthIndicator password={newPassword} lang={lang} darkMode={false} />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-[0.16em] text-[#5C574F] font-medium mb-1.5">
-                      {lang === 'ka' ? 'გაიმეორეთ ახალი პაროლი' : 'Confirm New Password'}
-                    </label>
-                    <div className="relative">
-                      <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#847E75] stroke-[1.5]" />
-                      <input
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="••••••••"
-                        autoComplete="new-password"
-                        required
-                        className={`${inputClass} pr-10`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#847E75] hover:text-[#141311] cursor-pointer"
-                      >
-                        {showConfirmPassword ? <EyeOff className="w-4 h-4 stroke-[1.5]" /> : <Eye className="w-4 h-4 stroke-[1.5]" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3.5 px-4 bg-[#141311] hover:bg-[#2C2A26] text-white text-xs tracking-[0.18em] uppercase flex items-center justify-center gap-2 transition-colors disabled:opacity-50 mt-2 cursor-pointer"
-                  >
-                    {loading ? (
-                      <div className="w-4 h-4 border-[1.5px] border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        <ShieldCheck className="w-4 h-4 stroke-[1.5]" />
-                        <span>{lang === 'ka' ? 'პაროლის განახლება' : 'Update Password'}</span>
-                      </>
-                    )}
-                  </button>
-                </form>
-              )}
-
-              <div className="mt-6 pt-4 border-t border-[#E8E3DB] text-center">
-                <a href="/" className="inline-flex items-center gap-1.5 text-xs text-[#847E75] hover:text-[#141311] transition-colors">
-                  <ArrowLeft className="w-3.5 h-3.5 stroke-[1.5]" />
-                  <span>{lang === 'ka' ? 'საიტზე დაბრუნება' : 'Back to Store'}</span>
-                </a>
-              </div>
-            </>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </main>
 
       <Footer lang={lang} siteSettings={siteSettings} />
