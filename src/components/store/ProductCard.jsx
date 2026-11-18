@@ -119,32 +119,30 @@ export default function ProductCard({
             <Heart className={`${compact ? "w-3 h-3" : "w-3.5 h-3.5"} stroke-[1.75] ${isFav ? "fill-white text-white" : ""}`} />
           </button>
 
-          {!compact && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleCompare(product.id);
-              }}
-              title={
-                isCompared
-                  ? (lang === "ka" ? "შედარებიდან ამოშლა" : "Remove from compare")
-                  : (lang === "ka" ? "შედარებაში დამატება" : "Add to compare")
-              }
-              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs ${
-                isCompared
-                  ? "bg-[#9E2A2B] text-white hover:bg-[#822021]"
-                  : "bg-white/90 text-[#1F1C18] hover:bg-[#9E2A2B] hover:text-white backdrop-blur-xs"
-              }`}
-            >
-              <ArrowLeftRight className="w-3.5 h-3.5 stroke-[1.75]" />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleCompare(product.id);
+            }}
+            title={
+              isCompared
+                ? (lang === "ka" ? "შედარებიდან ამოშლა" : "Remove from compare")
+                : (lang === "ka" ? "შედარებაში დამატება" : "Add to compare")
+            }
+            className={`${compact ? "w-6 h-6" : "w-8 h-8"} rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs ${
+              isCompared
+                ? "bg-[#9E2A2B] text-white hover:bg-[#822021]"
+                : "bg-white/90 text-[#1F1C18] hover:bg-[#9E2A2B] hover:text-white backdrop-blur-xs"
+            }`}
+          >
+            <ArrowLeftRight className={`${compact ? "w-3 h-3" : "w-3.5 h-3.5"} stroke-[1.75]`} />
+          </button>
         </div>
       </div>
 
       {/* Crisp Readable Card Body */}
-      <div className={`${compact ? "p-2 sm:p-3 space-y-1" : "p-4 sm:p-5 space-y-2"} flex-1 flex flex-col justify-between`}>
+      <div className={`${compact ? "p-2 sm:p-3 space-y-1" : "p-3 sm:p-5 space-y-1.5 sm:space-y-2"} flex-1 flex flex-col justify-between`}>
         <div>
           <div className="flex items-center justify-between gap-1 text-[10px] sm:text-[11px] text-[#787168]">
             <span className="truncate font-medium">{product.category || "სამკაული"}</span>
@@ -167,16 +165,32 @@ export default function ProductCard({
           )}
         </div>
 
-        <div className={`${compact ? "pt-1.5 mt-0.5" : "pt-2.5 mt-1"} border-t border-[#F3EFE8] flex items-center justify-between gap-1.5`}>
-          <div className="flex items-baseline gap-1 flex-wrap min-w-0">
-            <span className={`${compact ? "text-xs font-semibold" : "text-sm sm:text-base font-semibold"} text-[#1F1C18] whitespace-nowrap`}>
-              {formatPrice(product.price)}
-            </span>
-            {discountPct ? (
-              <span className={`${compact ? "text-[10px]" : "text-xs"} line-through text-[#857D73] whitespace-nowrap`}>
-                {formatPrice(product.oldPrice || product.originalPrice)}
+        <div className={`${compact ? "pt-1.5 mt-0.5" : "pt-2 sm:pt-2.5 mt-1"} border-t border-[#F3EFE8] flex flex-col gap-1.5`}>
+          <div className="flex items-baseline justify-between gap-1.5 min-w-0">
+            <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
+              <span className={`${compact ? "text-xs font-semibold" : "text-sm sm:text-base font-semibold"} text-[#1F1C18] whitespace-nowrap`}>
+                {formatPrice(product.price)}
               </span>
-            ) : null}
+              {discountPct ? (
+                <span className={`${compact ? "text-[10px]" : "text-xs"} line-through text-[#857D73] whitespace-nowrap`}>
+                  {formatPrice(product.oldPrice || product.originalPrice)}
+                </span>
+              ) : null}
+            </div>
+
+            {showDetailsButton && !compact && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClick && onClick(product);
+                }}
+                aria-label={`${lang === "ka" ? "დეტალურად ნახვა" : "View details"}: ${productName}`}
+                className="hidden sm:inline-flex items-center justify-center px-3.5 py-1.5 rounded-full text-xs font-medium bg-[#FAF8F4] text-[#1F1C18] border border-[#D9D1C5] group-hover:bg-[#1F1C18] group-hover:text-white group-hover:border-[#1F1C18] transition-colors cursor-pointer shrink-0"
+              >
+                {lang === "ka" ? "დეტალურად" : "View"}
+              </button>
+            )}
           </div>
 
           {showDetailsButton && !compact && (
@@ -187,7 +201,7 @@ export default function ProductCard({
                 onClick && onClick(product);
               }}
               aria-label={`${lang === "ka" ? "დეტალურად ნახვა" : "View details"}: ${productName}`}
-              className="inline-flex items-center justify-center px-3.5 py-1.5 rounded-full text-xs font-medium bg-[#FAF8F4] text-[#1F1C18] border border-[#D9D1C5] group-hover:bg-[#1F1C18] group-hover:text-white group-hover:border-[#1F1C18] transition-colors cursor-pointer shrink-0"
+              className="sm:hidden w-full py-1.5 rounded-full text-xs font-medium bg-[#FAF8F4] text-[#1F1C18] border border-[#D9D1C5] active:bg-[#1F1C18] active:text-white transition-colors cursor-pointer text-center"
             >
               {lang === "ka" ? "დეტალურად" : "View"}
             </button>
