@@ -267,11 +267,6 @@ export default function ProductPage({ skuProp }) {
                     <button
                       type="button"
                       onClick={() => {
-                        if (!user) {
-                          const current = window.location.pathname + window.location.search;
-                          navigateTo(`/login?redirect=${encodeURIComponent(current)}`);
-                          return;
-                        }
                         toggleFavorite(selectedProduct.id);
                       }}
                       className={`w-9 h-9 rounded-full border flex items-center justify-center transition-colors cursor-pointer ${
@@ -289,8 +284,8 @@ export default function ProductPage({ skuProp }) {
                       onClick={() => toggleCompare(selectedProduct.id)}
                       className={`w-9 h-9 rounded-full border flex items-center justify-center transition-colors cursor-pointer ${
                         isCompared
-                          ? "bg-[#9E2A2B] text-white border-[#9E2A2B] hover:bg-[#822021]"
-                          : "border-[#EAE4DB] bg-[#FAF8F4] text-[#4A453E] hover:bg-[#9E2A2B] hover:border-[#9E2A2B] hover:text-white"
+                          ? "bg-[#16A34A] text-white border-[#16A34A] hover:bg-[#15803D]"
+                          : "border-[#EAE4DB] bg-[#FAF8F4] text-[#4A453E] hover:bg-[#16A34A] hover:border-[#16A34A] hover:text-white"
                       }`}
                       title={lang === "ka" ? "შედარება" : "Compare"}
                     >

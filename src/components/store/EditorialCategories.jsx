@@ -1,5 +1,4 @@
 import React from 'react';
-import { ArrowUpRight } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { getOptimizedImageUrl } from '../../utils/imageUtils';
 
@@ -56,11 +55,6 @@ export default function EditorialCategories() {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
-
-                {/* Elegant Top-Right Corner Arrow Action Pill */}
-                <span className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/95 text-[#1F1C18] flex items-center justify-center group-hover:bg-[#1F1C18] group-hover:text-white transition-colors shrink-0 shadow-xs z-10">
-                  <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[1.75]" />
-                </span>
 
                 {/* Full-Width Uncramped Category Labeling */}
                 <div className="absolute bottom-2.5 sm:bottom-3.5 left-3 sm:left-4 right-3 sm:right-4 text-white z-10">

@@ -98,11 +98,6 @@ export default function ProductCard({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              if (!user) {
-                const current = window.location.pathname + window.location.search;
-                navigateTo(`/login?redirect=${encodeURIComponent(current)}`);
-                return;
-              }
               toggleFavorite(product.id);
             }}
             aria-label={
@@ -132,8 +127,8 @@ export default function ProductCard({
             }
             className={`${compact ? "w-6 h-6" : "w-8 h-8"} rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs ${
               isCompared
-                ? "bg-[#9E2A2B] text-white hover:bg-[#822021]"
-                : "bg-white/90 text-[#1F1C18] hover:bg-[#9E2A2B] hover:text-white backdrop-blur-xs"
+                ? "bg-[#16A34A] text-white hover:bg-[#15803D]"
+                : "bg-white/90 text-[#1F1C18] hover:bg-[#16A34A] hover:text-white backdrop-blur-xs"
             }`}
           >
             <ArrowLeftRight className={`${compact ? "w-3 h-3" : "w-3.5 h-3.5"} stroke-[1.75]`} />

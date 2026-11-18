@@ -140,7 +140,7 @@ export default function FaqSection({ lang, siteSettings, standalone = false }) {
             )}`}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#1F1C18] hover:bg-[#35302A] text-white text-xs sm:text-sm font-medium transition-colors shrink-0"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#1F1C18] hover:bg-[#25D366] hover:shadow-[0_0_20px_rgba(37,211,102,0.45)] text-white text-xs sm:text-sm font-medium transition-all duration-300 shrink-0"
           >
             <MessageCircle className="w-4 h-4 stroke-[1.75]" />
             <span>{lang === "ka" ? "მოგვწერეთ WhatsApp-ში" : "Message on WhatsApp"}</span>

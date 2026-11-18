@@ -19,11 +19,6 @@ export default function Navbar({
   };
 
   const handleFavoritesClick = () => {
-    if (!user) {
-      const current = window.location.pathname + window.location.search;
-      navigateTo(`/login?redirect=${encodeURIComponent(current)}`);
-      return;
-    }
     setShowFavoritesModal(true);
   };
 
@@ -273,6 +268,21 @@ export default function Navbar({
               <a href={`${prefix}/#contact`} onClick={() => setIsMobileMenuOpen(false)} className="py-3 hover:text-[#9A7742]">
                 {lang === "ka" ? "კონტაქტი" : "Contact"}
               </a>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setShowFavoritesModal(true);
+                }}
+                className="py-3 flex items-center justify-between text-left hover:text-[#9A7742] cursor-pointer"
+              >
+                <span>{lang === "ka" ? "რჩეული სამკაულები" : "Favorites"}</span>
+                {favorites.length > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-xs bg-[#1F1C18] text-white font-medium">
+                    {favorites.length}
+                  </span>
+                )}
+              </button>
               {user && (
                 <a
                   href={`${prefix}/profile`}
