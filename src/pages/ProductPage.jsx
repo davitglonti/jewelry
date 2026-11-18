@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   ArrowLeft, Heart, Check, Share2, ArrowLeftRight,
-  Truck, ShieldCheck, Sparkles, ChevronRight, Home
+  Truck, ShieldCheck, Sparkles, ChevronRight, Home, Package
 } from 'lucide-react';
 import { pick, formatPrice, calculateDiscountPercent } from '../utils/i18n';
 import { shareProductLink } from '../utils/shareUtils';
@@ -91,7 +91,7 @@ export default function ProductPage({ skuProp }) {
   useEffect(() => {
     if (!selectedProduct) return;
 
-    const brand = siteSettings.brandName || "მატარე";
+    const brand = siteSettings.brandName || "MATARE";
     const prodName = lang === "ka" ? selectedProduct.name : (selectedProduct.nameEn || selectedProduct.name);
     const prodDesc = lang === "ka"
       ? (selectedProduct.description || `${prodName} — ექსკლუზიური ხელნაკეთი საიუველირო ნაკეთობა.`)
@@ -194,7 +194,7 @@ export default function ProductPage({ skuProp }) {
   const isCompared = compareList?.includes(selectedProduct.id);
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-[#FAF8F4] text-[#1F1C18]">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#FBF9F5] text-[#1F1C18]">
       <Navbar
         lang={lang}
         setLang={setLang}
@@ -206,38 +206,37 @@ export default function ProductPage({ skuProp }) {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main id="main-content" className="pt-[82px] sm:pt-[90px] pb-20">
-        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
-          {/* Compact Breadcrumb Row */}
-          <div className="flex items-center justify-between gap-4 pb-5">
-            <nav aria-label="Breadcrumbs" className="flex items-center gap-2 text-xs text-[#787168] truncate">
-              <a href={prefix || "/"} className="hover:text-[#1F1C18] transition-colors flex items-center gap-1">
-                <Home className="w-3.5 h-3.5 stroke-[1.75]" />
-                <span className="hidden sm:inline">{lang === "ka" ? "მთავარი" : "Home"}</span>
+      <main id="main-content" className="pt-[78px] sm:pt-[86px] pb-20">
+        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12">
+          {/* Breadcrumb Row (Mockup 1-to-1) */}
+          <div className="flex items-center justify-between gap-4 py-4 sm:py-5 text-xs text-[#787168]">
+            <nav aria-label="Breadcrumbs" className="flex items-center gap-2 truncate">
+              <a href={prefix || "/"} className="hover:text-[#1F1C18] transition-colors">
+                {lang === "ka" ? "მთავარი" : "Home"}
               </a>
-              <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+              <span className="text-[#A8A196]">›</span>
               <a href={`${prefix}/catalog`} className="hover:text-[#1F1C18] transition-colors">
                 {lang === "ka" ? "კოლექცია" : "Collection"}
               </a>
-              <ChevronRight className="w-3.5 h-3.5 shrink-0" />
-              <span className="text-[#1F1C18] font-medium truncate">
+              <span className="text-[#A8A196]">›</span>
+              <span className="text-[#1F1C18] font-normal truncate">
                 {selectedProduct.category}
               </span>
             </nav>
 
             <button
               onClick={goToCatalog}
-              className="text-xs font-medium text-[#5C564E] hover:text-[#1F1C18] flex items-center gap-1.5 shrink-0 cursor-pointer transition-colors"
+              className="text-xs text-[#1F1C18] hover:text-[#9A7742] flex items-center gap-1.5 shrink-0 cursor-pointer transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5 stroke-[1.75]" />
               <span className="hidden sm:inline">{lang === "ka" ? "კატალოგში დაბრუნება" : "Back to Catalog"}</span>
             </button>
           </div>
 
-          {/* Balanced 2-Column Product Showcase (CTA cleanly visible above the fold!) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-            {/* Left 6 Cols: Gallery */}
-            <div className="lg:col-span-6 lg:sticky lg:top-[116px]">
+          {/* 2-Column Split Showcase (Exact Mockup Layout) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
+            {/* Left 6 Cols: Product Gallery */}
+            <div className="lg:col-span-6 lg:sticky lg:top-[106px]">
               <ProductMediaGallery
                 images={selectedProduct.images}
                 productName={selectedProduct.name}
@@ -251,105 +250,89 @@ export default function ProductPage({ skuProp }) {
               />
             </div>
 
-            {/* Right 6 Cols: Elevated White Atelier Info Card */}
-            <div className="lg:col-span-6 p-6 sm:p-8 rounded-3xl bg-white border border-[#EAE4DB] shadow-[0_4px_24px_rgba(31,28,24,0.04)] space-y-5">
-              {/* Top Meta & Utility Pills */}
-              <div className="space-y-3 pb-4 border-b border-[#F3EFE8]">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="px-2.5 py-0.5 rounded-full bg-[#F5EFE4] text-[#8A6836] font-medium">
-                      {selectedProduct.category}
-                    </span>
-                    <span className="font-mono text-[#787168]">#{selectedProduct.sku}</span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        toggleFavorite(selectedProduct.id);
-                      }}
-                      className={`w-9 h-9 rounded-full border flex items-center justify-center transition-colors cursor-pointer ${
-                        isFav
-                          ? "bg-[#9E2A2B] text-white border-[#9E2A2B] hover:bg-[#822021]"
-                          : "border-[#EAE4DB] bg-[#FAF8F4] text-[#4A453E] hover:bg-[#9E2A2B] hover:border-[#9E2A2B] hover:text-white"
-                      }`}
-                      title={isFav ? (lang === "ka" ? "რჩეულებშია" : "In Favorites") : (lang === "ka" ? "რჩეულებში დამატება" : "Add to favorites")}
-                    >
-                      <Heart className={`w-4 h-4 stroke-[1.75] ${isFav ? "fill-white text-white" : ""}`} />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => toggleCompare(selectedProduct.id)}
-                      className={`w-9 h-9 rounded-full border flex items-center justify-center transition-colors cursor-pointer ${
-                        isCompared
-                          ? "bg-[#16A34A] text-white border-[#16A34A] hover:bg-[#15803D]"
-                          : "border-[#EAE4DB] bg-[#FAF8F4] text-[#4A453E] hover:bg-[#16A34A] hover:border-[#16A34A] hover:text-white"
-                      }`}
-                      title={lang === "ka" ? "შედარება" : "Compare"}
-                    >
-                      <ArrowLeftRight className="w-4 h-4 stroke-[1.75]" />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        shareProductLink(selectedProduct, lang, () => {
-                          setCopiedLink(true);
-                          setTimeout(() => setCopiedLink(false), 2500);
-                        })
-                      }
-                      className={`h-9 px-3 rounded-full border flex items-center gap-1.5 text-xs font-medium transition-colors cursor-pointer ${
-                        copiedLink
-                          ? "border-[#2E7D52] bg-[#F4F8F5] text-[#2B5C40]"
-                          : "border-[#EAE4DB] bg-[#FAF8F4] text-[#4A453E] hover:border-[#1F1C18] hover:text-[#1F1C18]"
-                      }`}
-                      title={lang === "ka" ? "ბმულის გაზიარება" : "Share link"}
-                    >
-                      {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5 stroke-[1.75]" />}
-                      <span className="hidden sm:inline">{copiedLink ? (lang === "ka" ? "დაკოპირდა" : "Copied") : (lang === "ka" ? "გაზიარება" : "Share")}</span>
-                    </button>
-                  </div>
+            {/* Right 6 Cols: Product Details */}
+            <div className="lg:col-span-6 space-y-6 pt-1">
+              {/* Category & SKU row with Action Icons on right */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xs font-semibold tracking-widest uppercase text-[#1F1C18]">
+                    {selectedProduct.category}
+                  </span>
+                  <span className="text-xs text-[#9D7B48] font-mono">
+                    #{selectedProduct.sku}
+                  </span>
                 </div>
 
-                <h1 className="font-serif text-2xl sm:text-4xl font-medium text-[#1F1C18] leading-tight">
-                  {lang === "ka" ? selectedProduct.name : (selectedProduct.nameEn || selectedProduct.name)}
-                </h1>
+                {/* Right Action Icons: Heart, Compare, Share */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleFavorite(selectedProduct.id)}
+                    className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[#F4EFE6] text-[#1F1C18] transition-colors cursor-pointer"
+                    title={isFav ? (lang === "ka" ? "რჩეულებშია" : "In Favorites") : (lang === "ka" ? "რჩეულებში დამატება" : "Add to favorites")}
+                  >
+                    <Heart className={`w-[19px] h-[19px] stroke-[1.5] ${isFav ? "fill-[#1F1C18] text-[#1F1C18]" : ""}`} />
+                  </button>
 
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                  <div className="flex items-baseline gap-2.5">
-                    <span className="text-2xl sm:text-3xl font-semibold text-[#1F1C18]">
-                      {formatPrice(selectedProduct.price)}
-                    </span>
-                    {selectedProduct.oldPrice && (
-                      <span className="text-base line-through text-[#9E978D]">
-                        {formatPrice(selectedProduct.oldPrice)}
-                      </span>
-                    )}
-                    {discountPct ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#9E2A2B] text-white">
-                        -{discountPct}%
-                      </span>
-                    ) : null}
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => toggleCompare(selectedProduct.id)}
+                    className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[#F4EFE6] text-[#1F1C18] transition-colors cursor-pointer"
+                    title={lang === "ka" ? "შედარება" : "Compare"}
+                  >
+                    <ArrowLeftRight className={`w-[19px] h-[19px] stroke-[1.5] ${isCompared ? "text-[#16A34A]" : ""}`} />
+                  </button>
 
-                  <StockStatusBadge
-                    status={selectedProduct.stockStatus || 'in_stock'}
-                    lang={lang}
-                    size="sm"
-                    showSubtext={false}
-                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      shareProductLink(selectedProduct, lang, () => {
+                        setCopiedLink(true);
+                        setTimeout(() => setCopiedLink(false), 2500);
+                      })
+                    }
+                    className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[#F4EFE6] text-[#1F1C18] transition-colors cursor-pointer"
+                    title={lang === "ka" ? "გაზიარება" : "Share"}
+                  >
+                    {copiedLink ? <Check className="w-[19px] h-[19px] text-[#16A34A]" /> : <Share2 className="w-[19px] h-[19px] stroke-[1.5]" />}
+                  </button>
                 </div>
               </div>
 
+              {/* Title */}
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-[40px] font-normal text-[#1F1C18] leading-[1.2]">
+                {lang === "ka" ? selectedProduct.name : (selectedProduct.nameEn || selectedProduct.name)}
+              </h1>
+
+              {/* Price & Stock Badge */}
+              <div className="flex items-center gap-3.5">
+                <span className="text-2xl sm:text-3xl font-serif font-medium text-[#1F1C18]">
+                  {formatPrice(selectedProduct.price)}
+                </span>
+                {selectedProduct.oldPrice && (
+                  <span className="text-base line-through text-[#9E978D]">
+                    {formatPrice(selectedProduct.oldPrice)}
+                  </span>
+                )}
+                {discountPct ? (
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#9E2A2B] text-white">
+                    -{discountPct}%
+                  </span>
+                ) : null}
+
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EBF7EE] text-[#166534] text-xs font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]" />
+                  <span>{lang === "ka" ? "მარაგშია" : "In Stock"}</span>
+                </span>
+              </div>
+
               {selectedProduct.description && (
-                <p className="text-sm text-[#4A453E] leading-relaxed">
+                <p className="text-xs sm:text-sm text-[#5C564E] leading-relaxed">
                   {pick(selectedProduct, "description", lang)}
                 </p>
               )}
 
-              {/* Primary Sizes & Buy Now CTA Immediately Accessible Above the Fold */}
+              {/* Size Selector and ADD TO BAG / BUY NOW Buttons */}
               <ProductActionButtons
                 product={selectedProduct}
                 selectedSize={selectedSize}
@@ -363,70 +346,47 @@ export default function ProductPage({ skuProp }) {
                 products={products}
               />
 
-              {/* Spacious 2-Column Specs Grid (Zero Mid-Word Wrapping) */}
+              {/* Specifications Card (Exact Mockup Box) */}
               <ProductSpecsTable product={selectedProduct} lang={lang} />
 
-              {/* Delivery & Atelier Highlights */}
+              {/* Delivery and Atelier Packaging Badges */}
               <ProductStoryHighlights product={selectedProduct} lang={lang} />
             </div>
           </div>
 
-          {/* Assurance Standards */}
-          <section className="mt-16 pt-14 border-t border-[#EAE4DB]">
-            <div className="text-center mb-8 space-y-1.5">
-              <span className="text-xs font-medium text-[#9A7742] block">
-                {lang === "ka"
-                  ? `${siteSettings?.brandName || "მატარე"}-ს სტანდარტი და გარანტია`
-                  : `${siteSettings?.brandName || "MATARE"} Standards & Guarantee`}
-              </span>
-              <h3 className="font-serif text-2xl sm:text-3xl font-medium text-[#1F1C18]">
-                {lang === "ka" ? "უსაფრთხო შეძენა და უმაღლესი სერვისი" : "Secure Purchase & Exceptional Service"}
-              </h3>
+          {/* Bottom Bar: Matare Standard & Guarantee (Mockup 1-to-1) */}
+          <section className="mt-16 pt-8 pb-10 border-t border-[#EAE4DB] flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-[#1F1C18]">
+            <div className="font-serif text-lg font-normal tracking-wide">
+              {lang === 'ka' ? 'Matare Standard & Guarantee' : 'Matare Standard & Guarantee'}
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {((siteSettings?.productAssurance && siteSettings.productAssurance.length === 3)
-                ? siteSettings.productAssurance
-                : DEFAULT_PRODUCT_ASSURANCE
-              ).map((card, idx) => {
-                const Icon = idx === 0 ? Truck : idx === 1 ? ShieldCheck : Sparkles;
-                const title = lang === "ka" ? card.titleKa : (card.titleEn || card.titleKa);
-                const descRaw = lang === "ka" ? card.descKa : (card.descEn || card.descKa);
-                const lines = (descRaw || "").split("\n").filter(Boolean);
-
-                return (
-                  <div key={card.id || idx} className="p-6 sm:p-7 rounded-2xl bg-white border border-[#EAE4DB] shadow-xs space-y-3.5">
-                    <div className="w-10 h-10 rounded-full bg-[#F5EFE4] text-[#9A7742] flex items-center justify-center">
-                      <Icon className="w-5 h-5 stroke-[1.75]" />
-                    </div>
-                    <h4 className="font-serif text-xl font-medium text-[#1F1C18]">{title}</h4>
-                    <ul className="space-y-2 text-sm text-[#4A453E] leading-relaxed">
-                      {lines.map((line, lIdx) => {
-                        const cleanLine = line.replace(/^[•\s-]+/, "");
-                        return (
-                          <li key={lIdx} className="flex items-start gap-2">
-                            <span className="text-[#9A7742] mt-0.5 shrink-0">•</span>
-                            <span>{cleanLine}</span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                );
-              })}
+            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-medium text-[#4A453E]">
+              <div className="flex items-center gap-2">
+                <ArrowLeftRight className="w-4 h-4 text-[#787168]" />
+                <span>{lang === 'ka' ? 'Delivery & Exchange' : 'Delivery & Exchange'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-[#787168]" />
+                <span>{lang === 'ka' ? 'Certified Purity' : 'Certified Purity'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Heart className="w-4 h-4 text-[#787168]" />
+                <span>{lang === 'ka' ? 'Lifetime Care' : 'Lifetime Care'}</span>
+              </div>
             </div>
           </section>
 
-          {/* Similar Pieces */}
+          {/* Similar Pieces Carousel/Grid */}
           {relatedProducts.length > 0 && (
-            <section className="mt-16 pt-12 border-t border-[#EAE4DB]">
-              <div className="mb-7">
-                <span className="text-xs font-medium text-[#9A7742] block mb-1">
-                  {lang === "ka" ? "კოლექცია" : "You May Also Like"}
-                </span>
-                <h3 className="font-serif text-2xl sm:text-3xl font-medium text-[#1F1C18]">
-                  {lang === "ka" ? "მსგავსი მოდელები" : "Similar Pieces"}
-                </h3>
+            <section className="mt-6 pt-10 border-t border-[#EAE4DB]">
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-medium text-[#9A7742] block mb-1">
+                    {lang === "ka" ? "კოლექცია" : "You May Also Like"}
+                  </span>
+                  <h3 className="font-serif text-2xl font-normal text-[#1F1C18]">
+                    {lang === "ka" ? "მსგავსი მოდელები" : "Similar Pieces"}
+                  </h3>
+                </div>
               </div>
 
               <div

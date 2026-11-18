@@ -22,23 +22,21 @@ export default function ProductSpecsTable({ product, lang = 'ka' }) {
   if (specs.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-2 gap-2.5">
-      {specs.map((item, i) => (
-        <div
-          key={i}
-          className="px-4 py-3 rounded-xl bg-[#FAF8F4] border border-[#EAE4DB] flex flex-col justify-between"
-        >
-          <span className="block text-[11px] font-medium text-[#9A7742] mb-0.5">
-            {item.label}
-          </span>
-          <span
-            className="font-medium text-xs sm:text-sm text-[#1F1C18] leading-snug"
-            title={String(item.value)}
-          >
-            {item.value}
-          </span>
-        </div>
-      ))}
+    <div className="space-y-2.5 pt-1">
+      <h3 className="font-serif text-lg font-normal text-[#1F1C18]">
+        {lang === 'ka' ? 'მახასიათებლები' : 'Specifications'}
+      </h3>
+
+      <div className="bg-[#F4F1EA] rounded-2xl p-4 px-6 flex flex-wrap items-center justify-between gap-4 text-xs">
+        {specs.map((item, i) => (
+          <div key={i} className="flex items-center gap-2.5">
+            <span className="text-[#787168] font-normal">{item.label}</span>
+            <span className="font-medium text-[#1F1C18]" title={String(item.value)}>
+              {item.value}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

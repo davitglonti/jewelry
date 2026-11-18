@@ -1,16 +1,22 @@
-import React from 'react';
-import { Globe, Heart, Menu, X, LogOut, User } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Globe, Heart, Menu, X, LogOut, User, Search } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { useAuth } from '../../context/AuthContext';
 import { navigateTo, switchLanguage } from '../../utils/navigation';
+import { formatPrice } from '../../utils/i18n';
 
 export default function Navbar({
   lang, setLang,
   favorites = [], setShowFavoritesModal,
   isMobileMenuOpen, setIsMobileMenuOpen
 }) {
-  const { siteSettings } = useStore();
+  const { siteSettings, products } = useStore();
   const { user, userRole, logout } = useAuth();
+
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchContainerRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   const handleToggleLang = () => {
     const nextLang = lang === "ka" ? "en" : "ka";
@@ -31,8 +37,80 @@ export default function Navbar({
     }
   };
 
+  // Close search on click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+        setIsSearchOpen(false);
+      }
+    };
+    if (isSearchOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isSearchOpen]);
+
   const prefix = lang === "en" ? "/en" : "";
   const isEn = lang === "en";
+
+  // Filter matching products with smart Georgian/English jewelry synonyms
+  const trimmedQuery = searchQuery.trim().toLowerCase();
+  const getSearchTokens = (query) => {
+    const tokens = [query];
+    if (query.includes('ბეჭედ') || query.includes('ბეჭდ')) {
+      tokens.push('ბეჭდ', 'ბეჭედ', 'ring');
+    }
+    if (query.includes('საყურ')) {
+      tokens.push('საყურ', 'earring');
+    }
+    if (query.includes('სამაჯურ') || query.includes('სამაჯ')) {
+      tokens.push('სამაჯურ', 'bracelet');
+    }
+    if (query.includes('ყელსაბამ') || query.includes('ყელს')) {
+      tokens.push('ყელსაბამ', 'necklace');
+    }
+    if (query.includes('ring')) {
+      tokens.push('ბეჭდ', 'ბეჭედ');
+    }
+    if (query.includes('earring')) {
+      tokens.push('საყურ');
+    }
+    if (query.includes('bracelet')) {
+      tokens.push('სამაჯურ');
+    }
+    if (query.includes('necklace')) {
+      tokens.push('ყელსაბამ');
+    }
+    return tokens;
+  };
+
+  const searchTokens = trimmedQuery ? getSearchTokens(trimmedQuery) : [];
+
+  const searchResults = trimmedQuery.length > 0
+    ? (products || []).filter((p) => {
+        const nameKa = (p.name || '').toLowerCase();
+        const nameEn = (p.nameEn || '').toLowerCase();
+        const sku = (p.sku || '').toLowerCase();
+        const category = (p.category || '').toLowerCase();
+        const metal = (p.metal || '').toLowerCase();
+        const karat = (p.karat || '').toLowerCase();
+        const descKa = (p.description || '').toLowerCase();
+        const descEn = (p.descriptionEn || '').toLowerCase();
+
+        return searchTokens.some((token) => (
+          nameKa.includes(token) ||
+          nameEn.includes(token) ||
+          sku.includes(token) ||
+          category.includes(token) ||
+          metal.includes(token) ||
+          karat.includes(token) ||
+          descKa.includes(token) ||
+          descEn.includes(token)
+        ));
+      }).slice(0, 5)
+    : [];
 
   return (
     <>
@@ -45,8 +123,8 @@ export default function Navbar({
 
       <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#EAE4DB] text-[#1F1C18] shadow-[0_1px_12px_rgba(31,28,24,0.03)]">
         {/* Main Navigation Bar */}
-        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 h-[66px] sm:h-[70px] grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-          {/* Left: Mobile Trigger or Clean Nav Links */}
+        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 h-[68px] sm:h-[72px] grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+          {/* Left: Mobile Trigger & Left Nav Links */}
           <div className="flex items-center">
             <button
               type="button"
@@ -58,130 +136,210 @@ export default function Navbar({
             </button>
 
             <nav
-              className={`hidden lg:flex items-center gap-5 xl:gap-7 text-[13px] font-medium text-[#4A453E] ${isEn ? "tracking-[0.1em] uppercase text-[11px]" : ""}`}
+              className="hidden lg:flex items-center gap-6 xl:gap-8 text-xs xl:text-[13px] font-normal text-[#1F1C18] tracking-wide"
               aria-label="Main navigation"
             >
-              <a href={`${prefix}/catalog`} className="hover:text-[#1F1C18] transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#9A7742] hover:after:w-full after:transition-all whitespace-nowrap">
+              <a href={`${prefix}/catalog`} className="hover:text-[#9A7742] transition-colors py-1 whitespace-nowrap">
                 {lang === "ka" ? "კოლექცია" : "Collection"}
               </a>
-              <a href={`${prefix}/about`} className="hover:text-[#1F1C18] transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#9A7742] hover:after:w-full after:transition-all whitespace-nowrap">
-                {lang === "ka" ? "ჩვენს შესახებ" : "About"}
+              <a href={`${prefix}/about`} className="hover:text-[#9A7742] transition-colors py-1 whitespace-nowrap">
+                {lang === "ka" ? "ჩვენს შესახებ" : "About Us"}
               </a>
-              <a href={`${prefix}/#craftsmanship`} className="hover:text-[#1F1C18] transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#9A7742] hover:after:w-full after:transition-all whitespace-nowrap">
-                {lang === "ka" ? "ოსტატობა" : "Atelier"}
+              <a href={`${prefix}/blog`} className="hover:text-[#9A7742] transition-colors py-1 whitespace-nowrap">
+                {lang === "ka" ? "ბლოგი" : "Blog"}
               </a>
-              <a href={`${prefix}/blog`} className="hover:text-[#1F1C18] transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#9A7742] hover:after:w-full after:transition-all whitespace-nowrap">
-                {lang === "ka" ? "ბლოგი" : "Journal"}
-              </a>
-              <a href={`${prefix}/size-guide`} className="hidden xl:inline-block hover:text-[#1F1C18] transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#9A7742] hover:after:w-full after:transition-all whitespace-nowrap">
-                {lang === "ka" ? "ზომის გიდი" : "Size Guide"}
+              <a href={`${prefix}/size-guide`} className="hover:text-[#9A7742] transition-colors py-1 whitespace-nowrap">
+                {lang === "ka" ? "ზომის გზამკვლევი" : "Size Guide"}
               </a>
             </nav>
           </div>
 
-          {/* Center: Natural Balanced Brand Wordmark */}
+          {/* Center: Iconic MATARE Wordmark */}
           <a
             href={prefix || "/"}
-            className="flex flex-col items-center justify-center group text-center shrink-0"
-            aria-label={siteSettings.brandName || "მთავარი გვერდი"}
+            className="flex items-center justify-center group text-center shrink-0"
+            aria-label={siteSettings.brandName || "MATARE"}
           >
-            <span className={`font-serif text-2xl sm:text-[27px] font-semibold text-[#1F1C18] leading-none group-hover:text-[#9A7742] transition-colors ${isEn ? "tracking-[0.2em] uppercase" : "tracking-[0.06em]"}`}>
-              {siteSettings.brandName || "მატარე"}
-            </span>
-            <span className={`text-[10px] text-[#9A7742] font-medium mt-1 ${isEn ? "tracking-[0.2em] uppercase" : "tracking-[0.04em]"}`}>
-              {lang === "ka" ? siteSettings.brandSubtitle : (siteSettings.brandSubtitleEn || siteSettings.brandSubtitle)}
+            <span className="font-serif text-2xl sm:text-[28px] font-normal text-[#1F1C18] tracking-[0.22em] uppercase leading-none group-hover:text-[#9A7742] transition-colors">
+              {isEn ? (siteSettings.brandNameEn || "MATARE") : (siteSettings.brandName || "მატარე")}
             </span>
           </a>
 
-          {/* Right: Clean Tactile Utilities */}
-          <div className="flex items-center justify-end gap-2 sm:gap-3.5">
-            <a
-              href={`${prefix}/#contact`}
-              className={`hidden xl:inline-block text-[13px] font-medium text-[#4A453E] hover:text-[#1F1C18] transition-colors whitespace-nowrap mr-1 ${isEn ? "tracking-[0.1em] uppercase text-[11px]" : ""}`}
-            >
-              {lang === "ka" ? "კონტაქტი" : "Contact"}
-            </a>
+          {/* Right: Expandable Search & Utility Icons */}
+          <div className="flex items-center justify-end gap-1 sm:gap-2 text-[#1F1C18]">
+            {/* Expandable Smooth Search Bar with Dropdown */}
+            <div ref={searchContainerRef} className="relative flex items-center">
+              <div
+                className={`flex items-center transition-all duration-300 ease-out overflow-hidden ${
+                  isSearchOpen
+                    ? 'w-[200px] sm:w-[260px] md:w-[300px] bg-[#FAF8F5] border border-[#DCD6CC] shadow-sm rounded-full px-2.5 py-1'
+                    : 'w-9 h-9 bg-transparent border border-transparent'
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!isSearchOpen) {
+                      setIsSearchOpen(true);
+                      setTimeout(() => searchInputRef.current?.focus(), 80);
+                    }
+                  }}
+                  className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#F4EFE6] text-[#1F1C18] transition-colors cursor-pointer"
+                  title={lang === "ka" ? "ძიება" : "Search"}
+                  aria-label={lang === "ka" ? "ძიება" : "Search"}
+                >
+                  <Search className="w-[18px] h-[18px] stroke-[1.5]" />
+                </button>
 
+                {isSearchOpen && (
+                  <div className="flex-1 flex items-center min-w-0 pr-1 animate-fadeIn">
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                          setIsSearchOpen(false);
+                          setSearchQuery('');
+                        } else if (e.key === 'Enter' && searchQuery.trim()) {
+                          navigateTo(`${prefix}/catalog?search=${encodeURIComponent(searchQuery.trim())}`);
+                          setIsSearchOpen(false);
+                        }
+                      }}
+                      placeholder={lang === 'ka' ? 'მოძებნეთ სამკაული, კოდი...' : 'Search jewelry, SKU...'}
+                      className="w-full bg-transparent text-xs text-[#1F1C18] outline-none px-2 placeholder-[#9E978D]"
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery('')}
+                        className="p-1 text-[#9E978D] hover:text-[#1F1C18] cursor-pointer"
+                        aria-label="Clear text"
+                      >
+                        <X className="w-3.5 h-3.5 stroke-[1.75]" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsSearchOpen(false);
+                        setSearchQuery('');
+                      }}
+                      className="p-1 text-[#787168] hover:text-[#1F1C18] cursor-pointer"
+                      aria-label="Close search"
+                    >
+                      <X className="w-4 h-4 stroke-[1.75]" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Live Search Results Dropdown */}
+              {isSearchOpen && trimmedQuery.length > 0 && (
+                <div className="absolute right-0 top-[calc(100%+10px)] w-[290px] sm:w-[350px] bg-white rounded-2xl shadow-[0_15px_50px_rgba(31,28,24,0.12)] border border-[#EAE4DB] p-3 z-50 animate-fadeIn">
+                  <div className="flex items-center justify-between px-2 pb-2 mb-1 border-b border-[#F3EFE8] text-[11px] font-medium text-[#787168]">
+                    <span>{lang === 'ka' ? 'ნაპოვნია სამკაულები' : 'Search Results'}</span>
+                    <span>{searchResults.length}</span>
+                  </div>
+
+                  {searchResults.length > 0 ? (
+                    <div className="space-y-1">
+                      {searchResults.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => {
+                            setIsSearchOpen(false);
+                            setSearchQuery('');
+                            navigateTo(`${prefix}/product/${encodeURIComponent(item.sku || item.id)}`);
+                          }}
+                          className="w-full p-2 rounded-xl flex items-center gap-3 hover:bg-[#FAF8F5] transition-colors text-left cursor-pointer group"
+                        >
+                          <img
+                            src={item.images?.[0] || '/brand-logo.jpg'}
+                            alt={item.name}
+                            className="w-11 h-11 rounded-lg object-cover bg-[#F7F5F0] border border-[#EAE4DB] shrink-0"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-medium text-[#1F1C18] truncate group-hover:text-[#9A7742] transition-colors">
+                              {lang === 'ka' ? item.name : (item.nameEn || item.name)}
+                            </p>
+                            <div className="flex items-center gap-1.5 text-[11px] text-[#787168] mt-0.5">
+                              <span className="font-mono text-[#9A7742]">#{item.sku}</span>
+                              <span>•</span>
+                              <span className="truncate">{item.category}</span>
+                            </div>
+                          </div>
+                          <div className="text-xs font-semibold text-[#1F1C18] shrink-0 font-serif">
+                            {formatPrice(item.price)}
+                          </div>
+                        </button>
+                      ))}
+
+                      <div className="pt-2 border-t border-[#F3EFE8] text-center">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsSearchOpen(false);
+                            navigateTo(`${prefix}/catalog?search=${encodeURIComponent(trimmedQuery)}`);
+                          }}
+                          className="text-xs font-medium text-[#9A7742] hover:text-[#1F1C18] transition-colors cursor-pointer"
+                        >
+                          {lang === 'ka' ? 'ყველა შედეგის ნახვა კატალოგში →' : 'View all results in catalog →'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="py-5 text-center text-xs text-[#787168] space-y-1">
+                      <p className="font-medium text-[#1F1C18]">
+                        {lang === 'ka' ? 'სამკაული ვერ მოიძებნა' : 'No pieces found'}
+                      </p>
+                      <p className="text-[11px]">
+                        {lang === 'ka' ? 'სცადეთ სხვა სიტყვა ან კოდი' : 'Try searching by a different term or SKU'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Language Switcher */}
             <button
               type="button"
               onClick={handleToggleLang}
               aria-label={lang === "ka" ? "Switch language to English" : "ენის გადართვა ქართულზე"}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-[#4A453E] bg-[#FAF8F4] border border-[#EAE4DB] hover:border-[#9A7742] hover:text-[#1F1C18] transition-colors cursor-pointer"
+              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[#F4EFE6] transition-colors cursor-pointer"
+              title={lang === "ka" ? "Switch to English" : "ქართულზე გადართვა"}
             >
-              <Globe className="w-3.5 h-3.5 stroke-[1.75] text-[#9A7742]" />
-              <span>{lang === "ka" ? "EN" : "GE"}</span>
+              <Globe className="w-[19px] h-[19px] stroke-[1.5]" />
             </button>
 
+            {/* Wishlist */}
             <button
               type="button"
               onClick={handleFavoritesClick}
               aria-label={lang === "ka" ? `რჩეული სამკაულები (${favorites.length})` : `Saved items (${favorites.length})`}
-              className="relative w-9 h-9 rounded-full flex items-center justify-center text-[#1F1C18] hover:bg-[#F4EFE6] transition-colors cursor-pointer"
+              className="relative w-9 h-9 rounded-full flex items-center justify-center hover:bg-[#F4EFE6] transition-colors cursor-pointer"
+              title={lang === "ka" ? "რჩეულები" : "Wishlist"}
             >
-              <Heart className={`w-[18px] h-[18px] stroke-[1.75] ${favorites.length > 0 ? "fill-[#9A7742] text-[#9A7742]" : ""}`} />
+              <Heart className={`w-[19px] h-[19px] stroke-[1.5] ${favorites.length > 0 ? "fill-[#1F1C18] text-[#1F1C18]" : ""}`} />
               {favorites.length > 0 && (
-                <span className="absolute top-0.5 right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-[#1F1C18] text-white text-[9px] font-semibold flex items-center justify-center">
+                <span className="absolute top-1 right-1 min-w-[15px] h-[15px] px-1 rounded-full bg-[#1F1C18] text-white text-[9px] font-semibold flex items-center justify-center">
                   {favorites.length}
                 </span>
               )}
             </button>
 
-            <div className="hidden lg:flex items-center gap-2.5 pl-2.5 border-l border-[#EAE4DB]">
-              {user ? (
-                <>
-                  <a
-                    href={`${prefix}/profile`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigateTo(`${prefix}/profile`);
-                    }}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FAF8F4] border border-[#EAE4DB] hover:border-[#9A7742] text-xs font-medium text-[#1F1C18] transition-colors cursor-pointer"
-                    title={lang === "ka" ? `პროფილი: ${user.displayName || user.email}` : `Profile: ${user.displayName || user.email}`}
-                  >
-                    {user.photoURL ? (
-                      <img src={user.photoURL} alt="Avatar" className="w-5 h-5 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-5 h-5 rounded-full bg-[#9A7742]/15 text-[#9A7742] text-[10px] font-semibold flex items-center justify-center">
-                        {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <span className="max-w-[100px] truncate hidden xl:inline">
-                      {user.displayName || user.email?.split('@')[0]}
-                    </span>
-                    {(userRole === 'superadmin' || userRole === 'admin') && (
-                      <span className="px-1.5 py-0.5 rounded-full text-[9px] font-semibold uppercase bg-[#1F1C18] text-white">
-                        ADMIN
-                      </span>
-                    )}
-                  </a>
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    title={lang === "ka" ? "გასვლა" : "Logout"}
-                    aria-label={lang === "ka" ? "ანგარიშიდან გასვლა" : "Sign out"}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-[#787168] hover:text-[#9E2A2B] hover:bg-[#FDF6F6] transition-colors cursor-pointer"
-                  >
-                    <LogOut className="w-4 h-4 stroke-[1.75]" />
-                  </button>
-                </>
-              ) : (
-                <div className="flex items-center gap-2.5">
-                  <a
-                    href={`${prefix}/login`}
-                    className="px-3 py-1.5 text-xs font-medium text-[#4A453E] hover:text-[#1F1C18] transition-colors flex items-center gap-1.5 whitespace-nowrap"
-                  >
-                    <User className="w-3.5 h-3.5 stroke-[1.75]" />
-                    <span>{lang === "ka" ? "შესვლა" : "Sign In"}</span>
-                  </a>
-                  <a
-                    href={`${prefix}/register`}
-                    className="hidden xl:inline-block px-4 py-2 rounded-full bg-[#1F1C18] text-white hover:bg-[#35302A] text-xs font-medium transition-colors whitespace-nowrap"
-                  >
-                    {lang === "ka" ? "რეგისტრაცია" : "Register"}
-                  </a>
-                </div>
-              )}
-            </div>
+            {/* User Account / Profile */}
+            <a
+              href={user ? `${prefix}/profile` : `${prefix}/login`}
+              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[#F4EFE6] transition-colors cursor-pointer"
+              title={user ? (lang === "ka" ? "ჩემი პროფილი" : "Profile") : (lang === "ka" ? "შესვლა" : "Sign In")}
+              aria-label={user ? (lang === "ka" ? "ჩემი პროფილი" : "Profile") : (lang === "ka" ? "შესვლა" : "Sign In")}
+            >
+              <User className="w-[19px] h-[19px] stroke-[1.5]" />
+            </a>
           </div>
         </div>
 
@@ -250,65 +408,13 @@ export default function Navbar({
               <a href={`${prefix}/about`} onClick={() => setIsMobileMenuOpen(false)} className="py-3 hover:text-[#9A7742]">
                 {lang === "ka" ? "ჩვენს შესახებ" : "About Us"}
               </a>
-              <a href={`${prefix}/#craftsmanship`} onClick={() => setIsMobileMenuOpen(false)} className="py-3 hover:text-[#9A7742]">
-                {lang === "ka" ? "ოსტატობა" : "Craftsmanship"}
-              </a>
               <a href={`${prefix}/blog`} onClick={() => setIsMobileMenuOpen(false)} className="py-3 hover:text-[#9A7742]">
-                {lang === "ka" ? "ბლოგი" : "Journal"}
+                {lang === "ka" ? "ბლოგი" : "Blog"}
               </a>
               <a href={`${prefix}/size-guide`} onClick={() => setIsMobileMenuOpen(false)} className="py-3 hover:text-[#9A7742]">
                 {lang === "ka" ? "ზომის გზამკვლევი" : "Size Guide"}
               </a>
-              <a href={`${prefix}/faq`} onClick={() => setIsMobileMenuOpen(false)} className="py-3 hover:text-[#9A7742]">
-                {lang === "ka" ? "კითხვა-პასუხი (FAQ)" : "FAQ"}
-              </a>
-              <a href={`${prefix}/track`} onClick={() => setIsMobileMenuOpen(false)} className="py-3 hover:text-[#9A7742]">
-                {lang === "ka" ? "შეკვეთის თრექინგი" : "Track Order"}
-              </a>
-              <a href={`${prefix}/#contact`} onClick={() => setIsMobileMenuOpen(false)} className="py-3 hover:text-[#9A7742]">
-                {lang === "ka" ? "კონტაქტი" : "Contact"}
-              </a>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  setShowFavoritesModal(true);
-                }}
-                className="py-3 flex items-center justify-between text-left hover:text-[#9A7742] cursor-pointer"
-              >
-                <span>{lang === "ka" ? "რჩეული სამკაულები" : "Favorites"}</span>
-                {favorites.length > 0 && (
-                  <span className="px-2 py-0.5 rounded-full text-xs bg-[#1F1C18] text-white font-medium">
-                    {favorites.length}
-                  </span>
-                )}
-              </button>
-              {user && (
-                <a
-                  href={`${prefix}/profile`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setIsMobileMenuOpen(false);
-                    navigateTo(`${prefix}/profile`);
-                  }}
-                  className="py-3 text-[#9A7742]"
-                >
-                  {lang === "ka" ? "ჩემი პროფილი & შეკვეთები" : "My Account & Orders"}
-                </a>
-              )}
             </nav>
-
-            <div className="pt-1 flex items-center sm:hidden">
-              <button
-                type="button"
-                onClick={handleToggleLang}
-                aria-label={lang === "ka" ? "Switch language to English" : "ენის გადართვა ქართულზე"}
-                className="px-4 py-2 rounded-full border border-[#EAE4DB] bg-[#FAF8F4] text-xs font-medium flex items-center gap-2 text-[#1F1C18]"
-              >
-                <Globe className="w-3.5 h-3.5 text-[#9A7742]" />
-                {lang === "ka" ? "English (EN)" : "ქართული (GE)"}
-              </button>
-            </div>
           </div>
         )}
       </header>

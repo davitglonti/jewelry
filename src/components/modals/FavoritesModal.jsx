@@ -1,228 +1,231 @@
-import React, { useState, useMemo } from 'react';
-import { X, Trash2, ArrowUpDown, ArrowLeftRight, ShoppingBag } from 'lucide-react';
+import React, { useMemo, useEffect } from 'react';
+import { X, Trash2, ArrowRight } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { formatPrice } from '../../utils/i18n';
 import { navigateTo } from '../../utils/navigation';
-import QuickBuyModal from './QuickBuyModal';
 
 export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
-  const { lang, products, favorites, toggleFavorite, compareList, toggleCompare } = useStore();
+  const { lang, products, favorites, toggleFavorite } = useStore();
 
-  const [sortBy, setSortBy] = useState('newest');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [buyModalOpen, setBuyModalOpen] = useState(false);
-  const [selectedForBuy] = useState([]);
-
-  const handleBuySingle = (item) => {
-    onClose?.();
-    const prefix = lang === 'en' ? '/en' : '';
-    navigateTo(`${prefix}/checkout?productId=${encodeURIComponent(item.id || item.sku)}`);
-  };
-
-  const handleBuyAll = () => {
-    if (!favoriteProducts || favoriteProducts.length === 0) return;
-    onClose?.();
-    const prefix = lang === 'en' ? '/en' : '';
-    navigateTo(`${prefix}/checkout?from=favorites`);
-  };
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose?.();
+      }
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, onClose]);
 
   const favoriteProducts = useMemo(() => {
-    let list = (products || []).filter((p) => favorites?.includes(p.id));
-    if (selectedCategory !== 'all') {
-      list = list.filter((p) => p.category === selectedCategory);
-    }
-    return [...list].sort((a, b) => {
-      const priceA = typeof a.price === 'number' ? a.price : parseFloat(String(a.price || '0').replace(/[^0-9.]/g, '')) || 0;
-      const priceB = typeof b.price === 'number' ? b.price : parseFloat(String(b.price || '0').replace(/[^0-9.]/g, '')) || 0;
-      if (sortBy === 'price-desc') return priceB - priceA;
-      if (sortBy === 'price-asc') return priceA - priceB;
-      if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
-      return 0;
-    });
-  }, [products, favorites, sortBy, selectedCategory]);
-
-  const categories = useMemo(() => {
-    const allFavs = (products || []).filter((p) => favorites?.includes(p.id));
-    const cats = new Set(allFavs.map((p) => p.category).filter(Boolean));
-    return ['all', ...Array.from(cats)];
+    return (products || []).filter((p) => favorites?.includes(p.id));
   }, [products, favorites]);
 
   const totalValue = useMemo(() => {
     return favoriteProducts.reduce((sum, item) => {
-      const p = typeof item.price === 'number' ? item.price : parseFloat(String(item.price || '0').replace(/[^0-9.]/g, '')) || 0;
+      const p = typeof item.price === 'number'
+        ? item.price
+        : parseFloat(String(item.price || '0').replace(/[^0-9.]/g, '')) || 0;
       return sum + p;
     }, 0);
   }, [favoriteProducts]);
 
+  const freeShippingThreshold = 500;
+  const progressPercent = Math.min(100, Math.round((totalValue / freeShippingThreshold) * 100));
+  const amountToFreeShipping = Math.max(0, freeShippingThreshold - totalValue);
+
+  const prefix = lang === 'en' ? '/en' : '';
+  const isEn = lang === 'en';
+
+  const handleCheckout = () => {
+    if (!favoriteProducts || favoriteProducts.length === 0) return;
+    onClose?.();
+    navigateTo(`${prefix}/checkout?from=favorites`);
+  };
+
+  const handleItemClick = (item) => {
+    onClose?.();
+    if (onSelectProduct) {
+      onSelectProduct(item);
+    } else {
+      navigateTo(`${prefix}/product/${encodeURIComponent(item.sku || item.id)}`);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-black/45 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="favorites-modal-title"
-    >
-      <div className="w-full max-w-2xl bg-white border border-[#E8E3DB] text-[#141311] p-6 sm:p-8 shadow-2xl">
-        <div className="flex items-center justify-between pb-4 border-b border-[#E8E3DB]">
-          <div className="flex items-center gap-3">
-            <h3 id="favorites-modal-title" className="font-serif text-2xl font-light">
-              {lang === "ka" ? "რჩეული სამკაულები" : "Saved Jewelry"}
-            </h3>
-            {favorites?.length > 0 && (
-              <span className="px-2 py-0.5 text-[11px] font-mono bg-[#F8F6F2] border border-[#E8E3DB] text-[#9D7B48]">
-                {favorites.length}
-              </span>
-            )}
+    <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true">
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/45 backdrop-blur-[2px] transition-opacity duration-300"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Slide-in Right Drawer */}
+      <aside
+        className="relative z-10 w-full max-w-[440px] sm:max-w-[460px] h-full bg-white shadow-2xl flex flex-col justify-between animate-slide-left overflow-hidden border-l border-[#EAE4DB]"
+        aria-label={isEn ? "Wishlist Drawer" : "რჩეულების პანელი"}
+      >
+        {/* Top Header */}
+        <div className="p-6 pb-4 border-b border-[#EAE4DB]">
+          <div className="flex items-center justify-between">
+            <h2 className="font-serif text-2xl sm:text-[26px] font-normal text-[#1F1C18] tracking-tight">
+              {isEn ? `Wishlist (${favoriteProducts.length})` : `რჩეულები (${favoriteProducts.length})`}
+            </h2>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={isEn ? "Close wishlist" : "დახურვა"}
+              className="p-1.5 -mr-1.5 text-[#787168] hover:text-[#1F1C18] rounded-full hover:bg-[#F4EFE6] transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5 stroke-[1.5]" />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={lang === "ka" ? "ფანჯრის დახურვა" : "Close modal"}
-            className="p-2 text-[#847E75] hover:text-[#141311] transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5 stroke-[1.5]" />
-          </button>
+
+          {/* Free Shipping Progress Indicator (mockup style) */}
+          <div className="mt-4 pt-3 border-t border-[#F3EFE8] space-y-1.5">
+            <p className="text-xs text-[#787168]">
+              {totalValue >= freeShippingThreshold ? (
+                <span className="text-[#2D6A4F] font-medium">
+                  {isEn ? "✓ Your order qualifies for Free Insured Shipping" : "✓ თქვენ გაქვთ უფასო დაზღვეული მიწოდება"}
+                </span>
+              ) : (
+                <span>
+                  {isEn
+                    ? `You are ${formatPrice(amountToFreeShipping)} away from free insured shipping`
+                    : `დაგრჩათ ${formatPrice(amountToFreeShipping)} უფასო დაზღვეულ მიწოდებამდე`}
+                </span>
+              )}
+            </p>
+            <div className="w-full h-1.5 bg-[#EAE4DB] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#9A7742] transition-all duration-500 rounded-full"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <p className="text-[11px] text-[#9E978D]">
+              {isEn
+                ? "Your order qualifies for Free Insured Shipping"
+                : "უფასო დაზღვეული ექსპრეს მიწოდება საქართველოს მასშტაბით"}
+            </p>
+          </div>
         </div>
 
-        {favorites?.length > 1 && (
-          <div className="py-3 flex flex-wrap items-center justify-between gap-2.5 border-b border-[#EFECE6]">
-            <div className="flex items-center gap-2 text-xs">
-              <ArrowUpDown className="w-3.5 h-3.5 text-[#9D7B48] stroke-[1.5]" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="py-1.5 px-2.5 border border-[#E8E3DB] bg-white text-xs text-[#141311] outline-none cursor-pointer"
-              >
-                <option value="newest">{lang === 'ka' ? 'უახლესი' : 'Newest'}</option>
-                <option value="price-desc">{lang === 'ka' ? 'ფასი: კლებადი ↓' : 'Price: High to Low'}</option>
-                <option value="price-asc">{lang === 'ka' ? 'ფასი: ზრდადი ↑' : 'Price: Low to High'}</option>
-                <option value="name">{lang === 'ka' ? 'დასახელებით (A-Z)' : 'Name (A-Z)'}</option>
-              </select>
-            </div>
-
-            {categories.length > 2 && (
-              <div className="flex items-center gap-1.5 text-xs">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-2.5 py-1 text-[11px] border transition-colors cursor-pointer ${
-                      selectedCategory === cat
-                        ? 'bg-[#141311] text-white border-[#141311]'
-                        : 'bg-white text-[#4A4640] border-[#E8E3DB] hover:border-[#141311]'
-                    }`}
-                  >
-                    {cat === 'all' ? (lang === 'ka' ? 'ყველა' : 'All') : cat}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="py-4 max-h-96 overflow-y-auto divide-y divide-[#EFECE6]">
+        {/* Scrollable Items List */}
+        <div className="flex-1 overflow-y-auto p-6 divide-y divide-[#F3EFE8] space-y-4">
           {favoriteProducts.length === 0 ? (
-            <div className="text-center py-12 space-y-2">
-              <p className="font-serif text-lg text-[#4A4640]">
-                {lang === "ka" ? "რჩეულების სია ცარიელია." : "No saved items yet."}
+            <div className="py-16 text-center space-y-3">
+              <div className="w-16 h-16 mx-auto rounded-full bg-[#FAF8F5] border border-[#EAE4DB] flex items-center justify-center text-[#9A7742]">
+                <X className="w-7 h-7 stroke-[1.25] opacity-40" />
+              </div>
+              <p className="font-serif text-lg text-[#1F1C18]">
+                {isEn ? "Your wishlist is empty" : "რჩეულების სია ცარიელია"}
               </p>
-              <p className="text-xs text-[#847E75]">
-                {lang === "ka" ? "დააჭირეთ გულის ხატულას კატალოგში ნივთის დასამატებლად" : "Click the heart icon on any piece to save it"}
+              <p className="text-xs text-[#787168] max-w-xs mx-auto">
+                {isEn
+                  ? "Browse the collection and tap the heart icon to save pieces here."
+                  : "დაათვალიერეთ კოლექცია და დააჭირეთ გულის ხატულას სამკაულის შესანახად."}
               </p>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose?.();
+                  navigateTo(`${prefix}/catalog`);
+                }}
+                className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-[#9A7742] hover:text-[#1F1C18] transition-colors cursor-pointer"
+              >
+                <span>{isEn ? "Explore Collection →" : "კოლექციის ნახვა →"}</span>
+              </button>
             </div>
           ) : (
-            favoriteProducts.map((item) => (
-              <div key={item.id} className="flex items-center justify-between gap-3 py-3.5 first:pt-1">
-                <div
-                  className="flex items-center gap-3.5 min-w-0 flex-1 cursor-pointer"
-                  onClick={() => {
-                    onClose();
-                    onSelectProduct(item);
-                  }}
-                >
-                  <img
-                    src={item.images?.[0] || item.image || "/brand-logo.jpg"}
-                    alt={item.name || "სამკაული"}
-                    className="w-14 h-16 object-cover shrink-0 bg-[#F4F1EC] border border-[#E8E3DB]"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="font-serif text-base text-[#141311] truncate">{item.name}</div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      {item.oldPrice && (
-                        <span className="text-xs line-through text-[#9C958B]">{formatPrice(item.oldPrice)}</span>
-                      )}
-                      <span className="text-xs sm:text-sm text-[#141311] font-medium">{formatPrice(item.price)}</span>
+            favoriteProducts.map((item) => {
+              const defaultSize = item.sizes?.[0] || '17.0';
+              return (
+                <div key={item.id} className="pt-4 first:pt-0 flex items-center gap-4">
+                  {/* Thumbnail */}
+                  <button
+                    type="button"
+                    onClick={() => handleItemClick(item)}
+                    className="shrink-0 cursor-pointer group"
+                    title={item.name}
+                  >
+                    <img
+                      src={item.images?.[0] || item.image || '/brand-logo.jpg'}
+                      alt={item.name || "Jewelry"}
+                      className="w-20 h-20 sm:w-22 sm:h-22 rounded-2xl object-cover bg-[#FAF8F5] border border-[#EAE4DB] group-hover:opacity-90 transition-opacity"
+                    />
+                  </button>
+
+                  {/* Details */}
+                  <div className="flex-1 min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => handleItemClick(item)}
+                      className="text-left cursor-pointer group block w-full"
+                    >
+                      <h3 className="font-serif text-sm sm:text-base font-normal text-[#1F1C18] truncate group-hover:text-[#9A7742] transition-colors">
+                        {isEn ? (item.nameEn || item.name) : item.name}
+                      </h3>
+                      <p className="text-xs text-[#787168] mt-0.5">
+                        {isEn ? `Size: ${defaultSize}` : `ზომა: ${defaultSize}`}
+                      </p>
+                    </button>
+
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="font-serif text-sm sm:text-base font-normal text-[#1F1C18]">
+                        {formatPrice(item.price)}
+                      </span>
+
+                      {/* Remove action matching mockup (trash + text) */}
+                      <button
+                        type="button"
+                        onClick={() => toggleFavorite(item.id)}
+                        className="flex items-center gap-1 text-xs text-[#787168] hover:text-[#B91C1C] transition-colors cursor-pointer"
+                        title={isEn ? "Remove from wishlist" : "რჩეულებიდან ამოშლა"}
+                      >
+                        <Trash2 className="w-3.5 h-3.5 stroke-[1.5]" />
+                        <span>{isEn ? "remove" : "წაშლა"}</span>
+                      </button>
                     </div>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => toggleCompare(item.id)}
-                    title={lang === 'ka' ? 'შედარების სიაში დამატება' : 'Compare'}
-                    className={`p-2 border transition-colors cursor-pointer ${
-                      compareList?.includes(item.id)
-                        ? 'bg-[#9D7B48] text-white border-[#9D7B48]'
-                        : 'border-[#E8E3DB] text-[#4A4640] hover:border-[#141311]'
-                    }`}
-                  >
-                    <ArrowLeftRight className="w-3.5 h-3.5 stroke-[1.5]" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleBuySingle(item)}
-                    className="px-3.5 py-2 bg-[#141311] hover:bg-[#2C2A26] text-white text-[10px] uppercase tracking-[0.16em] flex items-center gap-1.5 transition-colors cursor-pointer"
-                  >
-                    <ShoppingBag className="w-3.5 h-3.5 stroke-[1.5]" />
-                    <span>{lang === "ka" ? "ყიდვა" : "Buy"}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => toggleFavorite(item.id)}
-                    aria-label={`${lang === "ka" ? "რჩეულებიდან ამოშლა" : "Remove from favorites"}: ${item.name}`}
-                    className="p-2 text-[#847E75] hover:text-[#8E2424] transition-colors cursor-pointer"
-                  >
-                    <Trash2 className="w-4 h-4 stroke-[1.5]" />
-                  </button>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
+        {/* Sticky Footer */}
         {favoriteProducts.length > 0 && (
-          <div className="pt-4 border-t border-[#E8E3DB] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="text-[#847E75]">
-                {lang === 'ka' ? `ჯამი (${favoriteProducts.length} ნივთი):` : `Total (${favoriteProducts.length} items):`}
+          <div className="p-6 border-t border-[#EAE4DB] bg-white space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-[#787168]">
+                {isEn ? "Subtotal" : "ჯამური ღირებულება"}
               </span>
-              <span className="font-mono font-medium text-[#141311] text-base">
+              <span className="font-serif text-xl sm:text-2xl font-normal text-[#1F1C18]">
                 {formatPrice(totalValue)}
               </span>
             </div>
 
             <button
               type="button"
-              onClick={handleBuyAll}
-              className="w-full sm:w-auto px-6 py-3 bg-[#141311] hover:bg-[#2C2A26] text-white text-[11px] uppercase tracking-[0.18em] flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              onClick={handleCheckout}
+              className="w-full py-4 px-6 rounded-full bg-[#1F1C18] hover:bg-black text-white text-xs sm:text-sm font-semibold tracking-widest uppercase transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
             >
-              <ShoppingBag className="w-3.5 h-3.5 stroke-[1.5]" />
-              <span>{lang === 'ka' ? 'შეკვეთის გაფორმება' : 'Checkout Order'}</span>
+              <span>{isEn ? "PROCEED TO CHECKOUT" : "შეკვეთის გაფორმება"}</span>
+              <ArrowRight className="w-4 h-4 stroke-[1.75]" />
             </button>
           </div>
         )}
-      </div>
-
-      <QuickBuyModal
-        isOpen={buyModalOpen}
-        onClose={() => setBuyModalOpen(false)}
-        items={selectedForBuy}
-      />
+      </aside>
     </div>
   );
 }

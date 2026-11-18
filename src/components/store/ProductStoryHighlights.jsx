@@ -1,5 +1,5 @@
 import React from 'react';
-import { Truck, Sparkles } from 'lucide-react';
+import { Truck, Package } from 'lucide-react';
 
 const DEFAULT_HIGHLIGHTS_KA = [
   {
@@ -43,52 +43,42 @@ export default function ProductStoryHighlights({ product, lang = 'ka' }) {
     : defaultList;
 
   return (
-    <div className="space-y-3 pt-1">
-      <div className="p-3.5 rounded-2xl bg-[#FAF8F4] border border-[#EAE4DB] flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-[#F4EFE6] text-[#9A7742] flex items-center justify-center shrink-0">
-          <Truck className="w-4 h-4 stroke-[1.75]" />
+    <div className="space-y-2.5 pt-2">
+      {/* Pill 1: Free Insured Express Delivery */}
+      <div className="p-3.5 px-5 rounded-2xl bg-white border border-[#EAE4DB] shadow-xs flex items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-3">
+          <Truck className="w-4 h-4 text-[#787168] stroke-[1.5]" />
+          <span className="font-medium text-[#1F1C18]">
+            {lang === 'ka' ? 'დაზღვეული ექსპრეს მიწოდება' : 'Guaranteed Express Delivery'}
+          </span>
+          <span className="text-[#166534] font-semibold">
+            {lang === 'ka' ? 'უფასო' : 'Free'}
+          </span>
         </div>
-        <div className="min-w-0">
-          <div className="text-xs sm:text-sm font-medium text-[#1F1C18] flex items-center gap-2 flex-wrap">
-            <span>{lang === 'ka' ? 'დაზღვეული ექსპრეს მიწოდება' : 'Guaranteed Express Delivery'}</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#1F1C18] text-white">
-              {lang === 'ka' ? 'უფასო' : 'Free'}
-            </span>
-          </div>
-          <div className="text-xs text-[#5C564E] mt-0.5">
-            {lang === 'ka'
-              ? 'თბილისში დღესვე • რეგიონებში 24-48 საათში დაზღვეული კურიერით'
-              : 'Same day in Tbilisi • 24-48h nationwide via insured courier'}
-          </div>
-        </div>
+        <span className="text-[11px] text-[#787168] hidden sm:inline">
+          {lang === 'ka' ? 'თბილისში დღესვე • რეგიონებში 24-48 საათში' : 'Same day in Tbilisi • 24-48h nationwide'}
+        </span>
       </div>
 
-      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#EAE4DB] space-y-3">
-        <div className="flex items-center justify-between border-b border-[#F3EFE8] pb-2.5">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-[#9A7742]" />
-            <span className="text-xs font-semibold text-[#1F1C18]">
-              {lang === 'ka' ? 'ატელიეს სტანდარტი და შეფუთვა' : 'Atelier Standard & Packaging'}
+      {/* Pill 2: Matare Atelier Packaging */}
+      <div className="p-3.5 px-5 rounded-2xl bg-white border border-[#EAE4DB] shadow-xs flex items-center gap-3 text-xs">
+        <Package className="w-4 h-4 text-[#787168] stroke-[1.5]" />
+        <span className="font-medium text-[#1F1C18]">
+          {lang === 'ka' ? 'მატარეს საფირმო შეფუთვა' : 'Matare Atelier Packaging'}
+        </span>
+      </div>
+
+      {/* Atelier Highlights */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#EAE4DB] shadow-xs space-y-2.5 text-xs text-[#4A453E]">
+        {highlights.map((item, idx) => (
+          <div key={idx} className="flex items-start gap-2">
+            <span className="text-[#9A7742] text-[10px] mt-0.5">✦</span>
+            <span>
+              {item.title && <strong className="text-[#1F1C18] font-medium mr-1">{item.title}</strong>}
+              {item.desc}
             </span>
           </div>
-          <span className="text-[11px] font-mono text-[#9A7742]">Matare Atelier</span>
-        </div>
-
-        <ul className="space-y-2 text-xs sm:text-[13px] text-[#4A453E] leading-relaxed">
-          {highlights.map((item, idx) => (
-            <li key={idx} className="flex items-start gap-2">
-              <span className="text-[#9A7742] mt-0.5 text-[10px]">✦</span>
-              <span>
-                {item.title && (
-                  <strong className="text-[#1F1C18] font-medium mr-1">
-                    {item.title}
-                  </strong>
-                )}
-                {item.desc}
-              </span>
-            </li>
-          ))}
-        </ul>
+        ))}
       </div>
     </div>
   );
