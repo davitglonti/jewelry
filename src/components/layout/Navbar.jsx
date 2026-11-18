@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
-import { Sparkles, Globe, Sun, Moon, Heart, Menu, X, PlusCircle, User, LogOut, LogIn, Package, ShieldCheck, Shield } from 'lucide-react';
+import React from 'react';
+import { Globe, Heart, Menu, X, LogOut, User, Package } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { useAuth } from '../../context/AuthContext';
 import { navigateTo, switchLanguage } from '../../utils/navigation';
 
 export default function Navbar({
   lang, setLang,
-  darkMode, setDarkMode,
-  favorites, setShowFavoritesModal,
+  favorites = [], setShowFavoritesModal,
   isMobileMenuOpen, setIsMobileMenuOpen
 }) {
   const { siteSettings } = useStore();
@@ -37,370 +36,285 @@ export default function Navbar({
     }
   };
 
+  const prefix = lang === "en" ? "/en" : "";
+  const isEn = lang === "en";
+
   return (
     <>
-      {/* ხელმისაწვდომობის სწრაფი გადასვლა კონტენტზე (Screen Readers / Keyboard navigation) */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 z-50 px-4 py-2 bg-amber-500 text-black font-semibold text-xs rounded-xl shadow-lg"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 z-50 px-4 py-2 rounded-full bg-[#1F1C18] text-white font-medium text-xs"
       >
         {lang === "ka" ? "კონტენტზე გადასვლა" : "Skip to content"}
       </a>
 
-      <header className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-md border-b transition-colors shadow-lg ${darkMode ? "bg-[#0c0b0a]/95 border-amber-500/15" : "bg-white/95 border-stone-200"}`}>
-        <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 h-20 flex items-center justify-between gap-2 sm:gap-4">
-          <a href={lang === "en" ? "/en" : "/"} className="flex items-center gap-2.5 sm:gap-3 group shrink-0" aria-label={siteSettings.brandName || "მთავარი გვერდი"}>
-            {siteSettings.logoUrl ? (
-              <img src={siteSettings.logoUrl} alt={siteSettings.brandName} className="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover border border-amber-500/40 shrink-0" />
-            ) : (
-              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-black shadow-lg shadow-amber-500/20 shrink-0">
-                <Sparkles className="w-5 h-5" />
-              </div>
-            )}
-            <div className="shrink-0">
-              <span className="font-serif text-xl sm:text-2xl xl:text-3xl tracking-[0.16em] xl:tracking-[0.22em] font-semibold block leading-none">
-                {siteSettings.brandName}
-              </span>
-              <span className="text-[9px] sm:text-[10px] xl:text-xs tracking-[0.12em] xl:tracking-[0.18em] text-amber-500/90 uppercase block mt-1">
-                {lang === "ka" ? siteSettings.brandSubtitle : (siteSettings.brandSubtitleEn || siteSettings.brandSubtitle)}
-              </span>
-            </div>
-          </a>
-
-          {/* Desktop Navigation (visible on lg: 1024px and up) */}
-          <nav className="hidden lg:flex items-center gap-3.5 xl:gap-6 2xl:gap-8 text-xs xl:text-sm tracking-wide xl:tracking-wider uppercase shrink-0" aria-label="Main navigation">
-            <a href={lang === "en" ? "/en/catalog" : "/catalog"} className="hover:text-amber-500 transition-colors whitespace-nowrap">
-              {lang === "ka" ? "კოლექცია" : "Collection"}
-            </a>
-            <a href={lang === "en" ? "/en/about" : "/about"} className="hover:text-amber-500 transition-colors whitespace-nowrap">
-              {lang === "ka" ? "ჩვენს შესახებ" : "About Us"}
-            </a>
-            <a href={lang === "en" ? "/en/#craftsmanship" : "/#craftsmanship"} className="hover:text-amber-500 transition-colors whitespace-nowrap">
-              {lang === "ka" ? "ოსტატობა" : "Craftsmanship"}
-            </a>
-            <a href={lang === "en" ? "/en/blog" : "/blog"} className="hover:text-amber-500 transition-colors whitespace-nowrap">
-              {lang === "ka" ? "ბლოგი" : "Journal"}
-            </a>
-            <a href={lang === "en" ? "/en/size-guide" : "/size-guide"} className="hover:text-amber-500 transition-colors whitespace-nowrap">
-              {lang === "ka" ? "ზომის გიდი" : "Size Guide"}
-            </a>
-            <a href={lang === "en" ? "/en/#contact" : "/#contact"} className="hover:text-amber-500 transition-colors whitespace-nowrap">
-              {lang === "ka" ? "კონტაქტი" : "Contact"}
-            </a>
-          </nav>
-
-          {/* Desktop Action Icons (visible on lg: 1024px and up) */}
-          <div className="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
-            <button
-              type="button"
-              onClick={handleToggleLang}
-              aria-label={lang === "ka" ? "Switch language to English" : "ენის გადართვა ქართულზე"}
-              className={`px-3 py-2 rounded-full text-xs font-medium border flex items-center gap-1.5 transition-all ${
-                darkMode ? "border-stone-800 bg-stone-900/80 hover:border-amber-500/50" : "border-stone-200 bg-stone-100 hover:border-amber-600"
-              }`}
+      <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#EAE4DB] text-[#1F1C18] shadow-[0_1px_12px_rgba(31,28,24,0.03)]">
+        {/* Soft Champagne Announcement Bar */}
+        <div className="bg-[#F4EFE6] text-[#574E42] border-b border-[#EAE4DB]">
+          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 h-8 flex items-center justify-between text-[11px] font-medium">
+            <span className={`truncate ${isEn ? "tracking-[0.12em] uppercase text-[10px]" : "tracking-[0.01em]"}`}>
+              {lang === "ka"
+                ? "უფასო დაზღვეული მიწოდება  •  სერტიფიცირებული ოქრო და ბრილიანტები"
+                : "Complimentary Insured Delivery  •  Certified Gold & Diamonds"}
+            </span>
+            <a
+              href={`${prefix}/track`}
+              className="hidden sm:inline-flex items-center gap-1.5 text-[#8A6836] hover:text-[#1F1C18] transition-colors shrink-0 ml-4"
             >
-              <Globe className="w-3.5 h-3.5 text-amber-500" />
-              {lang === "ka" ? "EN" : "GE"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setDarkMode(!darkMode)}
-              aria-label={darkMode ? (lang === "ka" ? "დღის რეჟიმზე გადართვა" : "Switch to light mode") : (lang === "ka" ? "ღამის რეჟიმზე გადართვა" : "Switch to dark mode")}
-              className={`p-2.5 rounded-full border transition-all ${
-                darkMode ? "border-stone-800 bg-stone-900/80 text-amber-400 hover:border-amber-500/50" : "border-stone-200 bg-stone-100 text-stone-700 hover:border-amber-600"
-              }`}
-            >
-              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-
-            <button
-              type="button"
-              onClick={handleFavoritesClick}
-              aria-label={lang === "ka" ? `რჩეული სამკაულები (${favorites.length})` : `Saved items (${favorites.length})`}
-              className={`relative p-2.5 rounded-full border transition-all ${
-                darkMode ? "border-stone-800 bg-stone-900/80 hover:border-amber-500/50" : "border-stone-200 bg-stone-100 hover:border-amber-600"
-              }`}
-            >
-              <Heart className={`w-4 h-4 ${favorites.length > 0 ? "fill-amber-500 text-amber-500" : ""}`} />
-              {favorites.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-black text-[10px] font-bold flex items-center justify-center">
-                  {favorites.length}
-                </span>
-              )}
-            </button>
-
-            {/* Desktop Auth Section */}
-            {user ? (
-              <div className="flex items-center gap-2 pl-2 border-l border-stone-500/20">
-                <a
-                  href={lang === "en" ? "/en/profile" : "/profile"}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigateTo(lang === "en" ? "/en/profile" : "/profile");
-                  }}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer ${
-                    darkMode
-                      ? "border-stone-800 bg-stone-900/80 text-stone-200 hover:border-amber-500/50 hover:bg-stone-800"
-                      : "border-stone-200 bg-stone-100 text-stone-800 hover:border-amber-500 hover:bg-stone-200"
-                  }`}
-                  title={lang === "ka" ? `პროფილი: ${user.displayName || user.email}` : `Profile: ${user.displayName || user.email}`}
-                >
-                  {user.photoURL ? (
-                    <img
-                      src={user.photoURL}
-                      alt="Avatar"
-                      className="w-5 h-5 rounded-full object-cover border border-amber-500/50 shrink-0"
-                    />
-                  ) : (
-                    <div className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-500 font-bold text-[10px] flex items-center justify-center shrink-0">
-                      {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
-                    </div>
-                  )}
-
-                  <span className="max-w-[120px] truncate hidden xl:inline">
-                    {user.displayName || user.email?.split('@')[0]}
-                  </span>
-
-                  {userRole === 'superadmin' ? (
-                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-xs">
-                      ADMIN
-                    </span>
-                  ) : userRole === 'admin' ? (
-                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/40">
-                      ADMIN
-                    </span>
-                  ) : userRole === 'moderator' ? (
-                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-purple-500/20 text-purple-400 border border-purple-500/40">
-                      MOD
-                    </span>
-                  ) : (
-                    <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                      CLIENT
-                    </span>
-                  )}
-                </a>
-
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  title={lang === "ka" ? `გასვლა (${user.displayName || user.email})` : `Logout (${user.displayName || user.email})`}
-                  className={`p-2.5 rounded-full border transition-all ${
-                    darkMode ? "border-stone-800 bg-stone-900/80 text-stone-400 hover:text-red-400 hover:border-red-500/40" : "border-stone-200 bg-stone-100 text-stone-600 hover:text-red-600 hover:border-red-400"
-                  }`}
-                  aria-label={lang === "ka" ? "ანგარიშიდან გასვლა" : "Sign out"}
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 pl-2 border-l border-stone-500/20">
-                <a
-                  href={lang === "en" ? "/en/login" : "/login"}
-                  className={`px-3.5 py-2 rounded-full text-xs font-medium border flex items-center gap-1.5 transition-all whitespace-nowrap ${
-                    darkMode ? "border-stone-800 bg-stone-900/80 hover:border-amber-500/50 text-stone-200" : "border-stone-200 bg-stone-100 hover:border-amber-600 text-stone-800"
-                  }`}
-                >
-                  <LogIn className="w-3.5 h-3.5 text-amber-500" />
-                  <span>{lang === "ka" ? "შესვლა" : "Sign In"}</span>
-                </a>
-
-                <a
-                  href={lang === "en" ? "/en/register" : "/register"}
-                  className="px-3.5 py-2 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-500 border border-amber-500/30 hover:bg-amber-500 hover:text-black transition-all whitespace-nowrap hidden xl:flex items-center gap-1.5"
-                >
-                  <span>{lang === "ka" ? "რეგისტრაცია" : "Register"}</span>
-                </a>
-              </div>
-            )}
+              <Package className="w-3.5 h-3.5 stroke-[1.75]" />
+              <span>{lang === "ka" ? "შეკვეთის თრექინგი" : "Track Order"}</span>
+            </a>
           </div>
+        </div>
 
-          {/* Mobile & Tablet Action Icons (< 1024px) */}
-          <div className="flex lg:hidden items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Quick switches on tablet / medium screens (>= 640px) */}
-            <button
-              type="button"
-              onClick={handleToggleLang}
-              aria-label={lang === "ka" ? "Switch language to English" : "ენის გადართვა ქართულზე"}
-              className={`hidden sm:flex px-2.5 py-1.5 rounded-full text-xs font-medium border items-center gap-1 transition-all ${
-                darkMode ? "border-stone-800 bg-stone-900 text-stone-300" : "border-stone-200 bg-stone-100 text-stone-700"
-              }`}
-            >
-              <Globe className="w-3.5 h-3.5 text-amber-500" />
-              {lang === "ka" ? "EN" : "GE"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setDarkMode(!darkMode)}
-              aria-label={darkMode ? (lang === "ka" ? "დღის რეჟიმზე გადართვა" : "Switch to light mode") : (lang === "ka" ? "ღამის რეჟიმზე გადართვა" : "Switch to dark mode")}
-              className={`hidden sm:flex p-2 rounded-full border transition-all ${
-                darkMode ? "border-stone-800 bg-stone-900 text-amber-400" : "border-stone-200 bg-stone-100 text-stone-700"
-              }`}
-            >
-              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-
-            <button
-              type="button"
-              onClick={handleFavoritesClick}
-              aria-label={lang === "ka" ? `რჩეული სამკაულები (${favorites.length})` : `Saved items (${favorites.length})`}
-              className={`relative p-2 rounded-full border transition-all ${darkMode ? "border-stone-800 bg-stone-900 text-stone-300" : "border-stone-200 bg-stone-100 text-stone-700"}`}
-            >
-              <Heart className={`w-4 h-4 ${favorites.length > 0 ? "fill-amber-500 text-amber-500" : ""}`} />
-              {favorites.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 text-black text-[9px] font-bold flex items-center justify-center">
-                  {favorites.length}
-                </span>
-              )}
-            </button>
-
+        {/* Main Navigation Bar */}
+        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 h-[66px] sm:h-[70px] grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+          {/* Left: Mobile Trigger or Clean Nav Links */}
+          <div className="flex items-center">
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label={isMobileMenuOpen ? (lang === "ka" ? "მენიუს დახურვა" : "Close menu") : (lang === "ka" ? "მენიუს გახსნა" : "Open menu")}
-              className={`p-2 rounded-full border transition-all ${darkMode ? "border-stone-800 bg-stone-900 text-amber-400" : "border-stone-200 bg-stone-100 text-stone-800"}`}
+              className="lg:hidden p-2 -ml-2 rounded-full text-[#1F1C18] hover:bg-[#F4EFE6] transition-colors cursor-pointer"
             >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isMobileMenuOpen ? <X className="w-5 h-5 stroke-[1.75]" /> : <Menu className="w-5 h-5 stroke-[1.75]" />}
             </button>
-          </div>
-        </div>
 
-        {/* Mobile & Tablet Dropdown Navigation (< 1024px) */}
-        {isMobileMenuOpen && (
-          <div className={`lg:hidden border-b p-5 space-y-4 animate-fadeIn ${darkMode ? "bg-[#0c0b0a] border-stone-800" : "bg-white border-stone-200"}`}>
-            {/* User status mobile banner */}
-            {user ? (
-              <div className={`p-3 rounded-2xl border flex items-center justify-between gap-3 ${darkMode ? "bg-stone-900/80 border-amber-500/25" : "bg-stone-100 border-stone-200"}`}>
-                <a
-                  href={lang === "en" ? "/en/profile" : "/profile"}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setIsMobileMenuOpen(false);
-                    navigateTo(lang === "en" ? "/en/profile" : "/profile");
-                  }}
-                  className="flex items-center gap-2.5 min-w-0 flex-1 text-left group"
-                >
-                  <div className="relative shrink-0">
+            <nav
+              className={`hidden lg:flex items-center gap-5 xl:gap-7 text-[13px] font-medium text-[#4A453E] ${isEn ? "tracking-[0.1em] uppercase text-[11px]" : ""}`}
+              aria-label="Main navigation"
+            >
+              <a href={`${prefix}/catalog`} className="hover:text-[#1F1C18] transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#9A7742] hover:after:w-full after:transition-all whitespace-nowrap">
+                {lang === "ka" ? "კოლექცია" : "Collection"}
+              </a>
+              <a href={`${prefix}/about`} className="hover:text-[#1F1C18] transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#9A7742] hover:after:w-full after:transition-all whitespace-nowrap">
+                {lang === "ka" ? "ჩვენს შესახებ" : "About"}
+              </a>
+              <a href={`${prefix}/#craftsmanship`} className="hover:text-[#1F1C18] transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#9A7742] hover:after:w-full after:transition-all whitespace-nowrap">
+                {lang === "ka" ? "ოსტატობა" : "Atelier"}
+              </a>
+              <a href={`${prefix}/blog`} className="hover:text-[#1F1C18] transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#9A7742] hover:after:w-full after:transition-all whitespace-nowrap">
+                {lang === "ka" ? "ბლოგი" : "Journal"}
+              </a>
+              <a href={`${prefix}/size-guide`} className="hidden xl:inline-block hover:text-[#1F1C18] transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#9A7742] hover:after:w-full after:transition-all whitespace-nowrap">
+                {lang === "ka" ? "ზომის გიდი" : "Size Guide"}
+              </a>
+            </nav>
+          </div>
+
+          {/* Center: Natural Balanced Brand Wordmark */}
+          <a
+            href={prefix || "/"}
+            className="flex flex-col items-center justify-center group text-center shrink-0"
+            aria-label={siteSettings.brandName || "მთავარი გვერდი"}
+          >
+            <span className={`font-serif text-2xl sm:text-[27px] font-semibold text-[#1F1C18] leading-none group-hover:text-[#9A7742] transition-colors ${isEn ? "tracking-[0.2em] uppercase" : "tracking-[0.06em]"}`}>
+              {siteSettings.brandName || "მატარე"}
+            </span>
+            <span className={`text-[10px] text-[#9A7742] font-medium mt-1 ${isEn ? "tracking-[0.2em] uppercase" : "tracking-[0.04em]"}`}>
+              {lang === "ka" ? siteSettings.brandSubtitle : (siteSettings.brandSubtitleEn || siteSettings.brandSubtitle)}
+            </span>
+          </a>
+
+          {/* Right: Clean Tactile Utilities */}
+          <div className="flex items-center justify-end gap-2 sm:gap-3.5">
+            <a
+              href={`${prefix}/#contact`}
+              className={`hidden xl:inline-block text-[13px] font-medium text-[#4A453E] hover:text-[#1F1C18] transition-colors whitespace-nowrap mr-1 ${isEn ? "tracking-[0.1em] uppercase text-[11px]" : ""}`}
+            >
+              {lang === "ka" ? "კონტაქტი" : "Contact"}
+            </a>
+
+            <button
+              type="button"
+              onClick={handleToggleLang}
+              aria-label={lang === "ka" ? "Switch language to English" : "ენის გადართვა ქართულზე"}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-[#4A453E] bg-[#FAF8F4] border border-[#EAE4DB] hover:border-[#9A7742] hover:text-[#1F1C18] transition-colors cursor-pointer"
+            >
+              <Globe className="w-3.5 h-3.5 stroke-[1.75] text-[#9A7742]" />
+              <span>{lang === "ka" ? "EN" : "GE"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleFavoritesClick}
+              aria-label={lang === "ka" ? `რჩეული სამკაულები (${favorites.length})` : `Saved items (${favorites.length})`}
+              className="relative w-9 h-9 rounded-full flex items-center justify-center text-[#1F1C18] hover:bg-[#F4EFE6] transition-colors cursor-pointer"
+            >
+              <Heart className={`w-[18px] h-[18px] stroke-[1.75] ${favorites.length > 0 ? "fill-[#9A7742] text-[#9A7742]" : ""}`} />
+              {favorites.length > 0 && (
+                <span className="absolute top-0.5 right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-[#1F1C18] text-white text-[9px] font-semibold flex items-center justify-center">
+                  {favorites.length}
+                </span>
+              )}
+            </button>
+
+            <div className="hidden lg:flex items-center gap-2.5 pl-2.5 border-l border-[#EAE4DB]">
+              {user ? (
+                <>
+                  <a
+                    href={`${prefix}/profile`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigateTo(`${prefix}/profile`);
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FAF8F4] border border-[#EAE4DB] hover:border-[#9A7742] text-xs font-medium text-[#1F1C18] transition-colors cursor-pointer"
+                    title={lang === "ka" ? `პროფილი: ${user.displayName || user.email}` : `Profile: ${user.displayName || user.email}`}
+                  >
                     {user.photoURL ? (
-                      <img
-                        src={user.photoURL}
-                        alt="Avatar"
-                        className="w-9 h-9 rounded-full object-cover border border-amber-500/50 shadow-sm"
-                      />
+                      <img src={user.photoURL} alt="Avatar" className="w-5 h-5 rounded-full object-cover" />
                     ) : (
-                      <div className="w-9 h-9 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center font-bold text-xs shrink-0">
+                      <div className="w-5 h-5 rounded-full bg-[#9A7742]/15 text-[#9A7742] text-[10px] font-semibold flex items-center justify-center">
                         {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
                       </div>
                     )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold truncate group-hover:text-amber-500 transition-colors">
-                      {user.displayName || user.email}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      {userRole === 'superadmin' ? (
-                        <span className="text-[10px] font-bold text-amber-400">Super Admin</span>
-                      ) : userRole === 'admin' ? (
-                        <span className="text-[10px] font-semibold text-blue-400">ადმინისტრატორი</span>
-                      ) : userRole === 'moderator' ? (
-                        <span className="text-[10px] font-semibold text-purple-400">მოდერატორი</span>
-                      ) : (
-                        <span className="text-[10px] text-amber-500">{lang === "ka" ? "მომხმარებელი (პროფილი ⚙️)" : "Member (Profile ⚙️)"}</span>
-                      )}
+                    <span className="max-w-[100px] truncate hidden xl:inline">
+                      {user.displayName || user.email?.split('@')[0]}
+                    </span>
+                    {(userRole === 'superadmin' || userRole === 'admin') && (
+                      <span className="px-1.5 py-0.5 rounded-full text-[9px] font-semibold uppercase bg-[#1F1C18] text-white">
+                        ADMIN
+                      </span>
+                    )}
+                  </a>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    title={lang === "ka" ? "გასვლა" : "Logout"}
+                    aria-label={lang === "ka" ? "ანგარიშიდან გასვლა" : "Sign out"}
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-[#787168] hover:text-[#9E2A2B] hover:bg-[#FDF6F6] transition-colors cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4 stroke-[1.75]" />
+                  </button>
+                </>
+              ) : (
+                <div className="flex items-center gap-2.5">
+                  <a
+                    href={`${prefix}/login`}
+                    className="px-3 py-1.5 text-xs font-medium text-[#4A453E] hover:text-[#1F1C18] transition-colors flex items-center gap-1.5 whitespace-nowrap"
+                  >
+                    <User className="w-3.5 h-3.5 stroke-[1.75]" />
+                    <span>{lang === "ka" ? "შესვლა" : "Sign In"}</span>
+                  </a>
+                  <a
+                    href={`${prefix}/register`}
+                    className="hidden xl:inline-block px-4 py-2 rounded-full bg-[#1F1C18] text-white hover:bg-[#35302A] text-xs font-medium transition-colors whitespace-nowrap"
+                  >
+                    {lang === "ka" ? "რეგისტრაცია" : "Register"}
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Dropdown Drawer */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden bg-white border-t border-[#EAE4DB] px-5 py-6 space-y-5 animate-fadeIn shadow-xl">
+            {user ? (
+              <div className="pb-4 border-b border-[#EAE4DB] flex items-center justify-between gap-3">
+                <a
+                  href={`${prefix}/profile`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsMobileMenuOpen(false);
+                    navigateTo(`${prefix}/profile`);
+                  }}
+                  className="flex items-center gap-3 min-w-0 flex-1"
+                >
+                  {user.photoURL ? (
+                    <img src={user.photoURL} alt="Avatar" className="w-10 h-10 rounded-full object-cover border border-[#EAE4DB]" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-[#F4EFE6] text-[#1F1C18] flex items-center justify-center font-semibold text-sm">
+                      {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
                     </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-[#1F1C18] truncate">{user.displayName || user.email}</p>
+                    <p className="text-xs text-[#9A7742]">
+                      {userRole === 'superadmin' || userRole === 'admin'
+                        ? 'Administrator'
+                        : (lang === "ka" ? "ჩემი პროფილი" : "My Account")}
+                    </p>
                   </div>
                 </a>
-
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="p-2 rounded-xl text-stone-400 hover:text-red-400 transition-colors shrink-0"
+                  className="p-2 text-[#787168] hover:text-[#9E2A2B]"
                   title={lang === "ka" ? "გასვლა" : "Sign out"}
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-2 pt-1">
+              <div className="grid grid-cols-2 gap-3 pb-4 border-b border-[#EAE4DB]">
                 <a
-                  href={lang === "en" ? "/en/login" : "/login"}
+                  href={`${prefix}/login`}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`py-2.5 px-4 rounded-xl text-center text-xs font-semibold border transition-all ${
-                    darkMode ? "border-stone-800 bg-stone-900 hover:border-amber-500" : "border-stone-200 bg-stone-100"
-                  }`}
+                  className="py-2.5 px-4 rounded-full border border-[#1F1C18] text-[#1F1C18] text-center text-xs font-medium"
                 >
                   {lang === "ka" ? "შესვლა" : "Sign In"}
                 </a>
                 <a
-                  href={lang === "en" ? "/en/register" : "/register"}
+                  href={`${prefix}/register`}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="py-2.5 px-4 rounded-xl text-center text-xs font-semibold bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-md shadow-amber-500/20"
+                  className="py-2.5 px-4 rounded-full bg-[#1F1C18] text-white text-center text-xs font-medium"
                 >
                   {lang === "ka" ? "რეგისტრაცია" : "Register"}
                 </a>
               </div>
             )}
 
-            <nav className="flex flex-col space-y-3 text-sm tracking-wider uppercase" aria-label="Mobile navigation">
-              <a href={lang === "en" ? "/en/catalog" : "/catalog"} onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
+            <nav className="flex flex-col divide-y divide-[#F4EFE6] text-sm font-medium text-[#1F1C18]" aria-label="Mobile navigation">
+              <a href={`${prefix}/catalog`} onClick={() => setIsMobileMenuOpen(false)} className="py-3 hover:text-[#9A7742]">
                 {lang === "ka" ? "კოლექცია" : "Collection"}
               </a>
-              <a href={lang === "en" ? "/en/about" : "/about"} onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
+              <a href={`${prefix}/about`} onClick={() => setIsMobileMenuOpen(false)} className="py-3 hover:text-[#9A7742]">
                 {lang === "ka" ? "ჩვენს შესახებ" : "About Us"}
               </a>
-              <a href={lang === "en" ? "/en/#craftsmanship" : "/#craftsmanship"} onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
+              <a href={`${prefix}/#craftsmanship`} onClick={() => setIsMobileMenuOpen(false)} className="py-3 hover:text-[#9A7742]">
                 {lang === "ka" ? "ოსტატობა" : "Craftsmanship"}
               </a>
-              <a href={lang === "en" ? "/en/blog" : "/blog"} onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
+              <a href={`${prefix}/blog`} onClick={() => setIsMobileMenuOpen(false)} className="py-3 hover:text-[#9A7742]">
                 {lang === "ka" ? "ბლოგი" : "Journal"}
               </a>
-              <a href={lang === "en" ? "/en/size-guide" : "/size-guide"} onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
+              <a href={`${prefix}/size-guide`} onClick={() => setIsMobileMenuOpen(false)} className="py-3 hover:text-[#9A7742]">
                 {lang === "ka" ? "ზომის გზამკვლევი" : "Size Guide"}
               </a>
-              <a href={lang === "en" ? "/en/#contact" : "/#contact"} onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">
+              <a href={`${prefix}/faq`} onClick={() => setIsMobileMenuOpen(false)} className="py-3 hover:text-[#9A7742]">
+                {lang === "ka" ? "კითხვა-პასუხი (FAQ)" : "FAQ"}
+              </a>
+              <a href={`${prefix}/track`} onClick={() => setIsMobileMenuOpen(false)} className="py-3 hover:text-[#9A7742]">
+                {lang === "ka" ? "შეკვეთის თრექინგი" : "Track Order"}
+              </a>
+              <a href={`${prefix}/#contact`} onClick={() => setIsMobileMenuOpen(false)} className="py-3 hover:text-[#9A7742]">
                 {lang === "ka" ? "კონტაქტი" : "Contact"}
               </a>
               {user && (
-                <>
-                  <a
-                    href={lang === "en" ? "/en/profile" : "/profile"}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setIsMobileMenuOpen(false);
-                      navigateTo(lang === "en" ? "/en/profile" : "/profile");
-                    }}
-                    className="hover:text-amber-500 py-1 text-stone-300 font-medium flex items-center justify-between"
-                  >
-                    <span>{lang === "ka" ? "ჩემი პროფილი & შეკვეთები" : "My Account & Orders"}</span>
-                    <span className="text-xs">⚙️</span>
-                  </a>
-                </>
+                <a
+                  href={`${prefix}/profile`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsMobileMenuOpen(false);
+                    navigateTo(`${prefix}/profile`);
+                  }}
+                  className="py-3 text-[#9A7742]"
+                >
+                  {lang === "ka" ? "ჩემი პროფილი & შეკვეთები" : "My Account & Orders"}
+                </a>
               )}
             </nav>
 
-            <div className="pt-3 border-t border-stone-500/20 flex items-center gap-2 sm:hidden">
+            <div className="pt-1 flex items-center sm:hidden">
               <button
                 type="button"
                 onClick={handleToggleLang}
                 aria-label={lang === "ka" ? "Switch language to English" : "ენის გადართვა ქართულზე"}
-                className={`px-3 py-2 rounded-xl text-xs font-medium border flex items-center gap-1.5 ${
-                  darkMode ? "border-stone-800 bg-stone-900" : "border-stone-200 bg-stone-100"
-                }`}
+                className="px-4 py-2 rounded-full border border-[#EAE4DB] bg-[#FAF8F4] text-xs font-medium flex items-center gap-2 text-[#1F1C18]"
               >
-                <Globe className="w-3.5 h-3.5 text-amber-500" />
-                {lang === "ka" ? "EN" : "GE"}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setDarkMode(!darkMode)}
-                aria-label={darkMode ? (lang === "ka" ? "დღის რეჟიმზე გადართვა" : "Switch to light mode") : (lang === "ka" ? "ღამის რეჟიმზე გადართვა" : "Switch to dark mode")}
-                className={`p-2.5 rounded-xl border ${
-                  darkMode ? "border-stone-800 bg-stone-900 text-amber-400" : "border-stone-200 bg-stone-100 text-stone-700"
-                }`}
-              >
-                {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                <Globe className="w-3.5 h-3.5 text-[#9A7742]" />
+                {lang === "ka" ? "English (EN)" : "ქართული (GE)"}
               </button>
             </div>
           </div>

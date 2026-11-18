@@ -1,12 +1,20 @@
-import React, { useEffect } from 'react';
-import { Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { pick } from '../../utils/i18n';
 import { SLIDE_INTERVAL_MS } from '../../constants';
 import { getOptimizedImageUrl, getUnsplashSrcSet, sanitizeImageUrl } from '../../utils/imageUtils';
 
+const HERO_FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80";
+
 export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, lang }) {
   const activeSlide = slides[currentSlide % slides.length] || slides[0];
-  const slideImage = sanitizeImageUrl(activeSlide?.image);
+  const rawSlideImage = sanitizeImageUrl(activeSlide?.image);
+  const [imgFailed, setImgFailed] = useState(false);
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [rawSlideImage]);
 
   useEffect(() => {
     if (!slides || slides.length <= 1) return;
@@ -18,98 +26,114 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
 
   if (!activeSlide) return null;
 
+  const activeIdx = currentSlide % slides.length;
+  const displayImg = !imgFailed && rawSlideImage ? getOptimizedImageUrl(rawSlideImage, 1200, 78) : HERO_FALLBACK_IMAGE;
+
   return (
-    <section className="relative w-full h-[500px] sm:h-[640px] overflow-hidden flex items-center bg-black">
-      <div className="absolute inset-0">
-        <img
-          src={getOptimizedImageUrl(slideImage, 1200, 60)}
-          srcSet={getUnsplashSrcSet(slideImage)}
-          sizes="100vw"
-          alt={pick(activeSlide, "title", lang) || "მატარე — საიუველირო კოლექცია"}
-          loading="eager"
-          fetchPriority="high"
-          decoding="async"
-          width="1200"
-          height="640"
-          className="w-full h-full object-cover object-center transition-transform duration-1000"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/35" />
-      </div>
+    <section className="w-full pt-[110px] sm:pt-[118px] pb-6 bg-[#FAF8F4]">
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div className="bg-white rounded-3xl border border-[#EAE4DB] shadow-[0_4px_28px_rgba(31,28,24,0.05)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 lg:h-[500px]">
+          {/* Left Editorial Copy Panel */}
+          <div className="lg:col-span-6 flex flex-col justify-between px-6 sm:px-10 lg:px-14 py-9 sm:py-11 lg:py-12 order-2 lg:order-1 min-h-[300px] lg:min-h-0 lg:h-full overflow-hidden">
+            <div className="space-y-4 sm:space-y-5 my-auto">
+              <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#F5EFE4] text-[#8A6836] text-xs font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#9A7742]" />
+                <span>{pick(activeSlide, "badge", lang)}</span>
+              </div>
 
-      <div className="relative z-10 w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-12 sm:pt-0">
-        <div className="max-w-xl space-y-3 sm:space-y-5">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs uppercase tracking-[0.2em] bg-amber-500/20 border border-amber-400/40 text-amber-300">
-            <Sparkles className="w-3.5 h-3.5" />
-            {pick(activeSlide, "badge", lang)}
-          </span>
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-[42px] font-medium text-[#1F1C18] leading-[1.2] line-clamp-2">
+                {pick(activeSlide, "title", lang)}
+              </h1>
 
-          <h1 className="font-serif text-2xl sm:text-5xl lg:text-6xl font-normal text-white leading-[1.2] sm:leading-[1.15]">
-            {pick(activeSlide, "title", lang)}
-          </h1>
+              <p className="text-sm sm:text-[15px] text-[#4A453E] leading-relaxed max-w-lg line-clamp-3">
+                {lang === "ka" ? activeSlide?.subtitle : (activeSlide?.subtitleEn || activeSlide?.subtitle)}
+              </p>
 
-          <p className="text-stone-300 text-xs sm:text-base lg:text-lg leading-relaxed line-clamp-3 sm:line-clamp-none">
-            {lang === "ka" ? activeSlide?.subtitle : (activeSlide?.subtitleEn || activeSlide?.subtitle)}
-          </p>
+              <div className="pt-2 flex flex-wrap items-center gap-3.5 sm:gap-4">
+                <a
+                  href="#catalog"
+                  className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-[#1F1C18] text-white hover:bg-[#35302A] text-xs sm:text-sm font-medium transition-all shadow-sm group"
+                >
+                  <span>{lang === "ka" ? (activeSlide?.buttonText || "კოლექციის ნახვა") : (activeSlide?.buttonTextEn || "Explore Collection")}</span>
+                  <ArrowRight className="w-4 h-4 stroke-[1.75] group-hover:translate-x-1 transition-transform" />
+                </a>
 
-          <div className="pt-2 flex flex-wrap items-center gap-3 sm:gap-4">
-            <a
-              href="#catalog"
-              className="px-6 py-3 sm:px-7 sm:py-3.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-black font-semibold text-xs sm:text-sm tracking-wider uppercase shadow-xl shadow-amber-500/25 hover:brightness-110 transition-all"
-            >
-              {lang === "ka" ? (activeSlide?.buttonText || "კოლექციის ნახვა") : (activeSlide?.buttonTextEn || "Explore Collection")}
-            </a>
-            <a
-              href="#contact"
-              className="px-6 py-3 sm:px-7 sm:py-3.5 rounded-full border border-white/30 text-white hover:bg-white/10 text-xs sm:text-sm tracking-wider uppercase transition-all"
-            >
-              {lang === "ka" ? "შოურუმში ვიზიტი" : "Visit Showroom"}
-            </a>
+                <a
+                  href="#contact"
+                  className="inline-flex items-center px-6 py-3.5 rounded-full border border-[#D9D1C5] text-[#1F1C18] hover:border-[#1F1C18] hover:bg-[#FAF8F4] text-xs sm:text-sm font-medium transition-colors"
+                >
+                  {lang === "ka" ? "შოურუმში ვიზიტი" : "Visit Showroom"}
+                </a>
+              </div>
+            </div>
+
+            {/* Clean Slide Progress Indicators */}
+            {slides.length > 1 && (
+              <div className="pt-8 flex items-center gap-3">
+                {slides.map((s, idx) => {
+                  const isActive = activeIdx === idx;
+                  return (
+                    <button
+                      key={s.id || idx}
+                      type="button"
+                      onClick={() => setCurrentSlide(idx)}
+                      aria-label={`Slide ${idx + 1}`}
+                      className="relative h-1.5 rounded-full bg-[#EAE4DB] overflow-hidden transition-all cursor-pointer"
+                      style={{ width: isActive ? "40px" : "12px" }}
+                    >
+                      {isActive && (
+                        <span
+                          className="absolute inset-0 bg-[#9A7742] origin-left rounded-full"
+                          style={{ animation: `fillProgress ${SLIDE_INTERVAL_MS}ms linear forwards` }}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+                <span className="ml-2 text-xs font-mono text-[#787168]">
+                  {String(activeIdx + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Right Framed Editorial Photography — Strictly Fixed Height (Zero Layout Shift) */}
+          <div className="lg:col-span-6 relative h-[280px] sm:h-[360px] lg:h-full bg-[#F2EDE4] order-1 lg:order-2 overflow-hidden">
+            <img
+              src={displayImg}
+              srcSet={!imgFailed && rawSlideImage ? getUnsplashSrcSet(rawSlideImage) : undefined}
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              alt={pick(activeSlide, "title", lang) || "მატარე — საიუველირო კოლექცია"}
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
+              onError={() => setImgFailed(true)}
+              className="absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500"
+            />
+
+            {slides.length > 1 && (
+              <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)}
+                  aria-label={lang === "ka" ? "წინა სლაიდი" : "Previous slide"}
+                  className="w-9 h-9 rounded-full bg-white/90 hover:bg-[#1F1C18] text-[#1F1C18] hover:text-white border border-[#EAE4DB] flex items-center justify-center shadow-sm transition-colors cursor-pointer backdrop-blur-sm"
+                >
+                  <ChevronLeft className="w-4 h-4 stroke-[1.75]" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
+                  aria-label={lang === "ka" ? "შემდეგი სლაიდი" : "Next slide"}
+                  className="w-9 h-9 rounded-full bg-white/90 hover:bg-[#1F1C18] text-[#1F1C18] hover:text-white border border-[#EAE4DB] flex items-center justify-center shadow-sm transition-colors cursor-pointer backdrop-blur-sm"
+                >
+                  <ChevronRight className="w-4 h-4 stroke-[1.75]" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      {slides.length > 1 && (
-        <>
-          <button
-            onClick={() => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)}
-            aria-label={lang === "ka" ? "წინა სლაიდი" : "Previous slide"}
-            className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3 rounded-full bg-black/40 hover:bg-black/70 text-white border border-white/15 transition-all"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
-            aria-label={lang === "ka" ? "შემდეგი სლაიდი" : "Next slide"}
-            className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3 rounded-full bg-black/40 hover:bg-black/70 text-white border border-white/15 transition-all"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
-            {slides.map((s, idx) => {
-              const isActive = currentSlide % slides.length === idx;
-              return (
-                <button
-                  key={s.id || idx}
-                  onClick={() => setCurrentSlide(idx)}
-                  aria-label={`Slide ${idx + 1}`}
-                  className="relative h-2 rounded-full bg-white/40 overflow-hidden transition-all cursor-pointer"
-                  style={{ width: isActive ? "36px" : "10px" }}
-                >
-                  {isActive && (
-                    <div
-                      className="absolute top-0 left-0 w-full h-full bg-amber-400 origin-left"
-                      style={{
-                        animation: `fillProgress ${SLIDE_INTERVAL_MS}ms linear forwards`
-                      }}
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </>
-      )}
     </section>
   );
 }

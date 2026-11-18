@@ -1,19 +1,17 @@
 import React, { useState, useMemo } from 'react';
-import { X, Trash2, ArrowUpDown, Filter, Sparkles, ArrowLeftRight, ShoppingBag } from 'lucide-react';
+import { X, Trash2, ArrowUpDown, ArrowLeftRight, ShoppingBag } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
-import { useAuth } from '../../context/AuthContext';
 import { formatPrice } from '../../utils/i18n';
 import { navigateTo } from '../../utils/navigation';
 import QuickBuyModal from './QuickBuyModal';
 
 export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
-  const { darkMode, lang, products, favorites, toggleFavorite, compareList, toggleCompare } = useStore();
-  const { user } = useAuth();
+  const { lang, products, favorites, toggleFavorite, compareList, toggleCompare } = useStore();
 
-  const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'price-desc' | 'price-asc' | 'name'
+  const [sortBy, setSortBy] = useState('newest');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [buyModalOpen, setBuyModalOpen] = useState(false);
-  const [selectedForBuy, setSelectedForBuy] = useState([]);
+  const [selectedForBuy] = useState([]);
 
   const handleBuySingle = (item) => {
     onClose?.();
@@ -28,24 +26,17 @@ export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
     navigateTo(`${prefix}/checkout?from=favorites`);
   };
 
-  // Filter & sort favorite products
   const favoriteProducts = useMemo(() => {
     let list = (products || []).filter((p) => favorites?.includes(p.id));
-
-    // Category filter
     if (selectedCategory !== 'all') {
       list = list.filter((p) => p.category === selectedCategory);
     }
-
-    // Sorting
     return [...list].sort((a, b) => {
       const priceA = typeof a.price === 'number' ? a.price : parseFloat(String(a.price || '0').replace(/[^0-9.]/g, '')) || 0;
       const priceB = typeof b.price === 'number' ? b.price : parseFloat(String(b.price || '0').replace(/[^0-9.]/g, '')) || 0;
-
       if (sortBy === 'price-desc') return priceB - priceA;
       if (sortBy === 'price-asc') return priceA - priceB;
       if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
-      // newest
       return 0;
     });
   }, [products, favorites, sortBy, selectedCategory]);
@@ -67,22 +58,19 @@ export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4"
+      className="fixed inset-0 z-50 bg-black/45 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="favorites-modal-title"
     >
-      <div className={`w-full max-w-2xl rounded-3xl border p-5 sm:p-6 transition-all ${
-        darkMode ? "bg-[#141210] border-stone-800 text-white shadow-2xl shadow-black/80" : "bg-white border-stone-200 text-stone-900 shadow-xl"
-      }`}>
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-stone-500/20">
-          <div className="flex items-center gap-2.5">
-            <h3 id="favorites-modal-title" className="font-serif text-xl sm:text-2xl font-medium">
+      <div className="w-full max-w-2xl bg-white border border-[#E8E3DB] text-[#141311] p-6 sm:p-8 shadow-2xl">
+        <div className="flex items-center justify-between pb-4 border-b border-[#E8E3DB]">
+          <div className="flex items-center gap-3">
+            <h3 id="favorites-modal-title" className="font-serif text-2xl font-light">
               {lang === "ka" ? "რჩეული სამკაულები" : "Saved Jewelry"}
             </h3>
             {favorites?.length > 0 && (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-black">
+              <span className="px-2 py-0.5 text-[11px] font-mono bg-[#F8F6F2] border border-[#E8E3DB] text-[#9D7B48]">
                 {favorites.length}
               </span>
             )}
@@ -91,25 +79,20 @@ export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
             type="button"
             onClick={onClose}
             aria-label={lang === "ka" ? "ფანჯრის დახურვა" : "Close modal"}
-            className="p-2 rounded-full hover:bg-stone-500/10 transition-colors"
+            className="p-2 text-[#847E75] hover:text-[#141311] transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 stroke-[1.5]" />
           </button>
         </div>
 
-        {/* Toolbar: დალაგება & ფილტრაცია (მხოლოდ რეგისტრირებულ მომხმარებელს) */}
         {favorites?.length > 1 && (
-          <div className="pt-3 pb-2 flex flex-wrap items-center justify-between gap-2.5 border-b border-stone-500/15">
-            {/* დალაგების მენიუ */}
-            <div className="flex items-center gap-1.5 text-xs">
-              <ArrowUpDown className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-              <span className="opacity-70 font-medium">{lang === 'ka' ? 'დალაგება:' : 'Sort:'}</span>
+          <div className="py-3 flex flex-wrap items-center justify-between gap-2.5 border-b border-[#EFECE6]">
+            <div className="flex items-center gap-2 text-xs">
+              <ArrowUpDown className="w-3.5 h-3.5 text-[#9D7B48] stroke-[1.5]" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className={`py-1 px-2.5 rounded-xl border text-xs outline-none cursor-pointer transition-all ${
-                  darkMode ? 'bg-stone-900 border-stone-700 text-stone-200' : 'bg-stone-100 border-stone-300 text-stone-800'
-                }`}
+                className="py-1.5 px-2.5 border border-[#E8E3DB] bg-white text-xs text-[#141311] outline-none cursor-pointer"
               >
                 <option value="newest">{lang === 'ka' ? 'უახლესი' : 'Newest'}</option>
                 <option value="price-desc">{lang === 'ka' ? 'ფასი: კლებადი ↓' : 'Price: High to Low'}</option>
@@ -118,20 +101,17 @@ export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
               </select>
             </div>
 
-            {/* კატეგორიების ფილტრი (თუ 1-ზე მეტია) */}
             {categories.length > 2 && (
-              <div className="flex items-center gap-1 text-xs">
+              <div className="flex items-center gap-1.5 text-xs">
                 {categories.map((cat) => (
                   <button
                     key={cat}
                     type="button"
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
+                    className={`px-2.5 py-1 text-[11px] border transition-colors cursor-pointer ${
                       selectedCategory === cat
-                        ? 'bg-amber-500 text-black font-semibold'
-                        : darkMode
-                        ? 'bg-stone-900 text-stone-400 hover:text-white'
-                        : 'bg-stone-100 text-stone-600 hover:text-black'
+                        ? 'bg-[#141311] text-white border-[#141311]'
+                        : 'bg-white text-[#4A4640] border-[#E8E3DB] hover:border-[#141311]'
                     }`}
                   >
                     {cat === 'all' ? (lang === 'ka' ? 'ყველა' : 'All') : cat}
@@ -142,27 +122,21 @@ export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
           </div>
         )}
 
-        {/* Favorites List */}
-        <div className="py-4 max-h-96 overflow-y-auto space-y-3">
+        <div className="py-4 max-h-96 overflow-y-auto divide-y divide-[#EFECE6]">
           {favoriteProducts.length === 0 ? (
-            <div className="text-center py-10 space-y-2">
-              <p className="opacity-60 text-sm">
+            <div className="text-center py-12 space-y-2">
+              <p className="font-serif text-lg text-[#4A4640]">
                 {lang === "ka" ? "რჩეულების სია ცარიელია." : "No saved items yet."}
               </p>
-              <p className="text-xs text-amber-500/80">
-                {lang === "ka" ? "დააჭირეთ გულის ხატულას კატალოგში ნივთის დასამატებლად" : "Click the heart icon on any jewelry piece to save it"}
+              <p className="text-xs text-[#847E75]">
+                {lang === "ka" ? "დააჭირეთ გულის ხატულას კატალოგში ნივთის დასამატებლად" : "Click the heart icon on any piece to save it"}
               </p>
             </div>
           ) : (
             favoriteProducts.map((item) => (
-              <div
-                key={item.id}
-                className={`flex items-center justify-between gap-3 p-3 rounded-2xl border transition-all ${
-                  darkMode ? 'border-stone-800 bg-stone-900/40 hover:border-amber-500/30' : 'border-stone-200 bg-stone-50/60 hover:border-amber-400'
-                }`}
-              >
+              <div key={item.id} className="flex items-center justify-between gap-3 py-3.5 first:pt-1">
                 <div
-                  className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
+                  className="flex items-center gap-3.5 min-w-0 flex-1 cursor-pointer"
                   onClick={() => {
                     onClose();
                     onSelectProduct(item);
@@ -171,74 +145,49 @@ export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
                   <img
                     src={item.images?.[0] || item.image || "/brand-logo.jpg"}
                     alt={item.name || "სამკაული"}
-                    className="w-14 h-14 rounded-xl object-cover shrink-0 border border-stone-500/20"
+                    className="w-14 h-16 object-cover shrink-0 bg-[#F4F1EC] border border-[#E8E3DB]"
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="font-serif font-medium truncate text-sm sm:text-base">{item.name}</div>
+                    <div className="font-serif text-base text-[#141311] truncate">{item.name}</div>
                     <div className="flex items-center gap-2 mt-0.5">
                       {item.oldPrice && (
-                        <span className="text-xs line-through opacity-50">{formatPrice(item.oldPrice)}</span>
+                        <span className="text-xs line-through text-[#9C958B]">{formatPrice(item.oldPrice)}</span>
                       )}
-                      <span className="text-xs sm:text-sm text-amber-500 font-semibold">{formatPrice(item.price)}</span>
-                      {item.category && (
-                        <span className="text-[10px] opacity-60 uppercase font-mono px-1.5 py-0.5 rounded bg-stone-500/10">
-                          {item.category}
-                        </span>
-                      )}
+                      <span className="text-xs sm:text-sm text-[#141311] font-medium">{formatPrice(item.price)}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                  {/* შედარებაში დამატება */}
+                <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     type="button"
                     onClick={() => toggleCompare(item.id)}
                     title={lang === 'ka' ? 'შედარების სიაში დამატება' : 'Compare'}
-                    className={`p-2 rounded-xl border text-xs font-medium transition-all ${
+                    className={`p-2 border transition-colors cursor-pointer ${
                       compareList?.includes(item.id)
-                        ? 'bg-amber-500 text-black border-amber-500'
-                        : darkMode
-                        ? 'border-stone-700 bg-stone-800 text-stone-300 hover:text-amber-400'
-                        : 'border-stone-200 bg-stone-100 text-stone-700 hover:text-amber-600'
+                        ? 'bg-[#9D7B48] text-white border-[#9D7B48]'
+                        : 'border-[#E8E3DB] text-[#4A4640] hover:border-[#141311]'
                     }`}
                   >
-                    <ArrowLeftRight className="w-3.5 h-3.5" />
+                    <ArrowLeftRight className="w-3.5 h-3.5 stroke-[1.5]" />
                   </button>
 
-                  {/* ყიდვა */}
                   <button
                     type="button"
                     onClick={() => handleBuySingle(item)}
-                    className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95"
+                    className="px-3.5 py-2 bg-[#141311] hover:bg-[#2C2A26] text-white text-[10px] uppercase tracking-[0.16em] flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
-                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <ShoppingBag className="w-3.5 h-3.5 stroke-[1.5]" />
                     <span>{lang === "ka" ? "ყიდვა" : "Buy"}</span>
-                  </button>
-
-                  {/* ნახვა */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onClose();
-                      onSelectProduct(item);
-                    }}
-                    className={`px-2.5 py-1.5 rounded-xl border text-xs font-medium transition-all ${
-                      darkMode
-                        ? 'border-stone-700 bg-stone-800 text-stone-300 hover:bg-stone-700'
-                        : 'border-stone-300 bg-stone-100 text-stone-700 hover:bg-stone-200'
-                    }`}
-                  >
-                    {lang === "ka" ? "ნახვა" : "View"}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => toggleFavorite(item.id)}
                     aria-label={`${lang === "ka" ? "რჩეულებიდან ამოშლა" : "Remove from favorites"}: ${item.name}`}
-                    className="p-2 text-stone-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
+                    className="p-2 text-[#847E75] hover:text-[#8E2424] transition-colors cursor-pointer"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4 stroke-[1.5]" />
                   </button>
                 </div>
               </div>
@@ -246,14 +195,13 @@ export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
           )}
         </div>
 
-        {/* Footer Summary with Buy / Checkout Button */}
         {favoriteProducts.length > 0 && (
-          <div className="pt-3.5 border-t border-stone-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="pt-4 border-t border-[#E8E3DB] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
-              <span className="opacity-70">
+              <span className="text-[#847E75]">
                 {lang === 'ka' ? `ჯამი (${favoriteProducts.length} ნივთი):` : `Total (${favoriteProducts.length} items):`}
               </span>
-              <span className="font-mono font-bold text-amber-500 text-sm sm:text-base">
+              <span className="font-mono font-medium text-[#141311] text-base">
                 {formatPrice(totalValue)}
               </span>
             </div>
@@ -261,16 +209,15 @@ export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
             <button
               type="button"
               onClick={handleBuyAll}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-amber-500/20 active:scale-95 transition-all"
+              className="w-full sm:w-auto px-6 py-3 bg-[#141311] hover:bg-[#2C2A26] text-white text-[11px] uppercase tracking-[0.18em] flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
-              <ShoppingBag className="w-4 h-4" />
+              <ShoppingBag className="w-3.5 h-3.5 stroke-[1.5]" />
               <span>{lang === 'ka' ? 'შეკვეთის გაფორმება' : 'Checkout Order'}</span>
             </button>
           </div>
         )}
       </div>
 
-      {/* Quick Buy / Checkout Modal */}
       <QuickBuyModal
         isOpen={buyModalOpen}
         onClose={() => setBuyModalOpen(false)}

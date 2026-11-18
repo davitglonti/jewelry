@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Clock, Calendar, Share2, Check, MessageCircle, Send, Sparkles } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, Share2, Check, MessageCircle, Send } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { navigateTo } from '../utils/navigation';
 import Navbar from '../components/layout/Navbar';
@@ -33,32 +33,32 @@ export default function BlogPostPage({ slugProp }) {
 
   useEffect(() => {
     if (article) {
-      const brand = siteSettings.brandName || "AURELIA";
+      const brand = siteSettings.brandName || "MATARE";
       const title = lang === "ka" ? article.titleKa : (article.titleEn || article.titleKa);
       document.title = `${title} — ${brand}`;
     }
     return () => {
-      const brand = siteSettings.brandName || "AURELIA";
+      const brand = siteSettings.brandName || "MATARE";
       document.title = `${brand} — საიუველირო სახლი`;
     };
   }, [article, lang, siteSettings.brandName]);
 
   if (!article) {
     return (
-      <div className={`min-h-screen flex flex-col justify-between ${darkMode ? "bg-[#0c0b0a] text-[#f5f0e6]" : "bg-[#faf7f2] text-[#1c1917]"}`}>
+      <div className="min-h-screen flex flex-col justify-between bg-white text-[#141311]">
         <Navbar
           lang={lang} setLang={setLang}
           darkMode={darkMode} setDarkMode={setDarkMode}
           favorites={favorites} setShowFavoritesModal={setShowFavoritesModal}
           isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen}
         />
-        <div className="py-28 text-center space-y-4 px-4">
-          <h2 className="font-serif text-3xl text-amber-500">სტატია ვერ მოიძებნა</h2>
-          <a href="/blog" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-amber-500 text-black font-semibold text-xs uppercase">
+        <div className="pt-40 pb-24 text-center space-y-4 px-4">
+          <h2 className="font-serif text-3xl font-light">სტატია ვერ მოიძებნა</h2>
+          <a href="/blog" className="inline-flex items-center gap-2 px-6 py-3 bg-[#141311] text-white text-xs uppercase tracking-[0.18em]">
             <ArrowLeft className="w-4 h-4" /> ბლოგზე დაბრუნება
           </a>
         </div>
-        <Footer darkMode={darkMode} lang={lang} siteSettings={siteSettings} />
+        <Footer lang={lang} siteSettings={siteSettings} />
       </div>
     );
   }
@@ -66,7 +66,6 @@ export default function BlogPostPage({ slugProp }) {
   const title = lang === "ka" ? article.titleKa : (article.titleEn || article.titleKa);
   const content = lang === "ka" ? article.contentKa : (article.contentEn || article.contentKa);
   const readTime = lang === "ka" ? article.readTime : (article.readTimeEn || article.readTime);
-
   const shareUrl = window.location.href;
 
   const handleCopyLink = () => {
@@ -75,11 +74,8 @@ export default function BlogPostPage({ slugProp }) {
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
-  const relatedArticles = articles
-    .filter((a) => a.id !== article.id)
-    .slice(0, 3);
+  const relatedArticles = articles.filter((a) => a.id !== article.id).slice(0, 3);
 
-  // Markdown-ის მარტივი და ელეგანტური რენდერი
   const renderFormattedContent = (text) => {
     if (!text) return null;
     const blocks = text.split('\n\n');
@@ -88,14 +84,14 @@ export default function BlogPostPage({ slugProp }) {
       const trimmed = block.trim();
       if (trimmed.startsWith('### ')) {
         return (
-          <h3 key={idx} className="font-serif text-xl sm:text-2xl text-amber-400 mt-8 mb-3 font-medium">
+          <h3 key={idx} className="font-serif text-xl sm:text-2xl text-[#141311] mt-10 mb-3 font-normal">
             {trimmed.replace('### ', '')}
           </h3>
         );
       }
       if (trimmed.startsWith('## ')) {
         return (
-          <h2 key={idx} className="font-serif text-2xl sm:text-3xl text-amber-500 mt-10 mb-4 font-normal">
+          <h2 key={idx} className="font-serif text-2xl sm:text-3xl text-[#141311] mt-12 mb-4 font-light border-b border-[#E8E3DB] pb-2">
             {trimmed.replace('## ', '')}
           </h2>
         );
@@ -103,9 +99,9 @@ export default function BlogPostPage({ slugProp }) {
       if (trimmed.startsWith('- ')) {
         const items = trimmed.split('\n').filter((l) => l.trim().startsWith('- '));
         return (
-          <ul key={idx} className="space-y-2 my-4 pl-4 list-disc marker:text-amber-500">
+          <ul key={idx} className="space-y-2.5 my-5 pl-5 list-disc marker:text-[#9D7B48]">
             {items.map((item, itemIdx) => (
-              <li key={itemIdx} className="text-sm sm:text-base leading-relaxed opacity-85">
+              <li key={itemIdx} className="text-sm sm:text-base text-[#4A4640] leading-relaxed font-light">
                 {item.replace('- ', '')}
               </li>
             ))}
@@ -115,9 +111,9 @@ export default function BlogPostPage({ slugProp }) {
       if (/^\d+\./.test(trimmed)) {
         const items = trimmed.split('\n').filter((l) => /^\d+\./.test(l.trim()));
         return (
-          <ol key={idx} className="space-y-2 my-4 pl-4 list-decimal marker:text-amber-500">
+          <ol key={idx} className="space-y-2.5 my-5 pl-5 list-decimal marker:text-[#9D7B48]">
             {items.map((item, itemIdx) => (
-              <li key={itemIdx} className="text-sm sm:text-base leading-relaxed opacity-85">
+              <li key={itemIdx} className="text-sm sm:text-base text-[#4A4640] leading-relaxed font-light">
                 {item.replace(/^\d+\.\s*/, '')}
               </li>
             ))}
@@ -125,7 +121,7 @@ export default function BlogPostPage({ slugProp }) {
         );
       }
       return (
-        <p key={idx} className="text-sm sm:text-base leading-relaxed opacity-85 my-4">
+        <p key={idx} className="text-sm sm:text-base text-[#4A4640] leading-relaxed font-light my-5">
           {trimmed}
         </p>
       );
@@ -133,31 +129,7 @@ export default function BlogPostPage({ slugProp }) {
   };
 
   return (
-    <div className={`min-h-screen w-full overflow-x-hidden transition-colors duration-300 ${darkMode ? "bg-[#0c0b0a] text-[#f5f0e6]" : "bg-[#faf7f2] text-[#1c1917]"}`}>
-      {/* Schema.org BlogPosting for SEO */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{
-        __html: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "BlogPosting",
-          "headline": title,
-          "image": article.image,
-          "datePublished": article.date,
-          "author": {
-            "@type": "Organization",
-            "name": siteSettings.brandName || "AURELIA"
-          },
-          "publisher": {
-            "@type": "Organization",
-            "name": siteSettings.brandName || "AURELIA",
-            "logo": {
-              "@type": "ImageObject",
-              "url": siteSettings.logoUrl || "https://www.matare.store/logo.png"
-            }
-          },
-          "description": lang === "ka" ? article.excerptKa : (article.excerptEn || article.excerptKa)
-        })
-      }} />
-
+    <div className="min-h-screen w-full overflow-x-hidden bg-white text-[#141311]">
       <Navbar
         lang={lang}
         setLang={setLang}
@@ -169,53 +141,49 @@ export default function BlogPostPage({ slugProp }) {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main id="main-content" className="pt-28 pb-20">
+      <main id="main-content" className="pt-[136px] sm:pt-[152px] pb-24">
         <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* ნავიგაციის ზოლი */}
-          <div className="py-4">
+          <div className="pb-6">
             <a
               href={lang === "en" ? "/en/blog" : "/blog"}
-              className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-500 hover:text-amber-400 transition-colors"
+              className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#847E75] hover:text-[#141311] transition-colors"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-3.5 h-3.5 stroke-[1.5]" />
               {lang === "ka" ? "ბლოგზე დაბრუნება" : "Back to Journal"}
             </a>
           </div>
 
-          {/* სათაურის ბლოკი */}
-          <header className="space-y-4 pt-4 pb-8">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest bg-amber-500 text-black">
-                {article.category}
-              </span>
-              <span className="flex items-center gap-1.5 text-xs opacity-60">
-                <Calendar className="w-3.5 h-3.5 text-amber-500" />
+          <header className="space-y-5 pb-10">
+            <div className="flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-[#847E75]">
+              <span className="text-[#9D7B48] font-medium">{article.category}</span>
+              <span>·</span>
+              <span className="flex items-center gap-1.5">
+                <Calendar className="w-3 h-3" />
                 {article.date}
               </span>
-              <span className="opacity-40">•</span>
-              <span className="flex items-center gap-1.5 text-xs opacity-60">
-                <Clock className="w-3.5 h-3.5 text-amber-500" />
+              <span>·</span>
+              <span className="flex items-center gap-1.5">
+                <Clock className="w-3 h-3" />
                 {readTime}
               </span>
             </div>
 
-            <h1 className="font-serif text-3xl sm:text-5xl lg:text-5xl font-normal leading-tight">
+            <h1 className="font-serif text-3xl sm:text-5xl font-light text-[#141311] leading-[1.15]">
               {title}
             </h1>
 
-            <p className="text-base sm:text-lg opacity-75 leading-relaxed font-light">
+            <p className="text-base sm:text-lg text-[#5C574F] leading-relaxed font-light">
               {lang === "ka" ? article.excerptKa : (article.excerptEn || article.excerptKa)}
             </p>
 
-            {/* გაზიარების ზოლი */}
-            <div className="pt-4 border-t border-stone-500/20 flex flex-wrap items-center justify-between gap-4">
+            <div className="pt-5 border-t border-[#E8E3DB] flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-serif font-bold text-sm">
-                  A
+                <div className="w-9 h-9 bg-[#F8F6F2] border border-[#E8E3DB] text-[#141311] flex items-center justify-center font-serif text-sm">
+                  {(siteSettings.brandName || "M").charAt(0)}
                 </div>
                 <div>
-                  <span className="text-xs font-medium block">{siteSettings.brandName || "AURELIA"}</span>
-                  <span className="text-[10px] opacity-60 block">საიუველირო სახლი • რედაქცია</span>
+                  <span className="text-xs font-medium text-[#141311] block">{siteSettings.brandName || "MATARE"}</span>
+                  <span className="text-[10px] text-[#847E75] uppercase tracking-[0.12em] block">Editorial Atelier</span>
                 </div>
               </div>
 
@@ -225,34 +193,33 @@ export default function BlogPostPage({ slugProp }) {
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Share on WhatsApp"
-                  className="p-2.5 rounded-full bg-emerald-700 hover:bg-emerald-600 text-white transition-all shadow-md"
+                  className="w-9 h-9 border border-[#E8E3DB] text-[#4A4640] hover:border-[#141311] hover:text-[#141311] flex items-center justify-center transition-colors"
                 >
-                  <MessageCircle className="w-4 h-4" />
+                  <MessageCircle className="w-4 h-4 stroke-[1.5]" />
                 </a>
                 <a
                   href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Share on Facebook"
-                  className="p-2.5 rounded-full bg-blue-700 hover:bg-blue-600 text-white transition-all shadow-md"
+                  className="w-9 h-9 border border-[#E8E3DB] text-[#4A4640] hover:border-[#141311] hover:text-[#141311] flex items-center justify-center transition-colors"
                 >
-                  <Send className="w-4 h-4" />
+                  <Send className="w-4 h-4 stroke-[1.5]" />
                 </a>
                 <button
                   type="button"
                   onClick={handleCopyLink}
                   aria-label="Copy link"
-                  className="px-3.5 py-2 rounded-full border border-stone-500/30 text-xs font-medium flex items-center gap-1.5 hover:border-amber-500 transition-all"
+                  className="px-3.5 h-9 border border-[#E8E3DB] text-[#141311] hover:border-[#141311] text-[10px] uppercase tracking-[0.16em] flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5 text-amber-500" />}
+                  {copiedLink ? <Check className="w-3.5 h-3.5 text-[#2E7D52]" /> : <Share2 className="w-3.5 h-3.5 text-[#9D7B48] stroke-[1.5]" />}
                   {copiedLink ? (lang === "ka" ? "დაკოპირდა!" : "Copied!") : (lang === "ka" ? "ლინკის კოპირება" : "Copy Link")}
                 </button>
               </div>
             </div>
           </header>
 
-          {/* მთავარი ფოტო */}
-          <div className="aspect-[16/9] rounded-3xl overflow-hidden border border-stone-500/20 mb-10 shadow-xl bg-stone-900">
+          <div className="aspect-[16/9] overflow-hidden border border-[#E8E3DB] mb-12 bg-[#F4F1EC]">
             <img
               src={article.image}
               alt={title}
@@ -263,24 +230,18 @@ export default function BlogPostPage({ slugProp }) {
             />
           </div>
 
-          {/* სტატიის ძირითადი შინაარსი */}
-          <div className={`p-6 sm:p-10 rounded-3xl border ${
-            darkMode ? "bg-[#141210] border-stone-800" : "bg-white border-stone-200 shadow-sm"
-          }`}>
-            <div className="prose prose-invert max-w-none">
-              {renderFormattedContent(content)}
-            </div>
+          <div className="max-w-3xl mx-auto">
+            {renderFormattedContent(content)}
           </div>
 
-          {/* ბოლო CTA ბლოკი */}
-          <div className="my-14 p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-amber-500/15 via-amber-500/5 to-transparent border border-amber-500/30 text-center space-y-4">
-            <span className="text-xs uppercase tracking-widest text-amber-400 block font-semibold">
+          <div className="my-16 p-10 sm:p-14 bg-[#F8F6F2] border border-[#E8E3DB] text-center space-y-4">
+            <span className="text-[10px] uppercase tracking-[0.26em] text-[#9D7B48] block font-medium">
               {lang === "ka" ? "ექსკლუზიური კოლექცია" : "Fine Jewelry Collection"}
             </span>
-            <h3 className="font-serif text-2xl sm:text-4xl font-normal">
+            <h3 className="font-serif text-2xl sm:text-4xl font-light text-[#141311]">
               {lang === "ka" ? "აღმოაჩინეთ თქვენი იდეალური სამკაული" : "Discover Your Perfect Piece"}
             </h3>
-            <p className="text-xs sm:text-sm opacity-75 max-w-md mx-auto">
+            <p className="text-xs sm:text-sm text-[#5C574F] max-w-md mx-auto font-light">
               {lang === "ka"
                 ? "დაათვალიერეთ ხელნაკეთი ბეჭდები, ყელსაბამები და სამაჯურები ჩვენს კატალოგში."
                 : "Explore handcrafted rings, necklaces, and bespoke pieces in our catalog."}
@@ -288,30 +249,26 @@ export default function BlogPostPage({ slugProp }) {
             <div className="pt-2">
               <a
                 href={lang === "en" ? "/en/catalog" : "/catalog"}
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-amber-500 text-black font-semibold text-xs uppercase tracking-wider hover:brightness-110 shadow-lg shadow-amber-500/20 transition-all"
+                className="inline-block px-8 py-3.5 bg-[#141311] text-white hover:bg-[#2C2A26] text-[11px] uppercase tracking-[0.2em] transition-colors"
               >
-                <Sparkles className="w-4 h-4" />
                 {lang === "ka" ? "კოლექციის დათვალიერება" : "Explore Collection"}
               </a>
             </div>
           </div>
 
-          {/* სხვა სტატიები */}
           {relatedArticles.length > 0 && (
-            <section className="pt-8 border-t border-stone-500/20 space-y-6">
-              <h4 className="font-serif text-2xl text-amber-500">
-                {lang === "ka" ? "ასევე წაიკითხეთ:" : "Recommended Reading:"}
+            <section className="pt-12 border-t border-[#E8E3DB] space-y-8">
+              <h4 className="font-serif text-2xl font-light text-[#141311]">
+                {lang === "ka" ? "ასევე წაიკითხეთ" : "Recommended Reading"}
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {relatedArticles.map((rel) => (
                   <a
                     key={rel.id}
                     href={`${lang === "en" ? "/en" : ""}/blog/${encodeURIComponent(rel.slug || rel.id)}`}
-                    className={`group rounded-2xl overflow-hidden border p-4 space-y-3 block transition-all ${
-                      darkMode ? "bg-[#141210] border-stone-800 hover:border-amber-500/40" : "bg-white border-stone-200 hover:border-amber-500 shadow-sm"
-                    }`}
+                    className="group space-y-3 block"
                   >
-                    <div className="aspect-[16/10] rounded-xl overflow-hidden bg-stone-900">
+                    <div className="aspect-[16/10] overflow-hidden bg-[#F4F1EC] border border-[#EFECE6]">
                       <img
                         src={rel.image}
                         alt={lang === "ka" ? rel.titleKa : (rel.titleEn || rel.titleKa)}
@@ -320,10 +277,10 @@ export default function BlogPostPage({ slugProp }) {
                         decoding="async"
                       />
                     </div>
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-500 block">
+                    <span className="text-[10px] uppercase tracking-[0.18em] text-[#9D7B48] block">
                       {rel.category}
                     </span>
-                    <h5 className="font-serif text-sm font-medium group-hover:text-amber-500 transition-colors line-clamp-2">
+                    <h5 className="font-serif text-base font-normal text-[#141311] group-hover:text-[#9D7B48] transition-colors line-clamp-2">
                       {lang === "ka" ? rel.titleKa : (rel.titleEn || rel.titleKa)}
                     </h5>
                   </a>
@@ -334,7 +291,7 @@ export default function BlogPostPage({ slugProp }) {
         </article>
       </main>
 
-      <Footer darkMode={darkMode} lang={lang} siteSettings={siteSettings} />
+      <Footer lang={lang} siteSettings={siteSettings} />
 
       <FavoritesModal
         isOpen={showFavoritesModal}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Clock, Calendar, ArrowRight, BookOpen, Sparkles } from 'lucide-react';
+import { Search, Clock, Calendar, ArrowRight, BookOpen } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { navigateTo } from '../utils/navigation';
 import Navbar from '../components/layout/Navbar';
@@ -47,7 +47,7 @@ export default function BlogPage() {
   };
 
   return (
-    <div className={`min-h-screen w-full overflow-x-hidden transition-colors duration-300 ${darkMode ? "bg-[#0c0b0a] text-[#f5f0e6]" : "bg-[#faf7f2] text-[#1c1917]"}`}>
+    <div className="min-h-screen w-full overflow-x-hidden bg-white text-[#141311]">
       <Navbar
         lang={lang}
         setLang={setLang}
@@ -59,53 +59,43 @@ export default function BlogPage() {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main id="main-content" className="pt-28 pb-20">
-        {/* ზედა სათაურის ბლოკი */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 text-center space-y-4">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs uppercase tracking-[0.2em] bg-amber-500/10 border border-amber-500/30 text-amber-500">
-            <Sparkles className="w-3.5 h-3.5" />
+      <main id="main-content" className="pt-[140px] sm:pt-[156px] pb-24">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-14 text-center space-y-5 border-b border-[#E8E3DB] mb-14">
+          <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.26em] text-[#9D7B48] font-medium block">
             {lang === "ka" ? "საიუველირო ჟურნალი" : "Fine Jewelry Journal"}
           </span>
 
-          <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-normal tracking-wide">
+          <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-light text-[#141311]">
             {lang === "ka" ? "ბლოგი & ექსპერტის რჩევები" : "Journal & Expert Insights"}
           </h1>
 
-          <p className="text-sm sm:text-base opacity-75 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base text-[#5C574F] max-w-2xl mx-auto leading-relaxed font-light">
             {lang === "ka"
               ? "ყველაფერი ძვირფასი ქვების, ოქროს სინჯების, ბეჭდის ზომის შერჩევისა და საიუველირო მემკვიდრეობის შესახებ."
               : "Discover guides on gemstones, gold purities, ring sizing, and timeless craftsmanship."}
           </p>
 
-          {/* ძიება და კატეგორიები */}
-          <div className="pt-6 max-w-xl mx-auto">
+          <div className="pt-4 max-w-lg mx-auto space-y-6">
             <div className="relative">
-              <Search className="w-4 h-4 text-amber-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-4 h-4 text-[#847E75] stroke-[1.5] absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 aria-label={lang === "ka" ? "სტატიების ძიება" : "Search articles"}
                 placeholder={lang === "ka" ? "ძიება სტატიებში (მაგ: ბრილიანტი, ზომა)..." : "Search articles..."}
-                className={`w-full pl-11 pr-4 py-3 rounded-full text-sm border outline-none transition-all ${
-                  darkMode
-                    ? "bg-stone-900/90 border-stone-800 focus:border-amber-500 text-white"
-                    : "bg-white border-stone-200 focus:border-amber-600 text-stone-900 shadow-sm"
-                }`}
+                className="w-full pl-7 pr-4 py-2.5 text-sm bg-transparent border-b border-[#D6CFC4] focus:border-[#141311] outline-none text-[#141311] placeholder:text-[#9C958B] transition-colors"
               />
             </div>
 
-            {/* კატეგორიის ფილტრები */}
-            <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
+            <div className="flex flex-wrap items-center justify-center gap-2">
               <button
                 type="button"
                 onClick={() => setSelectedCategory(ALL)}
-                className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+                className={`px-4 py-1.5 text-[11px] uppercase tracking-[0.16em] border transition-colors cursor-pointer ${
                   selectedCategory === ALL
-                    ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
-                    : darkMode
-                    ? "bg-stone-900 text-stone-300 hover:bg-stone-800"
-                    : "bg-white text-stone-700 hover:bg-stone-100 border border-stone-200"
+                    ? "bg-[#141311] text-white border-[#141311]"
+                    : "bg-white text-[#4A4640] border-[#E8E3DB] hover:border-[#141311]"
                 }`}
               >
                 {lang === "ka" ? "ყველა" : "All"}
@@ -115,12 +105,10 @@ export default function BlogPage() {
                   key={cat}
                   type="button"
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  className={`px-4 py-1.5 text-[11px] uppercase tracking-[0.16em] border transition-colors cursor-pointer ${
                     selectedCategory === cat
-                      ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
-                      : darkMode
-                      ? "bg-stone-900 text-stone-300 hover:bg-stone-800"
-                      : "bg-white text-stone-700 hover:bg-stone-100 border border-stone-200"
+                      ? "bg-[#141311] text-white border-[#141311]"
+                      : "bg-white text-[#4A4640] border-[#E8E3DB] hover:border-[#141311]"
                   }`}
                 >
                   {cat}
@@ -130,125 +118,102 @@ export default function BlogPage() {
           </div>
         </section>
 
-        {/* სტატიების სია */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
           {filteredArticles.length === 0 ? (
-            <div className="text-center py-20 opacity-60">
-              <BookOpen className="w-12 h-12 mx-auto mb-3 text-amber-500 opacity-60" />
-              <p className="text-lg">
-                {lang === "ka" ? "სტატიები ვერ მოიძებნა." : "No articles found."}
-              </p>
+            <div className="text-center py-20 text-[#847E75]">
+              <BookOpen className="w-10 h-10 mx-auto mb-3 text-[#9D7B48] stroke-[1.25]" />
+              <p className="font-serif text-xl">{lang === "ka" ? "სტატიები ვერ მოიძებნა." : "No articles found."}</p>
             </div>
           ) : (
-            <div className="space-y-12">
-              {/* გამორჩეული პირველი სტატია (Hero Card) */}
+            <div className="space-y-16">
               {featuredArticle && (
                 <article
                   onClick={() => openArticle(featuredArticle)}
-                  className={`group cursor-pointer rounded-3xl overflow-hidden border grid grid-cols-1 lg:grid-cols-2 gap-8 items-center transition-all ${
-                    darkMode
-                      ? "bg-[#141210] border-stone-800 hover:border-amber-500/40"
-                      : "bg-white border-stone-200 hover:border-amber-500 shadow-sm hover:shadow-xl"
-                  }`}
+                  className="group cursor-pointer bg-[#F8F6F2] border border-[#E8E3DB] grid grid-cols-1 lg:grid-cols-12 items-stretch overflow-hidden"
                 >
-                  <div className="relative aspect-[16/10] lg:aspect-auto lg:h-full overflow-hidden bg-stone-900">
+                  <div className="lg:col-span-7 relative aspect-[16/10] lg:aspect-auto overflow-hidden bg-[#EFECE6]">
                     <img
                       src={featuredArticle.image}
                       alt={lang === "ka" ? featuredArticle.titleKa : (featuredArticle.titleEn || featuredArticle.titleKa)}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       loading="eager"
                     />
-                    <span className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest bg-amber-500 text-black shadow-lg">
-                      {featuredArticle.category}
-                    </span>
                   </div>
 
-                  <div className="p-6 sm:p-10 space-y-4">
-                    <div className="flex items-center gap-4 text-xs opacity-60">
-                      <span className="flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-amber-500" />
+                  <div className="lg:col-span-5 p-8 sm:p-12 flex flex-col justify-center space-y-5">
+                    <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.18em] text-[#847E75]">
+                      <span className="text-[#9D7B48] font-medium">{featuredArticle.category}</span>
+                      <span>·</span>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
                         {featuredArticle.date}
                       </span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-amber-500" />
+                      <span>·</span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
                         {lang === "ka" ? featuredArticle.readTime : (featuredArticle.readTimeEn || featuredArticle.readTime)}
                       </span>
                     </div>
 
-                    <h2 className="font-serif text-2xl sm:text-4xl font-normal group-hover:text-amber-500 transition-colors leading-tight">
+                    <h2 className="font-serif text-2xl sm:text-4xl font-light text-[#141311] group-hover:text-[#9D7B48] transition-colors leading-tight">
                       {lang === "ka" ? featuredArticle.titleKa : (featuredArticle.titleEn || featuredArticle.titleKa)}
                     </h2>
 
-                    <p className="text-sm opacity-75 leading-relaxed line-clamp-3">
+                    <p className="text-sm text-[#5C574F] leading-relaxed line-clamp-3 font-light">
                       {lang === "ka" ? featuredArticle.excerptKa : (featuredArticle.excerptEn || featuredArticle.excerptKa)}
                     </p>
 
                     <div className="pt-2">
-                      <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-500 group-hover:gap-3 transition-all">
+                      <span className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-[#141311] border-b border-[#141311] pb-1 group-hover:text-[#9D7B48] group-hover:border-[#9D7B48] transition-colors">
                         {lang === "ka" ? "სრულად წაკითხვა" : "Read Full Story"}
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="w-3.5 h-3.5 stroke-[1.5]" />
                       </span>
                     </div>
                   </div>
                 </article>
               )}
 
-              {/* დანარჩენი სტატიების ბადე */}
               {remainingArticles.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
                   {remainingArticles.map((art) => (
                     <article
                       key={art.id}
                       onClick={() => openArticle(art)}
-                      className={`group cursor-pointer rounded-3xl overflow-hidden border flex flex-col transition-all ${
-                        darkMode
-                          ? "bg-[#141210] border-stone-800 hover:border-amber-500/40"
-                          : "bg-white border-stone-200 hover:border-amber-500 shadow-sm hover:shadow-xl"
-                      }`}
+                      className="group cursor-pointer flex flex-col justify-between"
                     >
-                      <div className="relative aspect-[16/10] overflow-hidden bg-stone-900">
-                        <img
-                          src={art.image}
-                          alt={lang === "ka" ? art.titleKa : (art.titleEn || art.titleKa)}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                        <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest bg-black/80 text-amber-400 border border-amber-500/30 backdrop-blur-md">
-                          {art.category}
-                        </span>
+                      <div className="space-y-4">
+                        <div className="relative aspect-[16/11] overflow-hidden bg-[#F4F1EC] border border-[#EFECE6]">
+                          <img
+                            src={art.image}
+                            alt={lang === "ka" ? art.titleKa : (art.titleEn || art.titleKa)}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-2.5 text-[10px] uppercase tracking-[0.16em] text-[#847E75]">
+                          <span className="text-[#9D7B48] font-medium">{art.category}</span>
+                          <span>·</span>
+                          <span>{art.date}</span>
+                          <span>·</span>
+                          <span>{lang === "ka" ? art.readTime : (art.readTimeEn || art.readTime)}</span>
+                        </div>
+
+                        <h3 className="font-serif text-xl sm:text-2xl font-light text-[#141311] group-hover:text-[#9D7B48] transition-colors leading-snug">
+                          {lang === "ka" ? art.titleKa : (art.titleEn || art.titleKa)}
+                        </h3>
+
+                        <p className="text-xs sm:text-sm text-[#5C574F] leading-relaxed line-clamp-3 font-light">
+                          {lang === "ka" ? art.excerptKa : (art.excerptEn || art.excerptKa)}
+                        </p>
                       </div>
 
-                      <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-3 text-xs opacity-60">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3 text-amber-500" />
-                              {art.date}
-                            </span>
-                            <span>•</span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3 text-amber-500" />
-                              {lang === "ka" ? art.readTime : (art.readTimeEn || art.readTime)}
-                            </span>
-                          </div>
-
-                          <h3 className="font-serif text-xl font-normal group-hover:text-amber-500 transition-colors leading-snug">
-                            {lang === "ka" ? art.titleKa : (art.titleEn || art.titleKa)}
-                          </h3>
-
-                          <p className="text-xs opacity-75 leading-relaxed line-clamp-3">
-                            {lang === "ka" ? art.excerptKa : (art.excerptEn || art.excerptKa)}
-                          </p>
-                        </div>
-
-                        <div className="pt-2 border-t border-stone-500/15">
-                          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-500 group-hover:gap-2.5 transition-all">
-                            {lang === "ka" ? "სრულად წაკითხვა" : "Read More"}
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          </span>
-                        </div>
+                      <div className="pt-4 mt-4 border-t border-[#EFECE6]">
+                        <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-[#141311] group-hover:text-[#9D7B48] transition-colors">
+                          {lang === "ka" ? "სრულად წაკითხვა" : "Read More"}
+                          <ArrowRight className="w-3.5 h-3.5 stroke-[1.5]" />
+                        </span>
                       </div>
                     </article>
                   ))}
@@ -259,7 +224,7 @@ export default function BlogPage() {
         </section>
       </main>
 
-      <Footer darkMode={darkMode} lang={lang} siteSettings={siteSettings} />
+      <Footer lang={lang} siteSettings={siteSettings} />
 
       <FavoritesModal
         isOpen={showFavoritesModal}

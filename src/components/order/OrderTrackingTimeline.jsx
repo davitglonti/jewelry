@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import {
   CheckCircle2, Clock, Truck, Package, Sparkles, MapPin,
-  Calendar, AlertCircle, Copy, Check, MessageCircle, Gift
+  AlertCircle, Copy, Check, MessageCircle, Gift
 } from 'lucide-react';
 import { formatPrice } from '../../utils/i18n';
 
@@ -56,7 +56,7 @@ export function getOrderStepIndex(status) {
   if (norm.includes('გზაში') || norm.includes('კურიერ') || norm.includes('transit')) return 3;
   if (norm.includes('შეფუთ') || norm.includes('მზადაა') || norm.includes('pack')) return 2;
   if (norm.includes('მუშავ') || norm.includes('შეთანხმებ') || norm.includes('process')) return 1;
-  return 0; // Default: ახალი შეკვეთა
+  return 0;
 }
 
 export function getDefaultEstimatedDelivery(order, lang = 'ka') {
@@ -74,7 +74,6 @@ export function getDefaultEstimatedDelivery(order, lang = 'ka') {
 
 export default function OrderTrackingTimeline({
   order,
-  darkMode = true,
   lang = 'ka',
   siteSettings = {}
 }) {
@@ -104,26 +103,20 @@ export default function OrderTrackingTimeline({
   const whatsappUrl = `https://wa.me/${(siteSettings?.whatsapp || '+995599000000').replace(/[^0-9]/g, '')}?text=${whatsappInquiryMsg}`;
 
   return (
-    <div
-      className={`rounded-3xl border p-5 sm:p-7 space-y-6 transition-all ${
-        darkMode
-          ? 'bg-[#141210] border-amber-500/20 text-[#f5f0e6] shadow-2xl'
-          : 'bg-white border-stone-200 text-[#1c1917] shadow-xl'
-      }`}
-    >
-      {/* Header: Order ID & Live Pulse */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-stone-500/15">
+    <div className="bg-white border border-[#E8E3DB] p-6 sm:p-8 space-y-7 text-[#141311]">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E8E3DB]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-            <span className="text-[11px] uppercase tracking-widest font-bold text-amber-500">
+            <span className="w-2 h-2 rounded-full bg-[#2E7D52]" />
+            <span className="text-[10px] uppercase tracking-[0.22em] font-medium text-[#9D7B48]">
               {lang === 'ka' ? 'შეკვეთის ლაივ-თრექინგი' : 'Live Order Tracker'}
             </span>
           </div>
-          <h3 className="font-mono text-xl sm:text-2xl font-bold mt-1">
+          <h3 className="font-mono text-xl sm:text-2xl font-medium mt-1 text-[#141311]">
             #{order.id}
           </h3>
-          <p className="text-xs opacity-60 mt-0.5">
+          <p className="text-xs text-[#847E75] mt-0.5">
             {lang === 'ka' ? 'გაფორმების თარიღი:' : 'Placed on:'} {order.date || 'ახლახან'}
           </p>
         </div>
@@ -132,13 +125,9 @@ export default function OrderTrackingTimeline({
           <button
             type="button"
             onClick={handleCopyLink}
-            className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all ${
-              darkMode
-                ? 'border-stone-800 bg-stone-900/80 hover:border-amber-500/50 text-stone-300'
-                : 'border-stone-200 bg-stone-100 hover:border-amber-500 text-stone-700'
-            }`}
+            className="px-3.5 py-2 border border-[#E8E3DB] bg-white hover:border-[#141311] text-[#141311] text-[11px] uppercase tracking-[0.14em] flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+            {copiedLink ? <Check className="w-3.5 h-3.5 text-[#2E7D52]" /> : <Copy className="w-3.5 h-3.5 stroke-[1.5]" />}
             <span>{copiedLink ? (lang === 'ka' ? 'დაკოპირდა!' : 'Copied!') : (lang === 'ka' ? 'თრექინგის ბმული' : 'Copy Link')}</span>
           </button>
 
@@ -146,64 +135,55 @@ export default function OrderTrackingTimeline({
             href={whatsappUrl}
             target="_blank"
             rel="noreferrer"
-            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all"
+            className="px-3.5 py-2 bg-[#141311] hover:bg-[#2C2A26] text-white text-[11px] uppercase tracking-[0.14em] flex items-center gap-1.5 transition-colors"
           >
-            <MessageCircle className="w-3.5 h-3.5" />
+            <MessageCircle className="w-3.5 h-3.5 stroke-[1.5]" />
             <span>WhatsApp</span>
           </a>
         </div>
       </div>
 
-      {/* ETA & Condition Highlight Card */}
+      {/* ETA Highlight */}
       {!isCancelled ? (
-        <div
-          className={`p-4 sm:p-5 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-            darkMode
-              ? 'bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-amber-500/30'
-              : 'bg-gradient-to-r from-amber-50 via-amber-50/50 to-white border-amber-300'
-          }`}
-        >
-          <div className="flex items-start gap-3.5">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500 text-black flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/30">
-              <Truck className="w-5 h-5" />
+        <div className="p-5 bg-[#F8F6F2] border border-[#E8E3DB] flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 bg-[#141311] text-white flex items-center justify-center shrink-0">
+              <Truck className="w-5 h-5 stroke-[1.5]" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-amber-500">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] uppercase tracking-[0.18em] text-[#9D7B48] font-medium">
                   {lang === 'ka' ? 'როდის მოვა? (სავარაუდო მიწოდება)' : 'Estimated Delivery'}
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                <span className="px-2 py-0.5 text-[10px] bg-white border border-[#E8E3DB] text-[#4A4640]">
                   {order.deliveryMethod || 'საკურიერო მიწოდება'}
                 </span>
               </div>
-              <div className="font-serif text-base sm:text-lg font-bold text-stone-100 dark:text-stone-100 mt-0.5">
+              <div className="font-serif text-lg sm:text-xl font-normal text-[#141311] mt-0.5">
                 {estimatedArrival}
               </div>
               {order.courierNote && (
-                <div className="text-xs text-amber-400/90 font-medium mt-1 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                  <span>{order.courierNote}</span>
-                </div>
+                <div className="text-xs text-[#7E6136] mt-1">{order.courierNote}</div>
               )}
             </div>
           </div>
 
-          <div className="text-xs space-y-1 md:text-right border-t md:border-t-0 md:border-l border-stone-500/20 pt-3 md:pt-0 md:pl-4">
-            <div className="flex items-center md:justify-end gap-1.5 text-stone-300 opacity-80">
-              <MapPin className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+          <div className="text-xs space-y-1 md:text-right border-t md:border-t-0 md:border-l border-[#E5DFD6] pt-3 md:pt-0 md:pl-5 text-[#5C574F]">
+            <div className="flex items-center md:justify-end gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-[#9D7B48] shrink-0 stroke-[1.5]" />
               <span className="truncate max-w-xs">{order.address || order.city || 'მისამართი'}</span>
             </div>
-            <div className="text-[11px] opacity-60">
+            <div className="text-[11px] text-[#847E75]">
               {order.clientPhone} • {order.clientName}
             </div>
           </div>
         </div>
       ) : (
-        <div className="p-4 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-400 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 shrink-0" />
+        <div className="p-4 bg-[#FDF6F6] border border-[#E8C8C8] text-[#8E2424] flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 shrink-0 stroke-[1.5]" />
           <div className="text-xs">
-            <span className="font-bold block">{lang === 'ka' ? 'შეკვეთა გაუქმებულია' : 'Order Cancelled'}</span>
-            <span>{lang === 'ka' ? 'დეტალების დასაზუსტებლად გთხოვთ დაუკავშირდეთ ჩვენს კონსიერჟს.' : 'Please contact our concierge for further details.'}</span>
+            <span className="font-medium block">{lang === 'ka' ? 'შეკვეთა გაუქმებულია' : 'Order Cancelled'}</span>
+            <span className="opacity-80">{lang === 'ka' ? 'დეტალების დასაზუსტებლად გთხოვთ დაუკავშირდეთ ჩვენს კონსიერჟს.' : 'Please contact our concierge for further details.'}</span>
           </div>
         </div>
       )}
@@ -211,57 +191,47 @@ export default function OrderTrackingTimeline({
       {/* Stepper Timeline */}
       {!isCancelled && (
         <div className="py-2">
-          {/* Desktop Horizontal Stepper */}
-          <div className="hidden lg:grid grid-cols-5 gap-2 relative">
+          <div className="hidden lg:grid grid-cols-5 gap-3 relative">
             {TRACKING_STEPS.map((step, idx) => {
               const Icon = step.icon;
               const isPast = idx < currentStepIdx;
               const isCurrent = idx === currentStepIdx;
 
               return (
-                <div key={step.key} className="flex flex-col items-center text-center relative group">
-                  {/* Connecting Line */}
+                <div key={step.key} className="flex flex-col items-center text-center relative">
                   {idx < TRACKING_STEPS.length - 1 && (
                     <div
-                      className={`absolute top-5 left-1/2 w-full h-1 z-0 transition-colors ${
-                        idx < currentStepIdx
-                          ? 'bg-amber-500'
-                          : darkMode ? 'bg-stone-800' : 'bg-stone-200'
+                      className={`absolute top-5 left-1/2 w-full h-[1.5px] z-0 ${
+                        idx < currentStepIdx ? 'bg-[#141311]' : 'bg-[#E8E3DB]'
                       }`}
                     />
                   )}
 
-                  {/* Step Icon */}
                   <div
-                    className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all ${
+                    className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
                       isPast
-                        ? 'bg-amber-500 text-black shadow-md shadow-amber-500/30'
+                        ? 'bg-[#141311] text-white'
                         : isCurrent
-                        ? 'bg-gradient-to-br from-amber-400 to-amber-600 text-black ring-4 ring-amber-500/30 shadow-lg shadow-amber-500/40 animate-pulse'
-                        : darkMode
-                        ? 'bg-stone-900 border border-stone-800 text-stone-500'
-                        : 'bg-stone-100 border border-stone-300 text-stone-400'
+                        ? 'bg-[#9D7B48] text-white ring-4 ring-[#9D7B48]/20'
+                        : 'bg-[#FAF9F6] border border-[#E8E3DB] text-[#9C958B]'
                     }`}
                   >
-                    {isPast ? <Check className="w-5 h-5 stroke-[2.5]" /> : <Icon className="w-4 h-4" />}
+                    {isPast ? <Check className="w-4 h-4 stroke-[2]" /> : <Icon className="w-4 h-4 stroke-[1.5]" />}
                   </div>
 
-                  {/* Title & Description */}
                   <div className="mt-3 space-y-1 px-1">
                     <span
-                      className={`block font-serif text-xs font-semibold leading-tight ${
+                      className={`block font-serif text-sm leading-tight ${
                         isCurrent
-                          ? 'text-amber-500'
+                          ? 'text-[#9D7B48] font-medium'
                           : isPast
-                          ? 'text-stone-200 dark:text-stone-200 font-medium'
-                          : 'opacity-40'
+                          ? 'text-[#141311]'
+                          : 'text-[#9C958B]'
                       }`}
                     >
                       {lang === 'ka' ? step.titleKa : step.titleEn}
                     </span>
-                    <p className={`text-[10px] leading-relaxed line-clamp-3 ${
-                      isCurrent ? 'opacity-85' : 'opacity-45'
-                    }`}>
+                    <p className={`text-[11px] leading-relaxed font-light ${isCurrent ? 'text-[#4A4640]' : 'text-[#847E75]'}`}>
                       {lang === 'ka' ? step.descKa : step.descEn}
                     </p>
                   </div>
@@ -270,7 +240,6 @@ export default function OrderTrackingTimeline({
             })}
           </div>
 
-          {/* Mobile Vertical Stepper */}
           <div className="lg:hidden space-y-4 relative pl-2">
             {TRACKING_STEPS.map((step, idx) => {
               const Icon = step.icon;
@@ -279,51 +248,38 @@ export default function OrderTrackingTimeline({
 
               return (
                 <div key={step.key} className="flex items-start gap-3.5 relative">
-                  {/* Vertical line between items */}
                   {idx < TRACKING_STEPS.length - 1 && (
                     <div
-                      className={`absolute left-4 top-8 bottom-0 w-0.5 -ml-[1px] ${
-                        idx < currentStepIdx ? 'bg-amber-500' : darkMode ? 'bg-stone-800' : 'bg-stone-200'
+                      className={`absolute left-4 top-8 bottom-0 w-[1px] ${
+                        idx < currentStepIdx ? 'bg-[#141311]' : 'bg-[#E8E3DB]'
                       }`}
                     />
                   )}
 
                   <div
-                    className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold transition-all ${
+                    className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                       isPast
-                        ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20'
+                        ? 'bg-[#141311] text-white'
                         : isCurrent
-                        ? 'bg-amber-500 text-black ring-4 ring-amber-500/25 shadow-lg shadow-amber-500/30 animate-pulse'
-                        : darkMode
-                        ? 'bg-stone-900 border border-stone-800 text-stone-500'
-                        : 'bg-stone-100 border border-stone-300 text-stone-400'
+                        ? 'bg-[#9D7B48] text-white ring-4 ring-[#9D7B48]/20'
+                        : 'bg-[#FAF9F6] border border-[#E8E3DB] text-[#9C958B]'
                     }`}
                   >
-                    {isPast ? <Check className="w-4 h-4 stroke-[2.5]" /> : <Icon className="w-3.5 h-3.5" />}
+                    {isPast ? <Check className="w-3.5 h-3.5" /> : <Icon className="w-3.5 h-3.5 stroke-[1.5]" />}
                   </div>
 
                   <div className="flex-1 pb-3">
                     <div className="flex items-center gap-2">
-                      <span
-                        className={`text-xs font-semibold ${
-                          isCurrent
-                            ? 'text-amber-500'
-                            : isPast
-                            ? 'text-stone-200 dark:text-stone-200'
-                            : 'opacity-40'
-                        }`}
-                      >
+                      <span className={`text-xs font-medium ${isCurrent ? 'text-[#9D7B48]' : isPast ? 'text-[#141311]' : 'text-[#9C958B]'}`}>
                         {lang === 'ka' ? step.titleKa : step.titleEn}
                       </span>
                       {isCurrent && (
-                        <span className="px-2 py-0.2 rounded-full text-[9px] font-bold bg-amber-500 text-black">
+                        <span className="px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] bg-[#141311] text-white">
                           {lang === 'ka' ? 'მიმდინარე' : 'Active'}
                         </span>
                       )}
                     </div>
-                    <p className={`text-[11px] leading-relaxed mt-0.5 ${
-                      isCurrent ? 'opacity-80' : 'opacity-45'
-                    }`}>
+                    <p className="text-[11px] text-[#5C574F] leading-relaxed mt-0.5 font-light">
                       {lang === 'ka' ? step.descKa : step.descEn}
                     </p>
                   </div>
@@ -334,40 +290,38 @@ export default function OrderTrackingTimeline({
         </div>
       )}
 
-      {/* Items Summary in this Order */}
+      {/* Items Summary */}
       {order.items && order.items.length > 0 && (
-        <div className={`p-4 rounded-2xl border space-y-3 ${
-          darkMode ? 'bg-stone-900/30 border-stone-800' : 'bg-stone-50 border-stone-200'
-        }`}>
-          <div className="flex items-center justify-between text-xs font-semibold opacity-75">
-            <span>{lang === 'ka' ? 'შეკვეთილი ნაკეთობები' : 'Ordered Items'} ({order.items.length})</span>
-            <span className="font-mono text-amber-500 font-bold">{formatPrice(order.totalPrice)}</span>
+        <div className="p-5 bg-[#FAF9F6] border border-[#E8E3DB] space-y-3">
+          <div className="flex items-center justify-between text-xs font-medium text-[#4A4640]">
+            <span className="uppercase tracking-[0.14em] text-[11px]">{lang === 'ka' ? 'შეკვეთილი ნაკეთობები' : 'Ordered Items'} ({order.items.length})</span>
+            <span className="font-mono text-[#141311] font-semibold">{formatPrice(order.totalPrice)}</span>
           </div>
 
-          <div className="divide-y divide-stone-500/10 space-y-2">
+          <div className="divide-y divide-[#E8E3DB]">
             {order.items.map((it, i) => (
-              <div key={i} className="pt-2 first:pt-0 flex items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0 text-[10px] font-bold text-amber-400">
+              <div key={i} className="py-2.5 first:pt-1 last:pb-0 flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-6 h-6 bg-white border border-[#E8E3DB] flex items-center justify-center shrink-0 text-[10px] font-mono text-[#9D7B48]">
                     {i + 1}
                   </div>
                   <div className="min-w-0">
-                    <span className="font-medium truncate block">{it.name}</span>
+                    <span className="font-medium text-[#141311] truncate block">{it.name}</span>
                     {it.size && (
-                      <span className="text-[10px] opacity-65">
+                      <span className="text-[10px] text-[#847E75]">
                         {lang === 'ka' ? 'ზომა' : 'Size'}: {it.size}
                       </span>
                     )}
                   </div>
                 </div>
-                <span className="font-mono font-semibold shrink-0">{formatPrice(it.price)}</span>
+                <span className="font-mono text-[#141311] shrink-0">{formatPrice(it.price)}</span>
               </div>
             ))}
           </div>
 
           {order.isGift && (
-            <div className="pt-2 border-t border-stone-500/10 flex items-center gap-2 text-xs text-purple-400 font-medium">
-              <Gift className="w-3.5 h-3.5 shrink-0" />
+            <div className="pt-2.5 border-t border-[#E8E3DB] flex items-center gap-2 text-xs text-[#9D7B48]">
+              <Gift className="w-3.5 h-3.5 shrink-0 stroke-[1.5]" />
               <span>{lang === 'ka' ? 'ექსკლუზიური სასაჩუქრე შეფუთვა ბრენდირებული ყუთით' : 'Exclusive boutique gift packaging'}</span>
             </div>
           )}

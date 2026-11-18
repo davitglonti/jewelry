@@ -7,10 +7,9 @@ export default function RingSizerModal({
   isOpen,
   onClose,
   onSelectSize,
-  availableSizes = [],
   productName = 'ბეჭედი'
 }) {
-  const { darkMode, lang, siteSettings } = useStore();
+  const { lang, siteSettings } = useStore();
   const [currentMatchedSize, setCurrentMatchedSize] = useState('16.5');
   const [currentDiameter, setCurrentDiameter] = useState(16.5);
   const titleId = useId();
@@ -33,27 +32,22 @@ export default function RingSizerModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 bg-black/45 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
     >
-      <div
-        className={`w-full max-w-lg rounded-3xl border shadow-2xl overflow-hidden my-auto transition-all ${
-          darkMode ? 'bg-[#121110] border-amber-500/20 text-[#f5f0e6]' : 'bg-white border-stone-200 text-stone-900'
-        }`}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-stone-500/15">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
-              <Ruler className="w-4 h-4" />
+      <div className="w-full max-w-lg rounded-3xl bg-white border border-[#EAE4DB] text-[#1F1C18] shadow-2xl overflow-hidden my-auto">
+        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[#EAE4DB]">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-[#FAF8F4] border border-[#EAE4DB] flex items-center justify-center text-[#9A7742]">
+              <Ruler className="w-4 h-4 stroke-[1.75]" />
             </div>
             <div>
-              <h3 id={titleId} className="font-serif text-lg sm:text-xl font-medium tracking-wide">
+              <h3 id={titleId} className="font-serif text-xl font-medium text-[#1F1C18]">
                 {lang === 'ka' ? 'ბეჭდის ზომის საზომი' : 'Ring Size Guide'}
               </h3>
-              <p className="text-[11px] opacity-60">
+              <p className="text-xs text-[#787168]">
                 {lang === 'ka' ? 'გაიგეთ თქვენი ზუსტი ზომა ონლაინ' : 'Measure your size directly on screen'}
               </p>
             </div>
@@ -62,34 +56,31 @@ export default function RingSizerModal({
             type="button"
             onClick={onClose}
             aria-label={lang === 'ka' ? 'დახურვა' : 'Close'}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-stone-500/10 transition-colors opacity-70 hover:opacity-100"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-[#787168] hover:text-[#1F1C18] hover:bg-[#FAF8F4] transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 stroke-[1.75]" />
           </button>
         </div>
 
-        {/* Core Interactive Ring Sizer Tool */}
-        <div className="p-5">
+        <div className="p-6">
           <RingSizerTool
             onSizeChange={(size, d) => {
               setCurrentMatchedSize(size);
               setCurrentDiameter(d);
             }}
             showNotice={true}
-            darkMode={darkMode}
             lang={lang}
           />
         </div>
 
-        {/* Footer Actions */}
-        <div className="p-5 pt-2 border-t border-stone-500/15 flex flex-col sm:flex-row items-center gap-2.5">
+        <div className="p-6 pt-4 border-t border-[#EAE4DB] flex flex-col sm:flex-row items-center gap-2.5 bg-[#FAF8F4]">
           {onSelectSize && (
             <button
               type="button"
               onClick={handleApplySize}
-              className="w-full sm:flex-1 py-3 px-4 rounded-2xl bg-amber-500 text-black font-semibold text-xs uppercase tracking-wider hover:brightness-110 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
+              className="w-full sm:flex-1 py-3 px-5 rounded-full bg-[#1F1C18] hover:bg-[#35302A] text-white text-xs font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
-              <Check className="w-4 h-4" />
+              <Check className="w-4 h-4 stroke-[1.75]" />
               <span>
                 {lang === 'ka'
                   ? `ამ ზომის არჩევა (${currentMatchedSize})`
@@ -102,9 +93,9 @@ export default function RingSizerModal({
             href={waUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full sm:w-auto py-3 px-4 rounded-2xl border border-stone-500/25 hover:border-amber-500/50 hover:bg-stone-500/10 text-xs font-medium transition-all flex items-center justify-center gap-2"
+            className="w-full sm:w-auto py-3 px-5 rounded-full bg-white border border-[#D9D1C5] text-[#1F1C18] hover:border-[#1F1C18] text-xs font-medium transition-colors flex items-center justify-center gap-2"
           >
-            <MessageCircle className="w-4 h-4 text-emerald-500" />
+            <MessageCircle className="w-4 h-4 text-[#9A7742] stroke-[1.75]" />
             <span>{lang === 'ka' ? 'WhatsApp კონსულტაცია' : 'WhatsApp Help'}</span>
           </a>
         </div>

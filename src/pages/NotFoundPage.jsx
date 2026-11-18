@@ -18,7 +18,7 @@ export default function NotFoundPage() {
   const [showFavoritesModal, setShowFavoritesModal] = useState(false);
 
   useEffect(() => {
-    const brand = siteSettings?.brandName || "AURELIA";
+    const brand = siteSettings?.brandName || "MATARE";
     document.title = lang === "ka"
       ? `404 — გვერდი ვერ მოიძებნა | ${brand}`
       : `404 — Page Not Found | ${brand}`;
@@ -36,9 +36,7 @@ export default function NotFoundPage() {
     : ["ბეჭდები", "სამაჯურები", "საყურეები", "ყელსაბამები"];
 
   return (
-    <div className={`w-full overflow-x-hidden transition-colors duration-300 ${
-      darkMode ? "bg-[#0c0b0a] text-[#f5f0e6]" : "bg-[#faf7f2] text-[#1c1917]"
-    }`}>
+    <div className="w-full overflow-x-hidden bg-white text-[#141311]">
       <Navbar
         lang={lang}
         setLang={setLang}
@@ -50,59 +48,51 @@ export default function NotFoundPage() {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      {/* 404 Main Section: სრულ ეკრანზე ჩანს (100vh / 100dvh), ფუტერი კი ჩამოსქროლვის შემდეგ ჩნდება */}
-      <main id="main-content" className="min-h-screen min-h-[100dvh] w-full flex flex-col items-center justify-center pt-24 pb-12 px-4 sm:px-6 relative">
-        <div className="max-w-xl w-full mx-auto text-center space-y-6 sm:space-y-7 relative z-10 my-auto">
-          {/* Classic Clean 404 & Heading */}
+      <main id="main-content" className="min-h-screen w-full flex flex-col items-center justify-center pt-32 pb-16 px-4 sm:px-6">
+        <div className="max-w-xl w-full mx-auto text-center space-y-7 my-auto">
           <div className="space-y-3">
-            <span className="font-serif text-6xl sm:text-8xl font-light tracking-[0.25em] text-amber-500/80 block select-none">
+            <span className="font-serif text-7xl sm:text-9xl font-light tracking-[0.2em] text-[#9D7B48] block select-none">
               404
             </span>
-            <div className="w-12 h-px bg-amber-500/30 mx-auto my-3" />
-            <h1 className="font-serif text-2xl sm:text-4xl font-normal tracking-wide">
+            <div className="w-12 h-[1px] bg-[#E8E3DB] mx-auto my-4" />
+            <h1 className="font-serif text-3xl sm:text-4xl font-light text-[#141311]">
               {lang === "ka" ? "გვერდი ვერ მოიძებნა" : "Page Not Found"}
             </h1>
-            <p className="text-xs sm:text-sm opacity-65 leading-relaxed font-light max-w-md mx-auto pt-1">
+            <p className="text-xs sm:text-sm text-[#5C574F] leading-relaxed font-light max-w-md mx-auto">
               {lang === "ka"
                 ? "თქვენ მიერ მოთხოვნილი გვერდი არ არსებობს ან მითითებული ბმული არასწორია."
                 : "The page you are looking for does not exist or the link may be mistyped."}
             </p>
           </div>
 
-          {/* Action CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-1">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <a
               href={lang === "en" ? "/en/catalog" : "/catalog"}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-400 text-black font-semibold text-xs tracking-wider uppercase transition-all active:scale-95 shadow-sm"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 bg-[#141311] hover:bg-[#2C2A26] text-white text-[11px] tracking-[0.18em] uppercase transition-colors"
             >
-              <ShoppingBag className="w-4 h-4" />
+              <ShoppingBag className="w-4 h-4 stroke-[1.5]" />
               <span>{lang === "ka" ? "სრული კოლექცია" : "Explore Collection"}</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-3.5 h-3.5 stroke-[1.5]" />
             </a>
 
             <a
               href={lang === "en" ? "/en" : "/"}
-              className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full border text-xs font-semibold tracking-wider uppercase transition-all active:scale-95 ${
-                darkMode
-                  ? "border-stone-700 bg-stone-900/60 text-stone-200 hover:border-amber-500/50 hover:bg-stone-800"
-                  : "border-stone-300 bg-white text-stone-800 hover:border-amber-500 hover:bg-stone-50"
-              }`}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 border border-[#141311] text-[#141311] hover:bg-[#F8F6F2] text-[11px] tracking-[0.18em] uppercase transition-colors"
             >
-              <Home className="w-4 h-4 text-amber-500" />
+              <Home className="w-4 h-4 stroke-[1.5]" />
               <span>{lang === "ka" ? "მთავარი გვერდი" : "Back to Home"}</span>
             </a>
           </div>
 
-          {/* WhatsApp Direct Help */}
           {siteSettings?.whatsapp && (
             <div className="pt-1">
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 text-xs text-stone-400 hover:text-emerald-400 transition-colors group"
+                className="inline-flex items-center gap-2 text-xs text-[#847E75] hover:text-[#141311] transition-colors"
               >
-                <MessageCircle className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" />
+                <MessageCircle className="w-4 h-4 text-[#9D7B48] stroke-[1.5]" />
                 <span>
                   {lang === "ka"
                     ? "გჭირდებათ კონსულტაცია? მოგვწერეთ WhatsApp-ში"
@@ -112,9 +102,8 @@ export default function NotFoundPage() {
             </div>
           )}
 
-          {/* Popular Category Shortcuts */}
-          <div className="pt-5 sm:pt-6 border-t border-stone-500/15 max-w-md mx-auto">
-            <span className="text-[11px] uppercase tracking-wider opacity-50 block mb-2.5 font-medium">
+          <div className="pt-6 border-t border-[#E8E3DB] max-w-md mx-auto">
+            <span className="text-[10px] uppercase tracking-[0.22em] text-[#847E75] block mb-3">
               {lang === "ka" ? "პოპულარული კოლექციები" : "Popular Collections"}
             </span>
             <div className="flex flex-wrap items-center justify-center gap-2">
@@ -124,11 +113,7 @@ export default function NotFoundPage() {
                   <a
                     key={cat}
                     href={`${prefix}/catalog?category=${encodeURIComponent(cat)}`}
-                    className={`px-3 py-1.5 rounded-full text-xs transition-all border ${
-                      darkMode
-                        ? "border-stone-800 bg-stone-900/40 text-stone-300 hover:border-amber-500/40 hover:text-amber-400 hover:bg-stone-900"
-                        : "border-stone-200 bg-stone-100 text-stone-700 hover:border-amber-500 hover:text-amber-700 hover:bg-white"
-                    }`}
+                    className="px-3.5 py-1.5 border border-[#E8E3DB] text-xs text-[#4A4640] hover:border-[#141311] hover:text-[#141311] transition-colors"
                   >
                     {cat}
                   </a>
@@ -139,8 +124,7 @@ export default function NotFoundPage() {
         </div>
       </main>
 
-      {/* Footer: ჩნდება ჩამოსქროლვის შემდეგ */}
-      <Footer darkMode={darkMode} lang={lang} siteSettings={siteSettings} />
+      <Footer lang={lang} siteSettings={siteSettings} />
 
       <FavoritesModal
         isOpen={showFavoritesModal}

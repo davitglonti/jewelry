@@ -1,9 +1,5 @@
 import React from 'react';
-import {
-  Ruler,
-  ShoppingBag,
-  ArrowRight
-} from 'lucide-react';
+import { Ruler, ShoppingBag, ArrowRight } from 'lucide-react';
 import { navigateTo } from '../../utils/navigation';
 
 export default function ProductActionButtons({
@@ -11,7 +7,6 @@ export default function ProductActionButtons({
   selectedSize,
   setSelectedSize,
   onOpenRingSizer,
-  darkMode = true,
   lang = 'ka'
 }) {
   if (!product) return null;
@@ -33,42 +28,37 @@ export default function ProductActionButtons({
       /one\s*size/i.test(product.sizes[0]));
 
   return (
-    <div className="space-y-4 pt-1">
-      {/* 1. Sizes Selector (Only when real selectable sizes exist) */}
+    <div className="space-y-4">
       {hasSizes && !isOnlyStandardSize && (
         <div className="space-y-2.5">
           <div className="flex items-center justify-between text-xs sm:text-sm">
-            <span className="uppercase tracking-wider opacity-75 font-medium flex items-center gap-1.5">
+            <span className="text-[#4A453E] font-medium flex items-center gap-1.5">
               <span>{lang === 'ka' ? 'აირჩიეთ ზომა:' : 'Select Size:'}</span>
               {selectedSize && (
-                <span className="font-mono text-amber-500 font-bold text-xs">({selectedSize})</span>
+                <span className="font-mono text-[#1F1C18] font-semibold">({selectedSize})</span>
               )}
             </span>
             {isRing && onOpenRingSizer && (
               <button
                 type="button"
                 onClick={onOpenRingSizer}
-                className="inline-flex items-center gap-1.5 text-xs text-amber-500 hover:text-amber-400 font-medium transition-colors group cursor-pointer"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[#9A7742] hover:text-[#1F1C18] transition-colors cursor-pointer underline underline-offset-4 decoration-[#9A7742]/40"
               >
-                <Ruler className="w-3.5 h-3.5 text-amber-500/80 group-hover:rotate-12 transition-transform" />
-                <span className="underline underline-offset-4 decoration-amber-500/40 hover:decoration-amber-400">
-                  {lang === 'ka' ? 'ზომის ონლაინ საზომი' : 'Ring Size Guide'}
-                </span>
+                <Ruler className="w-3.5 h-3.5 stroke-[1.75]" />
+                <span>{lang === 'ka' ? 'ზომის ონლაინ საზომი' : 'Ring Size Guide'}</span>
               </button>
             )}
           </div>
-          <div className="flex flex-wrap gap-2 pt-0.5">
+          <div className="flex flex-wrap gap-2">
             {product.sizes.map((sz) => (
               <button
                 key={sz}
                 type="button"
                 onClick={() => setSelectedSize?.(sz)}
-                className={`min-w-[46px] h-11 px-3.5 rounded-xl text-xs sm:text-sm font-medium border transition-all flex items-center justify-center cursor-pointer ${
+                className={`min-w-[50px] h-10 px-3.5 rounded-xl text-xs sm:text-sm font-medium border transition-all flex items-center justify-center cursor-pointer ${
                   selectedSize === sz
-                    ? 'bg-amber-500 text-black border-amber-500 font-bold shadow-md shadow-amber-500/20 scale-105'
-                    : darkMode
-                    ? 'border-stone-800 hover:border-amber-500/50 bg-stone-900/80 text-stone-300'
-                    : 'border-stone-200 hover:border-amber-500 bg-white text-stone-800 shadow-xs'
+                    ? 'bg-[#1F1C18] text-white border-[#1F1C18] shadow-xs'
+                    : 'border-[#DCD5C9] hover:border-[#1F1C18] bg-white text-[#1F1C18]'
                 }`}
               >
                 {sz}
@@ -78,7 +68,6 @@ export default function ProductActionButtons({
         </div>
       )}
 
-      {/* 2. Primary Action Button */}
       <div className="pt-1">
         <button
           type="button"
@@ -90,16 +79,16 @@ export default function ProductActionButtons({
             if (selectedSize) query.set('size', selectedSize);
             navigateTo(`${prefix}/checkout?${query.toString()}`);
           }}
-          className="w-full py-4.5 sm:py-5 px-8 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:via-amber-300 hover:to-amber-500 text-black font-bold text-sm sm:text-base md:text-lg tracking-wide flex items-center justify-center gap-3 shadow-xl shadow-amber-500/25 active:scale-[0.99] transition-all cursor-pointer group"
+          className="w-full py-4 px-7 rounded-full bg-[#1F1C18] hover:bg-[#35302A] text-white font-medium text-sm flex items-center justify-center gap-3 shadow-md shadow-[#1F1C18]/10 active:scale-[0.995] transition-all cursor-pointer group"
         >
-          <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-black group-hover:scale-110 transition-transform" />
+          <ShoppingBag className="w-4 h-4 stroke-[1.75]" />
           <span>{lang === 'ka' ? 'ახლავე შეძენა (ონლაინ შეკვეთა)' : 'Buy Now (Instant Checkout)'}</span>
           {selectedSize && !isOnlyStandardSize && (
-            <span className="text-xs sm:text-sm px-3 py-0.5 rounded-full bg-black/15 font-mono font-bold">
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-white/15 font-mono">
               {lang === 'ka' ? `ზომა: ${selectedSize}` : `Size: ${selectedSize}`}
             </span>
           )}
-          <ArrowRight className="w-5 h-5 text-black group-hover:translate-x-1.5 transition-transform ml-auto hidden sm:block" />
+          <ArrowRight className="w-4 h-4 stroke-[1.75] group-hover:translate-x-1 transition-transform ml-auto hidden sm:block" />
         </button>
       </div>
     </div>

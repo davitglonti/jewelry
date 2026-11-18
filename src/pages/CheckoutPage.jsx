@@ -1,13 +1,13 @@
 // src/pages/CheckoutPage.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  ShoppingBag, Check, ArrowLeft, Truck, Store, CreditCard,
-  Banknote, Phone, User, Mail, MapPin, Gift, MessageSquare,
-  ShieldCheck, Sparkles, AlertCircle, ArrowRight, Trash2, Tag, ChevronDown
+  ShoppingBag, Check, ArrowLeft, Truck, CreditCard,
+  Banknote, User, Mail, MapPin, Gift, MessageSquare,
+  ShieldCheck, AlertCircle, ArrowRight, Trash2, Tag, ChevronDown
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
-import { formatPrice, pick } from '../utils/i18n';
+import { formatPrice } from '../utils/i18n';
 import { navigateTo } from '../utils/navigation';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
@@ -28,7 +28,6 @@ export default function CheckoutPage() {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Parse URL query parameters
   const searchParams = useMemo(() => {
     return new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
   }, []);
@@ -37,31 +36,26 @@ export default function CheckoutPage() {
   const initialSizeParam = searchParams.get('size') || '';
   const fromParam = searchParams.get('from') || '';
 
-  // Form State
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [city, setCity] = useState('თბილისი');
   const [address, setAddress] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('card'); // 'card' | 'cod'
+  const [paymentMethod, setPaymentMethod] = useState('card');
   const [isGift, setIsGift] = useState(false);
   const [notes, setNotes] = useState('');
 
-  // Promo Code State
   const [promoCodeInput, setPromoCodeInput] = useState('');
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [promoError, setPromoError] = useState('');
 
-  // Selected Items State
   const [orderItems, setOrderItems] = useState([]);
-  const [itemSizes, setItemSizes] = useState({}); // { [productId]: size }
+  const [itemSizes, setItemSizes] = useState({});
 
-  // Submission State
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [completedOrder, setCompletedOrder] = useState(null);
 
-  // Autofill user details
   useEffect(() => {
     if (user) {
       if (user.displayName && !clientName) setClientName(user.displayName);
@@ -69,7 +63,6 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
-  // Load items from query params or favorites
   useEffect(() => {
     if (!products || products.length === 0) return;
 
@@ -102,7 +95,6 @@ export default function CheckoutPage() {
       }
     }
 
-    // Fallback: first available product if none specified
     if (products.length > 0) {
       const sample = products[0];
       setOrderItems([sample]);
@@ -110,7 +102,6 @@ export default function CheckoutPage() {
     }
   }, [products, productIdParam, initialSizeParam, fromParam, favorites]);
 
-  // Handle Size Change for an Item
   const handleSizeChange = (itemId, newSize) => {
     setItemSizes((prev) => ({
       ...prev,
@@ -118,12 +109,10 @@ export default function CheckoutPage() {
     }));
   };
 
-  // Handle Item Removal from Order
   const handleRemoveItem = (itemId) => {
     setOrderItems((prev) => prev.filter((item) => item.id !== itemId));
   };
 
-  // Configurable Delivery & Packaging Rates from siteSettings
   const parseRate = (val, fallback) => {
     if (val === null || val === undefined || val === '') return fallback;
     const num = Number(val);
@@ -138,7 +127,6 @@ export default function CheckoutPage() {
   const shippingFee = isTbilisi ? deliveryPriceTbilisi : deliveryPriceRegional;
   const giftFee = isGift ? giftPackagingPrice : 0;
 
-  // Price Calculations
   const rawSubtotal = useMemo(() => {
     return orderItems.reduce((sum, item) => {
       const p = typeof item.price === 'number'
@@ -155,7 +143,6 @@ export default function CheckoutPage() {
 
   const finalTotal = Math.max(0, rawSubtotal - discountAmount) + shippingFee + giftFee;
 
-  // Apply Promo Code
   const handleApplyPromo = (e) => {
     e?.preventDefault();
     setPromoError('');
@@ -174,7 +161,6 @@ export default function CheckoutPage() {
     }
   };
 
-  // Submit Order
   const handleSubmit = (e) => {
     e.preventDefault();
     setFormError('');
@@ -249,12 +235,10 @@ export default function CheckoutPage() {
     };
 
     try {
-      // 1. Sync to store inquiries (so admin sees it immediately)
       const updated = [newOrder, ...(inquiries || [])];
       if (setInquiries) setInquiries(updated);
       if (syncData) syncData(siteSettings, products, updated);
 
-      // 2. Persist to customer's order history
       try {
         const prevHistory = JSON.parse(localStorage.getItem('matare_orders') || '[]');
         localStorage.setItem('matare_orders', JSON.stringify([newOrder, ...prevHistory]));
@@ -262,7 +246,6 @@ export default function CheckoutPage() {
         console.warn('Local storage error:', err);
       }
 
-      // 3. Dispatch order tracking email notification to guest / customer
       if (newOrder.clientEmail && typeof window !== 'undefined' && window.location?.origin) {
         try {
           fetch(`${window.location.origin}/api/send-order-tracking`, {
@@ -273,9 +256,7 @@ export default function CheckoutPage() {
               origin: window.location.origin
             })
           }).catch(() => {});
-        } catch {
-          // Ignore network or test errors
-        }
+        } catch {}
       }
 
       setCompletedOrder(newOrder);
@@ -300,12 +281,11 @@ export default function CheckoutPage() {
 
   const whatsappUrl = `https://wa.me/${(siteSettings?.whatsapp || '+995599000000').replace(/[^0-9]/g, '')}?text=${whatsappMessage}`;
 
+  const inputClass =
+    'w-full px-4 py-3 text-xs sm:text-sm bg-white border border-[#DCD6CC] focus:border-[#141311] text-[#141311] placeholder-[#9C958B] outline-none transition-colors';
+
   return (
-    <div
-      className={`min-h-screen flex flex-col justify-between transition-colors duration-300 ${
-        darkMode ? 'bg-[#0c0b0a] text-[#f5f0e6]' : 'bg-[#faf7f2] text-[#1c1917]'
-      }`}
-    >
+    <div className="min-h-screen flex flex-col justify-between bg-white text-[#141311]">
       <Navbar
         lang={lang}
         setLang={setLang}
@@ -317,106 +297,91 @@ export default function CheckoutPage() {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
-        {/* Navigation Breadcrumb */}
-        <div className="mb-6 flex items-center justify-between">
+      <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pt-[136px] sm:pt-[152px] pb-24">
+        <div className="mb-8 flex items-center justify-between pb-4 border-b border-[#E8E3DB]">
           <button
             type="button"
             onClick={() => window.history.back()}
-            className="inline-flex items-center gap-2 text-xs font-medium opacity-70 hover:opacity-100 transition-opacity"
+            className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#5C574F] hover:text-[#141311] transition-colors cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-3.5 h-3.5 stroke-[1.5]" />
             <span>{lang === 'ka' ? 'უკან დაბრუნება' : 'Back'}</span>
           </button>
 
-          <span className="text-[11px] font-mono opacity-50 uppercase tracking-widest">
+          <span className="text-[10px] font-mono text-[#847E75] uppercase tracking-[0.18em]">
             {lang === 'ka' ? 'უსაფრთხო შეკვეთა • SSL 256-BIT' : 'Secure Checkout • 256-Bit SSL'}
           </span>
         </div>
 
-        {/* COMPLETED ORDER VIEW */}
         {completedOrder ? (
-          <div className="max-w-2xl mx-auto py-8 sm:py-12 animate-fadeIn text-center space-y-6">
-            <div className="w-20 h-20 rounded-full bg-emerald-500/15 border-2 border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/10">
-              <Check className="w-10 h-10" />
+          <div className="max-w-2xl mx-auto py-8 animate-fadeIn text-center space-y-7">
+            <div className="w-16 h-16 rounded-full bg-[#F4F8F5] border border-[#2E7D52] text-[#2E7D52] flex items-center justify-center mx-auto">
+              <Check className="w-8 h-8 stroke-[1.5]" />
             </div>
 
             <div className="space-y-2">
-              <span className="text-xs uppercase tracking-widest font-bold text-amber-500">
+              <span className="text-[10px] uppercase tracking-[0.26em] font-medium text-[#9D7B48]">
                 {lang === 'ka' ? 'შეკვეთა მიღებულია!' : 'Order Placed!'}
               </span>
-              <h1 className="font-serif text-3xl sm:text-4xl font-normal">
+              <h1 className="font-serif text-3xl sm:text-4xl font-light text-[#141311]">
                 {lang === 'ka' ? 'მადლობას გიხდით არჩევანისთვის' : 'Thank you for your order'}
               </h1>
-              <p className="text-xs sm:text-sm opacity-70 max-w-md mx-auto leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#5C574F] max-w-md mx-auto leading-relaxed font-light">
                 {lang === 'ka'
                   ? 'თქვენი შეკვეთა წარმატებით დარეგისტრირდა. ჩვენი კონსულტანტი უმოკლეს დროში დაგიკავშირდებათ მითითებულ ნომერზე.'
-                  : 'Your order has been registered. Our salon concierge will contact you shortly to confirm the delivery.'}
+                  : 'Your order has been registered. Our salon concierge will contact you shortly to confirm delivery.'}
               </p>
             </div>
 
-            <div
-              className={`p-6 rounded-3xl border text-left space-y-3.5 ${
-                darkMode ? 'bg-[#141210] border-stone-800' : 'bg-white border-stone-200 shadow-md'
-              }`}
-            >
-              <div className="flex justify-between items-center pb-3 border-b border-stone-500/15">
-                <span className="text-xs opacity-60">{lang === 'ka' ? 'შეკვეთის ნომერი:' : 'Order Code:'}</span>
-                <span className="font-mono font-bold text-amber-500 text-sm">#{completedOrder.id}</span>
+            <div className="p-6 sm:p-8 bg-[#FAF9F6] border border-[#E8E3DB] text-left space-y-4">
+              <div className="flex justify-between items-center pb-3 border-b border-[#E8E3DB]">
+                <span className="text-xs text-[#847E75]">{lang === 'ka' ? 'შეკვეთის ნომერი:' : 'Order Code:'}</span>
+                <span className="font-mono font-medium text-[#141311] text-sm">#{completedOrder.id}</span>
               </div>
 
               <div className="space-y-2 text-xs">
                 {completedOrder.items.map((it, idx) => (
                   <div key={idx} className="flex justify-between items-center">
-                    <span className="font-medium">
+                    <span className="font-medium text-[#141311]">
                       {it.name} {it.size ? `(${lang === 'ka' ? 'ზომა' : 'Size'}: ${it.size})` : ''}
                     </span>
-                    <span className="font-mono font-semibold text-amber-500/90">{formatPrice(it.price)}</span>
+                    <span className="font-mono text-[#141311]">{formatPrice(it.price)}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="pt-3 border-t border-stone-500/15 flex justify-between items-center">
-                <span className="text-xs uppercase tracking-wider font-semibold opacity-70">
+              <div className="pt-3 border-t border-[#E8E3DB] flex justify-between items-center">
+                <span className="text-xs uppercase tracking-[0.16em] text-[#5C574F]">
                   {lang === 'ka' ? 'საბოლოო თანხა:' : 'Total Amount:'}
                 </span>
-                <span className="font-mono text-lg font-bold text-amber-500">
+                <span className="font-mono text-lg font-medium text-[#141311]">
                   {formatPrice(completedOrder.totalPrice)}
                 </span>
               </div>
 
-              <div className="pt-2 text-[11px] opacity-65 space-y-1">
+              <div className="pt-2 text-[11px] text-[#5C574F] space-y-1 font-light">
                 <div>
-                  <strong>{lang === 'ka' ? 'მიწოდება:' : 'Delivery:'}</strong> {completedOrder.deliveryMethod} — {completedOrder.address}
+                  <strong className="text-[#141311] font-medium">{lang === 'ka' ? 'მიწოდება:' : 'Delivery:'}</strong> {completedOrder.deliveryMethod} — {completedOrder.address}
                 </div>
                 <div>
-                  <strong>{lang === 'ka' ? 'გადახდა:' : 'Payment:'}</strong> {completedOrder.paymentMethod}
+                  <strong className="text-[#141311] font-medium">{lang === 'ka' ? 'გადახდა:' : 'Payment:'}</strong> {completedOrder.paymentMethod}
                 </div>
               </div>
             </div>
 
-            {/* Email notification alert banner */}
             {completedOrder.clientEmail && (
-              <div
-                className={`p-4 rounded-2xl border flex items-center justify-between gap-3 text-xs ${
-                  darkMode ? 'bg-amber-500/10 border-amber-500/30 text-amber-200' : 'bg-amber-50 border-amber-300 text-amber-900'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Mail className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span>
-                    {lang === 'ka'
-                      ? `შეკვეთის დეტალები & თრექინგის ბმული გაიგზავნა თქვენს ელფოსტაზე: ${completedOrder.clientEmail}`
-                      : `Live order tracking link has been sent to your email: ${completedOrder.clientEmail}`}
-                  </span>
-                </div>
+              <div className="p-4 bg-[#F8F6F2] border border-[#E8E3DB] flex items-center gap-3 text-xs text-[#4A4640]">
+                <Mail className="w-4 h-4 text-[#9D7B48] shrink-0 stroke-[1.5]" />
+                <span>
+                  {lang === 'ka'
+                    ? `შეკვეთის დეტალები & თრექინგის ბმული გაიგზავნა თქვენს ელფოსტაზე: ${completedOrder.clientEmail}`
+                    : `Live order tracking link has been sent to your email: ${completedOrder.clientEmail}`}
+                </span>
               </div>
             )}
 
-            {/* LIVE ORDER TRACKER TIMELINE */}
             <OrderTrackingTimeline
               order={completedOrder}
-              darkMode={darkMode}
               lang={lang}
               siteSettings={siteSettings}
             />
@@ -426,78 +391,67 @@ export default function CheckoutPage() {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="flex-1 py-3.5 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-600/20 transition-all active:scale-95"
+                className="flex-1 py-3.5 px-6 bg-[#141311] hover:bg-[#2C2A26] text-white text-[11px] tracking-[0.18em] uppercase flex items-center justify-center gap-2 transition-colors"
               >
-                <MessageSquare className="w-4 h-4" />
+                <MessageSquare className="w-4 h-4 stroke-[1.5]" />
                 <span>{lang === 'ka' ? 'WhatsApp-ით დაკავშირება' : 'Chat on WhatsApp'}</span>
               </a>
 
               <a
                 href={`/track?id=${completedOrder.id}`}
-                className={`py-3.5 px-6 rounded-2xl border text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 transition-all ${
-                  darkMode
-                    ? 'border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-black'
-                    : 'border-amber-500 bg-amber-50 text-amber-900 hover:bg-amber-500 hover:text-black'
-                }`}
+                className="py-3.5 px-6 border border-[#141311] text-[#141311] hover:bg-[#F8F6F2] text-[11px] tracking-[0.18em] uppercase flex items-center justify-center gap-2 transition-colors"
               >
-                <Truck className="w-4 h-4" />
+                <Truck className="w-4 h-4 stroke-[1.5]" />
                 <span>{lang === 'ka' ? 'თრექინგის გვერდი' : 'Track Order Page'}</span>
               </a>
 
               <button
                 type="button"
                 onClick={() => navigateTo('/catalog')}
-                className={`py-3.5 px-6 rounded-2xl border text-xs font-semibold tracking-wider uppercase transition-all ${
-                  darkMode
-                    ? 'border-stone-800 bg-stone-900 text-stone-200 hover:bg-stone-800'
-                    : 'border-stone-300 bg-stone-100 text-stone-800 hover:bg-stone-200'
-                }`}
+                className="py-3.5 px-6 border border-[#E8E3DB] text-[#4A4640] hover:border-[#141311] hover:text-[#141311] text-[11px] tracking-[0.18em] uppercase transition-colors cursor-pointer"
               >
                 {lang === 'ka' ? 'კოლექცია' : 'Collection'}
               </button>
             </div>
           </div>
         ) : (
-          /* CHECKOUT FORM VIEW */
           <div className="space-y-8">
-            <div>
-              <h1 className="font-serif text-2xl sm:text-4xl font-normal tracking-wide">
+            <div className="space-y-2">
+              <span className="text-[10px] uppercase tracking-[0.26em] text-[#9D7B48] font-medium block">
+                {lang === 'ka' ? 'პერსონალური შეკვეთა' : 'Private Boutique Checkout'}
+              </span>
+              <h1 className="font-serif text-3xl sm:text-5xl font-light text-[#141311]">
                 {lang === 'ka' ? 'შეკვეთის გაფორმება' : 'Checkout & Purchase'}
               </h1>
-              <p className="text-xs sm:text-sm opacity-60 mt-1.5">
+              <p className="text-xs sm:text-sm text-[#5C574F] font-light">
                 {lang === 'ka'
                   ? 'შეავსეთ მონაცემები სამკაულის უსაფრთხო მიწოდებისა და შეკვეთის დასადასტურებლად.'
                   : 'Enter delivery details to finalize your fine jewelry purchase.'}
               </p>
             </div>
 
-            {/* Error Message */}
             {formError && (
-              <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2.5 animate-fadeIn">
+              <div className="p-4 bg-[#FDF6F6] border border-[#E8C8C8] text-[#8E2424] text-xs flex items-center gap-2.5 animate-fadeIn">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{formError}</span>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* LEFT COLUMN: Customer & Delivery Details */}
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+              {/* Left Column */}
               <div className="lg:col-span-7 space-y-6">
-                {/* 1. Contact Info Card */}
-                <div
-                  className={`p-6 sm:p-7 rounded-3xl border space-y-4 ${
-                    darkMode ? 'bg-[#141210] border-stone-800' : 'bg-white border-stone-200 shadow-sm'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 pb-2 border-b border-stone-500/15">
-                    <User className="w-4 h-4 text-amber-500" />
-                    <h2 className="font-serif text-base sm:text-lg font-medium">
+                {/* 1. Contact Info */}
+                <div className="p-6 sm:p-8 bg-white border border-[#E8E3DB] space-y-5">
+                  <div className="flex items-center gap-2.5 pb-3 border-b border-[#EFECE6]">
+                    <User className="w-4 h-4 text-[#9D7B48] stroke-[1.5]" />
+                    <h2 className="font-serif text-lg sm:text-xl font-light">
                       {lang === 'ka' ? '1. საკონტაქტო მონაცემები' : '1. Contact Details'}
                     </h2>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[11px] uppercase tracking-wider font-semibold opacity-75 block mb-1.5">
+                      <label className="text-[10px] uppercase tracking-[0.16em] text-[#5C574F] block mb-1.5 font-medium">
                         {lang === 'ka' ? 'სახელი და გვარი *' : 'Full Name *'}
                       </label>
                       <input
@@ -506,16 +460,12 @@ export default function CheckoutPage() {
                         onChange={(e) => setClientName(e.target.value)}
                         placeholder={lang === 'ka' ? 'მაგ: ნინო ბერიძე' : 'Your name'}
                         required
-                        className={`w-full px-4 py-3 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
-                          darkMode
-                            ? 'bg-stone-900/90 border-stone-700 text-white placeholder-stone-500 focus:border-amber-500'
-                            : 'bg-white border-stone-300 text-stone-900 placeholder-stone-400 focus:border-amber-600'
-                        }`}
+                        className={inputClass}
                       />
                     </div>
 
                     <div>
-                      <label className="text-[11px] uppercase tracking-wider font-semibold opacity-75 block mb-1.5">
+                      <label className="text-[10px] uppercase tracking-[0.16em] text-[#5C574F] block mb-1.5 font-medium">
                         {lang === 'ka' ? 'მობილურის ნომერი *' : 'Phone Number *'}
                       </label>
                       <input
@@ -524,22 +474,18 @@ export default function CheckoutPage() {
                         onChange={(e) => setClientPhone(e.target.value)}
                         placeholder="5XX XX XX XX"
                         required
-                        className={`w-full px-4 py-3 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
-                          darkMode
-                            ? 'bg-stone-900/90 border-stone-700 text-white placeholder-stone-500 focus:border-amber-500'
-                            : 'bg-white border-stone-300 text-stone-900 placeholder-stone-400 focus:border-amber-600'
-                        }`}
+                        className={inputClass}
                       />
                     </div>
                   </div>
 
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-[11px] uppercase tracking-wider font-semibold opacity-75">
+                      <label className="text-[10px] uppercase tracking-[0.16em] text-[#5C574F] font-medium">
                         {lang === 'ka' ? 'ელ-ფოსტა (თრექინგის ბმულის მისაღებად):' : 'Email (to receive tracking link):'}
                       </label>
-                      <span className="text-[10px] text-amber-500 font-medium">
-                        {lang === 'ka' ? 'ბმული გამოიგზავნება მეილზე ✉️' : 'Tracking link sent here ✉️'}
+                      <span className="text-[10px] text-[#9D7B48]">
+                        {lang === 'ka' ? 'ბმული გამოიგზავნება მეილზე' : 'Tracking link sent here'}
                       </span>
                     </div>
                     <input
@@ -547,43 +493,30 @@ export default function CheckoutPage() {
                       value={clientEmail}
                       onChange={(e) => setClientEmail(e.target.value)}
                       placeholder="name@example.com"
-                      className={`w-full px-4 py-3 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
-                        darkMode
-                          ? 'bg-stone-900/90 border-stone-700 text-white placeholder-stone-500 focus:border-amber-500'
-                          : 'bg-white border-stone-300 text-stone-900 placeholder-stone-400 focus:border-amber-600'
-                      }`}
+                      className={inputClass}
                     />
                   </div>
                 </div>
 
-                {/* 2. Delivery Method Card */}
-                <div
-                  className={`p-6 sm:p-7 rounded-3xl border space-y-4 ${
-                    darkMode ? 'bg-[#141210] border-stone-800' : 'bg-white border-stone-200 shadow-sm'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 pb-2 border-b border-stone-500/15">
-                    <Truck className="w-4 h-4 text-amber-500" />
-                    <h2 className="font-serif text-base sm:text-lg font-medium">
+                {/* 2. Delivery Method */}
+                <div className="p-6 sm:p-8 bg-white border border-[#E8E3DB] space-y-5">
+                  <div className="flex items-center gap-2.5 pb-3 border-b border-[#EFECE6]">
+                    <Truck className="w-4 h-4 text-[#9D7B48] stroke-[1.5]" />
+                    <h2 className="font-serif text-lg sm:text-xl font-light">
                       {lang === 'ka' ? '2. მიღების მეთოდი' : '2. Delivery Method'}
                     </h2>
                   </div>
 
-                  {/* Courier delivery banner */}
-                  <div
-                    className={`p-4 sm:p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                      darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-200'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="p-3 rounded-xl bg-amber-500 text-black font-bold shrink-0">
-                        <Truck className="w-5 h-5" />
+                  <div className="p-4 sm:p-5 bg-[#F8F6F2] border border-[#E8E3DB] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-10 h-10 bg-[#141311] text-white flex items-center justify-center shrink-0">
+                        <Truck className="w-4 h-4 stroke-[1.5]" />
                       </div>
                       <div>
-                        <div className="font-semibold text-xs sm:text-sm">
+                        <div className="font-medium text-xs sm:text-sm text-[#141311]">
                           {lang === 'ka' ? 'საკურიერო მიწოდება' : 'Express Courier Delivery'}
                         </div>
-                        <p className="text-[11px] opacity-75 mt-0.5">
+                        <p className="text-[11px] text-[#5C574F] mt-0.5 font-light">
                           {isTbilisi
                             ? (lang === 'ka'
                                 ? `თბილისის მასშტაბით: ${formatPrice(deliveryPriceTbilisi)} (1-2 სამუშაო დღე)`
@@ -595,65 +528,53 @@ export default function CheckoutPage() {
                       </div>
                     </div>
 
-                    <div className="font-mono font-bold text-sm sm:text-base text-amber-500 self-end sm:self-center shrink-0">
+                    <div className="font-mono font-medium text-sm sm:text-base text-[#141311] self-end sm:self-center shrink-0">
                       {formatPrice(shippingFee)}
                     </div>
                   </div>
 
-                  <div className="space-y-3 pt-2">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div>
-                        <label className="text-[11px] uppercase tracking-wider font-semibold opacity-75 block mb-1.5">
-                          {lang === 'ka' ? 'ქალაქი / რეგიონი' : 'City / Region'}
-                        </label>
-                        <select
-                          value={city}
-                          onChange={(e) => setCity(e.target.value)}
-                          className={`w-full px-3.5 py-3 rounded-xl text-xs sm:text-sm border outline-none cursor-pointer transition-all ${
-                            darkMode ? 'bg-stone-900 border-stone-700 text-white' : 'bg-white border-stone-300 text-stone-900'
-                          }`}
-                        >
-                          <option value="თბილისი">თბილისი (Tbilisi) — {formatPrice(deliveryPriceTbilisi)}</option>
-                          <option value="ბათუმი">ბათუმი (Batumi) — {formatPrice(deliveryPriceRegional)}</option>
-                          <option value="ქუთაისი">ქუთაისი (Kutaisi) — {formatPrice(deliveryPriceRegional)}</option>
-                          <option value="რუსთავი">რუსთავი (Rustavi) — {formatPrice(deliveryPriceRegional)}</option>
-                          <option value="სხვა რეგიონი">სხვა რეგიონი (Other Region) — {formatPrice(deliveryPriceRegional)}</option>
-                        </select>
-                      </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+                    <div>
+                      <label className="text-[10px] uppercase tracking-[0.16em] text-[#5C574F] block mb-1.5 font-medium">
+                        {lang === 'ka' ? 'ქალაქი / რეგიონი' : 'City / Region'}
+                      </label>
+                      <select
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        className={`${inputClass} cursor-pointer`}
+                      >
+                        <option value="თბილისი">თბილისი (Tbilisi) — {formatPrice(deliveryPriceTbilisi)}</option>
+                        <option value="ბათუმი">ბათუმი (Batumi) — {formatPrice(deliveryPriceRegional)}</option>
+                        <option value="ქუთაისი">ქუთაისი (Kutaisi) — {formatPrice(deliveryPriceRegional)}</option>
+                        <option value="რუსთავი">რუსთავი (Rustavi) — {formatPrice(deliveryPriceRegional)}</option>
+                        <option value="სხვა რეგიონი">სხვა რეგიონი (Other Region) — {formatPrice(deliveryPriceRegional)}</option>
+                      </select>
+                    </div>
 
-                      <div className="sm:col-span-2">
-                        <label className="text-[11px] uppercase tracking-wider font-semibold opacity-75 block mb-1.5">
-                          {lang === 'ka' ? 'ზუსტი მისამართი (ქუჩა, კორპუსი, ბინა) *' : 'Delivery Address *'}
-                        </label>
-                        <div className="relative">
-                          <MapPin className="w-4 h-4 text-stone-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                          <input
-                            type="text"
-                            value={address}
-                            onChange={(e) => setAddress(e.target.value)}
-                            placeholder={lang === 'ka' ? 'მაგ: ჭავჭავაძის გამზ. 24, ბინა 15' : 'Street address'}
-                            required
-                            className={`w-full pl-10 pr-4 py-3 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
-                              darkMode
-                                ? 'bg-stone-900/90 border-stone-700 text-white placeholder-stone-500 focus:border-amber-500'
-                                : 'bg-white border-stone-300 text-stone-900 placeholder-stone-400 focus:border-amber-600'
-                            }`}
-                          />
-                        </div>
+                    <div className="sm:col-span-2">
+                      <label className="text-[10px] uppercase tracking-[0.16em] text-[#5C574F] block mb-1.5 font-medium">
+                        {lang === 'ka' ? 'ზუსტი მისამართი (ქუჩა, კორპუსი, ბინა) *' : 'Delivery Address *'}
+                      </label>
+                      <div className="relative">
+                        <MapPin className="w-4 h-4 text-[#847E75] stroke-[1.5] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                          placeholder={lang === 'ka' ? 'მაგ: ჭავჭავაძის გამზ. 24, ბინა 15' : 'Street address'}
+                          required
+                          className={`${inputClass} pl-10`}
+                        />
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* 3. Payment Method Card */}
-                <div
-                  className={`p-6 sm:p-7 rounded-3xl border space-y-4 ${
-                    darkMode ? 'bg-[#141210] border-stone-800' : 'bg-white border-stone-200 shadow-sm'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 pb-2 border-b border-stone-500/15">
-                    <CreditCard className="w-4 h-4 text-amber-500" />
-                    <h2 className="font-serif text-base sm:text-lg font-medium">
+                {/* 3. Payment Method */}
+                <div className="p-6 sm:p-8 bg-white border border-[#E8E3DB] space-y-5">
+                  <div className="flex items-center gap-2.5 pb-3 border-b border-[#EFECE6]">
+                    <CreditCard className="w-4 h-4 text-[#9D7B48] stroke-[1.5]" />
+                    <h2 className="font-serif text-lg sm:text-xl font-light">
                       {lang === 'ka' ? '3. გადახდის მეთოდი' : '3. Payment Method'}
                     </h2>
                   </div>
@@ -662,44 +583,36 @@ export default function CheckoutPage() {
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('card')}
-                      className={`p-3.5 rounded-2xl border text-left flex items-start gap-3 transition-all ${
+                      className={`p-4 border text-left flex items-start gap-3 transition-colors cursor-pointer ${
                         paymentMethod === 'card'
-                          ? darkMode
-                            ? 'border-amber-500 bg-amber-500/15 text-stone-100 ring-2 ring-amber-400/30'
-                            : 'border-amber-500 bg-amber-50 text-stone-900 ring-2 ring-amber-400/40'
-                          : darkMode
-                          ? 'border-stone-800 bg-stone-900/40 text-stone-400 hover:border-stone-700'
-                          : 'border-stone-300 bg-stone-50 text-stone-700 hover:border-stone-400'
+                          ? 'border-[#141311] bg-[#F8F6F2] text-[#141311]'
+                          : 'border-[#E8E3DB] bg-white text-[#5C574F] hover:border-[#9D7B48]'
                       }`}
                     >
-                      <CreditCard className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                      <CreditCard className="w-5 h-5 text-[#9D7B48] shrink-0 mt-0.5 stroke-[1.5]" />
                       <div>
-                        <div className="font-semibold text-xs sm:text-sm">
+                        <div className="font-medium text-xs sm:text-sm text-[#141311]">
                           {lang === 'ka' ? 'ონლაინ ბარათით' : 'Online Card'}
                         </div>
-                        <span className="text-[10px] opacity-65">Visa / Mastercard</span>
+                        <span className="text-[11px] text-[#847E75]">Visa / Mastercard</span>
                       </div>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('cod')}
-                      className={`p-3.5 rounded-2xl border text-left flex items-start gap-3 transition-all ${
+                      className={`p-4 border text-left flex items-start gap-3 transition-colors cursor-pointer ${
                         paymentMethod === 'cod'
-                          ? darkMode
-                            ? 'border-amber-500 bg-amber-500/15 text-stone-100 ring-2 ring-amber-400/30'
-                            : 'border-amber-500 bg-amber-50 text-stone-900 ring-2 ring-amber-400/40'
-                          : darkMode
-                          ? 'border-stone-800 bg-stone-900/40 text-stone-400 hover:border-stone-700'
-                          : 'border-stone-300 bg-stone-50 text-stone-700 hover:border-stone-400'
+                          ? 'border-[#141311] bg-[#F8F6F2] text-[#141311]'
+                          : 'border-[#E8E3DB] bg-white text-[#5C574F] hover:border-[#9D7B48]'
                       }`}
                     >
-                      <Banknote className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                      <Banknote className="w-5 h-5 text-[#9D7B48] shrink-0 mt-0.5 stroke-[1.5]" />
                       <div>
-                        <div className="font-semibold text-xs sm:text-sm">
+                        <div className="font-medium text-xs sm:text-sm text-[#141311]">
                           {lang === 'ka' ? 'კურიერთან გადახდა' : 'Cash / Courier'}
                         </div>
-                        <span className="text-[10px] opacity-65">
+                        <span className="text-[11px] text-[#847E75]">
                           {lang === 'ka' ? 'მიღებისას (ნაღდი ან ტერმინალი)' : 'Upon delivery'}
                         </span>
                       </div>
@@ -708,20 +621,16 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* 4. Notes & Gift Packaging */}
-                <div
-                  className={`p-6 sm:p-7 rounded-3xl border space-y-4 ${
-                    darkMode ? 'bg-[#141210] border-stone-800' : 'bg-white border-stone-200 shadow-sm'
-                  }`}
-                >
+                <div className="p-6 sm:p-8 bg-white border border-[#E8E3DB] space-y-5">
                   <label className="flex items-center gap-3 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={isGift}
                       onChange={(e) => setIsGift(e.target.checked)}
-                      className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+                      className="w-4 h-4 accent-[#141311] cursor-pointer"
                     />
-                    <div className="flex items-center gap-2 text-xs sm:text-sm">
-                      <Gift className="w-4 h-4 text-purple-400 shrink-0" />
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-[#141311]">
+                      <Gift className="w-4 h-4 text-[#9D7B48] shrink-0 stroke-[1.5]" />
                       <span className="font-medium">
                         {lang === 'ka'
                           ? `სასაჩუქრე ექსკლუზიური შეფუთვა ბრენდირებული ყუთით (+${giftPackagingPrice} ₾)`
@@ -731,7 +640,7 @@ export default function CheckoutPage() {
                   </label>
 
                   <div>
-                    <label className="text-[11px] uppercase tracking-wider font-semibold opacity-75 block mb-1.5">
+                    <label className="text-[10px] uppercase tracking-[0.16em] text-[#5C574F] block mb-1.5 font-medium">
                       {lang === 'ka' ? 'კომენტარი ან დამატებითი სურვილი (სურვილისამებრ):' : 'Additional Notes (Optional):'}
                     </label>
                     <textarea
@@ -739,69 +648,59 @@ export default function CheckoutPage() {
                       onChange={(e) => setNotes(e.target.value)}
                       placeholder={lang === 'ka' ? 'მაგ: გთხოვთ მიტანამდე 30 წუთით ადრე დარეკოთ' : 'Notes for delivery courier'}
                       rows={2}
-                      className={`w-full px-4 py-2.5 rounded-xl text-xs sm:text-sm border outline-none transition-all resize-none ${
-                        darkMode
-                          ? 'bg-stone-900/90 border-stone-700 text-white placeholder-stone-500 focus:border-amber-500'
-                          : 'bg-white border-stone-300 text-stone-900 placeholder-stone-400 focus:border-amber-600'
-                      }`}
+                      className={`${inputClass} resize-none`}
                     />
                   </div>
                 </div>
               </div>
 
-              {/* RIGHT COLUMN: Order Summary Card (Sticky) */}
-              <div className="lg:col-span-5 lg:sticky lg:top-28 space-y-6">
-                <div
-                  className={`p-6 sm:p-7 rounded-3xl border space-y-5 shadow-xl ${
-                    darkMode ? 'bg-[#141210] border-stone-800' : 'bg-white border-stone-200'
-                  }`}
-                >
-                  <div className="flex items-center justify-between pb-3 border-b border-stone-500/15">
+              {/* Right Column: Order Summary */}
+              <div className="lg:col-span-5 lg:sticky lg:top-[132px]">
+                <div className="p-6 sm:p-8 bg-[#FAF9F6] border border-[#E8E3DB] space-y-6">
+                  <div className="flex items-center justify-between pb-4 border-b border-[#E8E3DB]">
                     <div className="flex items-center gap-2">
-                      <ShoppingBag className="w-4 h-4 text-amber-500" />
-                      <h2 className="font-serif text-lg font-medium">
+                      <ShoppingBag className="w-4 h-4 text-[#9D7B48] stroke-[1.5]" />
+                      <h2 className="font-serif text-xl font-light">
                         {lang === 'ka' ? 'შეკვეთის დეტალები' : 'Order Summary'}
                       </h2>
                     </div>
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-black">
+                    <span className="px-2.5 py-0.5 text-xs font-mono bg-[#141311] text-white">
                       {orderItems.length}
                     </span>
                   </div>
 
-                  {/* Selected Products List */}
-                  <div className="divide-y divide-stone-500/10 max-h-80 overflow-y-auto space-y-3 pr-1">
+                  <div className="divide-y divide-[#E8E3DB] max-h-80 overflow-y-auto pr-1">
                     {orderItems.map((item) => {
                       const currentItemSize = itemSizes[item.id] || '';
                       return (
-                        <div key={item.id} className="pt-3 first:pt-0 flex items-start gap-3">
+                        <div key={item.id} className="py-3.5 first:pt-0 flex items-start gap-3.5">
                           <img
                             src={item.images?.[0] || item.image || '/brand-logo.jpg'}
                             alt={item.name}
-                            className="w-16 h-16 rounded-2xl object-cover shrink-0 border border-stone-500/20"
+                            className="w-16 h-20 object-cover shrink-0 bg-[#F4F1EC] border border-[#E8E3DB]"
                           />
 
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
-                              <h3 className="font-serif text-sm font-medium truncate">{item.name}</h3>
+                              <h3 className="font-serif text-base font-normal text-[#141311] truncate">{item.name}</h3>
                               {orderItems.length > 1 && (
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveItem(item.id)}
-                                  className="text-stone-400 hover:text-red-400 p-0.5 transition-colors"
+                                  className="text-[#847E75] hover:text-[#8E2424] p-0.5 transition-colors cursor-pointer"
                                   title="ამოშლა"
                                 >
-                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <Trash2 className="w-3.5 h-3.5 stroke-[1.5]" />
                                 </button>
                               )}
                             </div>
 
-                            <div className="font-mono text-xs text-amber-500 font-bold mt-0.5">
+                            <div className="font-mono text-xs text-[#141311] font-medium mt-0.5">
                               {formatPrice(item.price)}
                             </div>
 
-                            {/* SIZE SELECTOR FOR ITEM */}
                             <div className="mt-2 flex items-center gap-2">
-                              <span className="text-[10px] uppercase tracking-wider opacity-60 font-medium">
+                              <span className="text-[10px] uppercase tracking-[0.14em] text-[#847E75]">
                                 {lang === 'ka' ? 'ზომა:' : 'Size:'}
                               </span>
 
@@ -812,22 +711,16 @@ export default function CheckoutPage() {
                                     data-testid="item-size-select"
                                     value={currentItemSize || item.sizes[0] || ''}
                                     onChange={(e) => handleSizeChange(item.id, e.target.value)}
-                                    className={`py-1 pl-2 pr-6 rounded-lg text-xs font-semibold border outline-none cursor-pointer appearance-none transition-all ${
-                                      darkMode
-                                        ? 'bg-stone-900 border-stone-700 text-amber-400 hover:border-amber-500'
-                                        : 'bg-stone-100 border-stone-300 text-stone-900 hover:border-amber-600'
-                                    }`}
+                                    className="py-1 pl-2.5 pr-6 text-xs font-medium bg-white border border-[#DCD6CC] text-[#141311] outline-none cursor-pointer appearance-none focus:border-[#141311]"
                                   >
                                     {item.sizes.map((sz) => (
-                                      <option key={sz} value={sz}>
-                                        {sz}
-                                      </option>
+                                      <option key={sz} value={sz}>{sz}</option>
                                     ))}
                                   </select>
-                                  <ChevronDown className="w-3 h-3 text-stone-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                  <ChevronDown className="w-3 h-3 text-[#847E75] absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                                 </div>
                               ) : (
-                                <span className="text-[11px] opacity-75 font-mono">
+                                <span className="text-[11px] text-[#5C574F] font-mono">
                                   {lang === 'ka' ? 'უნივერსალური' : 'One Size'}
                                 </span>
                               )}
@@ -838,19 +731,19 @@ export default function CheckoutPage() {
                     })}
                   </div>
 
-                  {/* Promo Code Input */}
-                  <div className="pt-2">
+                  {/* Promo Code */}
+                  <div className="pt-1">
                     {appliedPromo ? (
-                      <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center justify-between">
+                      <div className="p-3 bg-[#F4F8F5] border border-[#D4E2D9] text-[#2B5C40] text-xs flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Tag className="w-3.5 h-3.5" />
-                          <span className="font-bold">{appliedPromo.code}</span>
+                          <Tag className="w-3.5 h-3.5 stroke-[1.5]" />
+                          <span className="font-medium">{appliedPromo.code}</span>
                           <span>({appliedPromo.label})</span>
                         </div>
                         <button
                           type="button"
                           onClick={() => setAppliedPromo(null)}
-                          className="text-[10px] uppercase font-bold text-stone-400 hover:text-red-400 transition-colors"
+                          className="text-xs text-[#847E75] hover:text-[#8E2424] cursor-pointer"
                         >
                           ✕
                         </button>
@@ -863,88 +756,83 @@ export default function CheckoutPage() {
                             value={promoCodeInput}
                             onChange={(e) => setPromoCodeInput(e.target.value)}
                             placeholder="VIP პრომო კოდი"
-                            className={`flex-1 px-3 py-2 rounded-xl text-xs border outline-none uppercase font-mono ${
-                              darkMode
-                                ? 'bg-stone-900 border-stone-700 text-white placeholder-stone-500'
-                                : 'bg-stone-50 border-stone-300 text-stone-900 placeholder-stone-400'
-                            }`}
+                            className="flex-1 px-3 py-2.5 text-xs bg-white border border-[#DCD6CC] focus:border-[#141311] text-[#141311] placeholder-[#9C958B] outline-none uppercase font-mono"
                           />
                           <button
                             type="button"
                             onClick={handleApplyPromo}
-                            className="px-4 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-semibold transition-all"
+                            className="px-4 py-2.5 border border-[#141311] text-[#141311] hover:bg-[#141311] hover:text-white text-[10px] uppercase tracking-[0.16em] font-medium transition-colors cursor-pointer"
                           >
                             {lang === 'ka' ? 'გააქტიურება' : 'Apply'}
                           </button>
                         </div>
                         {promoError && (
-                          <span className="text-[11px] text-red-400 block">{promoError}</span>
+                          <span className="text-[11px] text-[#8E2424] block">{promoError}</span>
                         )}
                       </div>
                     )}
                   </div>
 
-                  {/* Price Calculations */}
-                  <div className="pt-3 border-t border-stone-500/15 space-y-2 text-xs">
-                    <div className="flex justify-between items-center opacity-70">
+                  {/* Totals */}
+                  <div className="pt-4 border-t border-[#E8E3DB] space-y-2.5 text-xs text-[#4A4640]">
+                    <div className="flex justify-between items-center">
                       <span>{lang === 'ka' ? 'ნივთების ჯამი:' : 'Subtotal:'}</span>
-                      <span className="font-mono">{formatPrice(rawSubtotal)}</span>
+                      <span className="font-mono text-[#141311]">{formatPrice(rawSubtotal)}</span>
                     </div>
 
                     {appliedPromo && (
-                      <div className="flex justify-between items-center text-emerald-400 font-medium">
+                      <div className="flex justify-between items-center text-[#2B5C40] font-medium">
                         <span>{lang === 'ka' ? 'ფასდაკლება (-10%):' : 'Discount:'}</span>
                         <span className="font-mono">-{formatPrice(discountAmount)}</span>
                       </div>
                     )}
 
-                    <div className="flex justify-between items-center opacity-75">
+                    <div className="flex justify-between items-center">
                       <span>
                         {lang === 'ka'
                           ? `მიწოდება (${isTbilisi ? 'თბილისი' : 'რეგიონი'}):`
                           : `Delivery (${isTbilisi ? 'Tbilisi' : 'Regions'}):`}
                       </span>
-                      <span className="font-mono font-semibold text-stone-200 dark:text-stone-200">
+                      <span className="font-mono text-[#141311]">
                         {formatPrice(shippingFee)}
                       </span>
                     </div>
 
                     {isGift && (
-                      <div className="flex justify-between items-center text-purple-400 font-medium">
+                      <div className="flex justify-between items-center text-[#9D7B48] font-medium">
                         <span>{lang === 'ka' ? 'სასაჩუქრე შეფუთვა:' : 'Gift Box:'}</span>
-                        <span className="font-mono font-semibold">+{formatPrice(giftFee)}</span>
+                        <span className="font-mono">+{formatPrice(giftFee)}</span>
                       </div>
                     )}
 
-                    <div className="pt-2 border-t border-stone-500/15 flex justify-between items-baseline">
-                      <span className="font-serif text-sm sm:text-base font-semibold">
+                    <div className="pt-3 border-t border-[#E8E3DB] flex justify-between items-baseline">
+                      <span className="font-serif text-base text-[#141311]">
                         {lang === 'ka' ? 'საბოლოო თანხა:' : 'Total to Pay:'}
                       </span>
-                      <span className="font-mono font-bold text-amber-500 text-xl sm:text-2xl">
+                      <span className="font-mono font-medium text-[#141311] text-xl sm:text-2xl">
                         {formatPrice(finalTotal)}
                       </span>
                     </div>
                   </div>
 
-                  {/* Submit Button */}
                   <button
                     type="submit"
                     disabled={submitting || orderItems.length === 0}
-                    className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-stone-950 font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl shadow-amber-500/25 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
+                    className="w-full py-4 px-6 bg-[#141311] hover:bg-[#2C2A26] text-white font-medium text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-2.5 transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     {submitting ? (
-                      <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-[1.5px] border-white border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <>
-                        <ShoppingBag className="w-4 h-4" />
+                        <ShoppingBag className="w-4 h-4 stroke-[1.5]" />
                         <span>{lang === 'ka' ? 'შეკვეთის დადასტურება' : 'Confirm Order'}</span>
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="w-4 h-4 stroke-[1.5]" />
                       </>
                     )}
                   </button>
 
-                  <div className="pt-2 flex items-center justify-center gap-2 text-[10px] opacity-60 text-center">
-                    <ShieldCheck className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <div className="pt-1 flex items-center justify-center gap-2 text-[10px] text-[#847E75] text-center">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#9D7B48] shrink-0 stroke-[1.5]" />
                     <span>
                       {lang === 'ka'
                         ? 'უსაფრთხო მიწოდება და ოფიციალური საგარანტიო სერტიფიკატი'
@@ -958,11 +846,7 @@ export default function CheckoutPage() {
         )}
       </main>
 
-      <Footer
-        lang={lang}
-        darkMode={darkMode}
-        siteSettings={siteSettings}
-      />
+      <Footer lang={lang} siteSettings={siteSettings} />
     </div>
   );
 }

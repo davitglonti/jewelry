@@ -1,6 +1,6 @@
 // src/pages/LoginPage.jsx
 import React, { useState, useEffect } from 'react';
-import { Mail, Lock, Eye, EyeOff, LogIn, ArrowLeft, Sparkles, AlertCircle, KeyRound, CheckCircle2, Send, ShieldCheck, RefreshCw } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, LogIn, ArrowLeft, AlertCircle, CheckCircle2, Send, ShieldCheck } from 'lucide-react';
 import { useAuth, getAuthErrorMessage } from '../context/AuthContext';
 import { useStore } from '../context/StoreContext';
 import { navigateTo } from '../utils/navigation';
@@ -13,17 +13,14 @@ export default function LoginPage({ initialMode = 'login' }) {
   const { login, loginWithGoogle, resetPassword, verifyResetCode, confirmReset } = useAuth();
   const { darkMode, setDarkMode, lang, setLang, siteSettings, favorites, setShowFavoritesModal } = useStore();
 
-  // URL პარამეტრების ამოღება
   const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
   const redirectTarget = params.get('redirect') || '/';
   const oobCode = params.get('oobCode');
   const actionParam = params.get('mode');
 
-  // რეჟიმი: 'login' | 'forgot' | 'new-password'
   const resolvedInitialMode = (oobCode || actionParam === 'resetPassword') ? 'new-password' : initialMode;
   const [mode, setMode] = useState(resolvedInitialMode);
 
-  // Login & Forgot states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +30,6 @@ export default function LoginPage({ initialMode = 'login' }) {
   const [resetSuccess, setResetSuccess] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // New Password states (აღდგენის ბმულიდან შემოსვლისას)
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -43,7 +39,6 @@ export default function LoginPage({ initialMode = 'login' }) {
   const [codeValid, setCodeValid] = useState(false);
   const [passwordResetSuccess, setPasswordResetSuccess] = useState(false);
 
-  // თუ URL-ში გვაქვს oobCode, ვამოწმებთ მის ვალიდურობას Firebase-თან
   useEffect(() => {
     if (oobCode) {
       setVerifyingCode(true);
@@ -152,10 +147,11 @@ export default function LoginPage({ initialMode = 'login' }) {
     }
   };
 
+  const inputClass =
+    'w-full pl-10 pr-4 py-3 text-sm bg-white border border-[#DCD6CC] focus:border-[#141311] text-[#141311] placeholder-[#9C958B] outline-none transition-colors';
+
   return (
-    <div className={`min-h-screen flex flex-col justify-between transition-colors duration-300 ${
-      darkMode ? 'bg-[#0c0b0a] text-[#f5f0e6]' : 'bg-[#faf7f2] text-[#1c1917]'
-    }`}>
+    <div className="min-h-screen flex flex-col justify-between bg-[#FAF9F6] text-[#141311]">
       <Navbar
         lang={lang}
         setLang={setLang}
@@ -167,90 +163,66 @@ export default function LoginPage({ initialMode = 'login' }) {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main className="flex-1 flex items-center justify-center px-4 py-28 sm:py-36">
-        <div className={`w-full max-w-md p-6 sm:p-9 rounded-3xl border transition-all shadow-2xl ${
-          darkMode ? 'bg-[#141210] border-stone-800 shadow-black/80' : 'bg-white border-stone-200 shadow-stone-300/40'
-        }`}>
+      <main className="flex-1 flex items-center justify-center px-4 pt-[140px] pb-24">
+        <div className="w-full max-w-md p-8 sm:p-10 bg-white border border-[#E8E3DB]">
           {mode === 'login' ? (
             <>
-              {/* Header */}
-              <div className="text-center mb-7">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-500 mb-3 shadow-inner">
-                  <Sparkles className="w-6 h-6" />
-                </div>
-                <h1 className="font-serif text-2xl sm:text-3xl font-medium tracking-wide">
+              <div className="text-center mb-8 space-y-2">
+                <span className="text-[10px] uppercase tracking-[0.26em] text-[#9D7B48] font-medium block">
+                  {siteSettings?.brandName || 'MATARE'}
+                </span>
+                <h1 className="font-serif text-3xl sm:text-4xl font-light text-[#141311]">
                   {lang === 'ka' ? 'ავტორიზაცია' : 'Sign In'}
                 </h1>
-                <p className="text-xs sm:text-sm opacity-70 mt-1.5">
+                <p className="text-xs sm:text-sm text-[#5C574F] font-light">
                   {lang === 'ka'
                     ? 'შედით თქვენს ანგარიშზე რჩეულების, შედარებისა და VIP ფასდაკლებისთვის'
                     : 'Sign in to access favorites, comparison & VIP perks'}
                 </p>
               </div>
 
-              {/* Error Message */}
               {errorMessage && (
-                <div className="mb-5 p-3.5 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-400 text-xs flex items-start gap-2.5 animate-fadeIn">
+                <div className="mb-5 p-3.5 bg-[#FDF6F6] border border-[#E8C8C8] text-[#8E2424] text-xs flex items-start gap-2.5 animate-fadeIn">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                   <span className="leading-relaxed">{errorMessage}</span>
                 </div>
               )}
 
-              {/* Google Sign In */}
               <button
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={loading || googleLoading}
-                className={`w-full py-3 px-4 rounded-xl border flex items-center justify-center gap-3 text-sm font-medium transition-all shadow-sm active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed mb-4 ${
-                  darkMode
-                    ? 'bg-stone-900/90 border-stone-700/80 hover:bg-stone-800 text-stone-200 hover:text-white hover:border-stone-600'
-                    : 'bg-stone-50 border-stone-300 hover:bg-stone-100 text-stone-800 hover:text-black hover:border-stone-400'
-                }`}
+                className="w-full py-3 px-4 border border-[#DCD6CC] bg-white hover:border-[#141311] text-[#141311] flex items-center justify-center gap-3 text-xs tracking-[0.12em] uppercase font-medium transition-colors disabled:opacity-50 mb-5 cursor-pointer"
               >
                 {googleLoading ? (
-                  <div className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-[1.5px] border-[#141311] border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
                     <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-                      <path
-                        fill="#4285F4"
-                        d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.27-2.09 3.66-5.17 3.66-9.12z"
-                      />
-                      <path
-                        fill="#34A853"
-                        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.13C3.26 21.36 7.36 24 12 24z"
-                      />
-                      <path
-                        fill="#FBBC05"
-                        d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.57H1.26C.46 8.17 0 9.99 0 12s.46 3.83 1.26 5.43l4.02-3.14z"
-                      />
-                      <path
-                        fill="#EA4335"
-                        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.26 6.57l4.02 3.14c.95-2.83 3.6-4.96 6.72-4.96z"
-                      />
+                      <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.27-2.09 3.66-5.17 3.66-9.12z" />
+                      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.13C3.26 21.36 7.36 24 12 24z" />
+                      <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.57H1.26C.46 8.17 0 9.99 0 12s.46 3.83 1.26 5.43l4.02-3.14z" />
+                      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.26 6.57l4.02 3.14c.95-2.83 3.6-4.96 6.72-4.96z" />
                     </svg>
                     <span>{lang === 'ka' ? 'Google-ით შესვლა' : 'Sign in with Google'}</span>
                   </>
                 )}
               </button>
 
-              <div className="relative mb-5 flex items-center justify-center">
-                <div className="border-t border-stone-500/20 w-full absolute" />
-                <span className={`relative px-3 text-xs uppercase tracking-wider ${
-                  darkMode ? 'bg-[#141210] text-stone-400' : 'bg-white text-stone-500'
-                }`}>
+              <div className="relative mb-6 flex items-center justify-center">
+                <div className="border-t border-[#E8E3DB] w-full absolute" />
+                <span className="relative px-3 text-[10px] uppercase tracking-[0.18em] bg-white text-[#847E75]">
                   {lang === 'ka' ? 'ან ელფოსტით' : 'or with email'}
                 </span>
               </div>
 
-              {/* Form */}
               <form onSubmit={handleLogin} className="space-y-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-wider font-semibold opacity-80 mb-1.5">
+                  <label className="block text-[10px] uppercase tracking-[0.16em] text-[#5C574F] font-medium mb-1.5">
                     {lang === 'ka' ? 'ელფოსტა' : 'Email Address'}
                   </label>
                   <div className="relative">
-                    <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500" />
+                    <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#847E75] stroke-[1.5]" />
                     <input
                       type="email"
                       value={email}
@@ -258,18 +230,14 @@ export default function LoginPage({ initialMode = 'login' }) {
                       placeholder="name@example.com"
                       autoComplete="email"
                       required
-                      className={`w-full pl-10 pr-4 py-3 rounded-xl text-sm border outline-none transition-all ${
-                        darkMode
-                          ? 'bg-stone-900/90 border-stone-700/80 text-white placeholder-stone-500 focus:border-amber-500'
-                          : 'bg-stone-50 border-stone-300 text-stone-900 placeholder-stone-400 focus:border-amber-600'
-                      }`}
+                      className={inputClass}
                     />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs uppercase tracking-wider font-semibold opacity-80">
+                    <label className="text-[10px] uppercase tracking-[0.16em] text-[#5C574F] font-medium">
                       {lang === 'ka' ? 'პაროლი' : 'Password'}
                     </label>
                     <button
@@ -279,13 +247,13 @@ export default function LoginPage({ initialMode = 'login' }) {
                         setResetSuccess(false);
                         setMode('forgot');
                       }}
-                      className="text-xs text-amber-500 hover:text-amber-400 font-medium transition-colors"
+                      className="text-[11px] text-[#9D7B48] hover:text-[#141311] transition-colors cursor-pointer"
                     >
                       {lang === 'ka' ? 'დაგავიწყდათ პაროლი?' : 'Forgot password?'}
                     </button>
                   </div>
                   <div className="relative">
-                    <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500" />
+                    <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#847E75] stroke-[1.5]" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={password}
@@ -293,19 +261,15 @@ export default function LoginPage({ initialMode = 'login' }) {
                       placeholder="••••••••"
                       autoComplete="current-password"
                       required
-                      className={`w-full pl-10 pr-11 py-3 rounded-xl text-sm border outline-none transition-all ${
-                        darkMode
-                          ? 'bg-stone-900/90 border-stone-700/80 text-white placeholder-stone-500 focus:border-amber-500'
-                          : 'bg-stone-50 border-stone-300 text-stone-900 placeholder-stone-400 focus:border-amber-600'
-                      }`}
+                      className={`${inputClass} pr-11`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-500 hover:text-stone-300 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#847E75] hover:text-[#141311] transition-colors cursor-pointer"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? <EyeOff className="w-4 h-4 stroke-[1.5]" /> : <Eye className="w-4 h-4 stroke-[1.5]" />}
                     </button>
                   </div>
                 </div>
@@ -313,77 +277,70 @@ export default function LoginPage({ initialMode = 'login' }) {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold text-sm tracking-wider uppercase flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                  className="w-full py-3.5 px-4 bg-[#141311] hover:bg-[#2C2A26] text-white font-medium text-xs tracking-[0.2em] uppercase flex items-center justify-center gap-2 transition-colors disabled:opacity-50 mt-2 cursor-pointer"
                 >
                   {loading ? (
-                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-[1.5px] border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <>
-                      <LogIn className="w-4 h-4" />
+                      <LogIn className="w-4 h-4 stroke-[1.5]" />
                       <span>{lang === 'ka' ? 'შესვლა' : 'Sign In'}</span>
                     </>
                   )}
                 </button>
               </form>
 
-              {/* Switch to Register */}
-              <div className="mt-6 pt-5 border-t border-stone-500/15 text-center text-xs opacity-80">
+              <div className="mt-7 pt-5 border-t border-[#E8E3DB] text-center text-xs text-[#5C574F]">
                 <span>{lang === 'ka' ? 'არ გაქვთ ანგარიში? ' : "Don't have an account? "}</span>
                 <a
                   href={`/register?redirect=${encodeURIComponent(redirectTarget)}`}
-                  className="text-amber-500 hover:text-amber-400 font-semibold underline underline-offset-4 ml-1 transition-colors"
+                  className="text-[#141311] hover:text-[#9D7B48] font-medium underline underline-offset-4 ml-1 transition-colors"
                 >
                   {lang === 'ka' ? 'დარეგისტრირდით' : 'Create an Account'}
                 </a>
               </div>
 
-              {/* Back to store */}
               <div className="mt-4 text-center">
-                <a
-                  href="/"
-                  className="inline-flex items-center gap-1.5 text-xs opacity-60 hover:opacity-100 hover:text-amber-500 transition-all"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
+                <a href="/" className="inline-flex items-center gap-1.5 text-xs text-[#847E75] hover:text-[#141311] transition-colors">
+                  <ArrowLeft className="w-3.5 h-3.5 stroke-[1.5]" />
                   <span>{lang === 'ka' ? 'საიტზე დაბრუნება' : 'Back to Store'}</span>
                 </a>
               </div>
             </>
           ) : mode === 'forgot' ? (
             <>
-              {/* Forgot Password Header */}
-              <div className="text-center mb-7">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-500 mb-3 shadow-inner">
-                  <KeyRound className="w-6 h-6" />
-                </div>
-                <h1 className="font-serif text-2xl sm:text-3xl font-medium tracking-wide">
+              <div className="text-center mb-8 space-y-2">
+                <span className="text-[10px] uppercase tracking-[0.26em] text-[#9D7B48] font-medium block">
+                  {lang === 'ka' ? 'ანგარიშის აღდგენა' : 'Account Recovery'}
+                </span>
+                <h1 className="font-serif text-3xl font-light text-[#141311]">
                   {lang === 'ka' ? 'პაროლის აღდგენა' : 'Reset Password'}
                 </h1>
-                <p className="text-xs sm:text-sm opacity-70 mt-1.5">
+                <p className="text-xs sm:text-sm text-[#5C574F] font-light">
                   {lang === 'ka'
                     ? 'შეიყვანეთ თქვენი ელფოსტა და გამოგიგზავნით პაროლის აღდგენის ბმულს'
                     : 'Enter your email to receive a password reset link'}
                 </p>
               </div>
 
-              {/* Error Message */}
               {errorMessage && (
-                <div className="mb-5 p-3.5 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-400 text-xs flex items-start gap-2.5 animate-fadeIn">
+                <div className="mb-5 p-3.5 bg-[#FDF6F6] border border-[#E8C8C8] text-[#8E2424] text-xs flex items-start gap-2.5 animate-fadeIn">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span className="leading-relaxed">{errorMessage}</span>
+                  <span>{errorMessage}</span>
                 </div>
               )}
 
               {resetSuccess ? (
                 <div className="space-y-5 animate-fadeIn">
-                  <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs sm:text-sm flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-400" />
+                  <div className="p-4 bg-[#F4F8F5] border border-[#D4E2D9] text-[#2B5C40] text-xs sm:text-sm flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
                     <div className="leading-relaxed">
-                      <p className="font-semibold mb-1">
+                      <p className="font-medium mb-1">
                         {lang === 'ka' ? 'ბმული წარმატებით გაიგზავნა!' : 'Reset link sent successfully!'}
                       </p>
-                      <p className="opacity-90">
+                      <p className="opacity-85">
                         {lang === 'ka'
-                          ? `პაროლის აღდგენის ინსტრუქცია გაიგზავნა მისამართზე: ${email}. გთხოვთ შეამოწმოთ შემოსული წერილები (Inbox) და სპამ (Spam) საქაღალდე.`
+                          ? `პაროლის აღდგენის ინსტრუქცია გაიგზავნა მისამართზე: ${email}. შეამოწმეთ Inbox და Spam.`
                           : `Instructions have been sent to ${email}. Please check your inbox and spam folder.`}
                       </p>
                     </div>
@@ -396,20 +353,20 @@ export default function LoginPage({ initialMode = 'login' }) {
                       setErrorMessage('');
                       setMode('login');
                     }}
-                    className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold text-sm tracking-wider uppercase flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.99] transition-all"
+                    className="w-full py-3.5 px-4 bg-[#141311] text-white text-xs tracking-[0.18em] uppercase flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <LogIn className="w-4 h-4" />
+                    <LogIn className="w-4 h-4 stroke-[1.5]" />
                     <span>{lang === 'ka' ? 'ავტორიზაციაზე დაბრუნება' : 'Back to Sign In'}</span>
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleResetPassword} className="space-y-4">
                   <div>
-                    <label className="block text-xs uppercase tracking-wider font-semibold opacity-80 mb-1.5">
+                    <label className="block text-[10px] uppercase tracking-[0.16em] text-[#5C574F] font-medium mb-1.5">
                       {lang === 'ka' ? 'თქვენი ელფოსტა' : 'Your Email Address'}
                     </label>
                     <div className="relative">
-                      <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500" />
+                      <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#847E75] stroke-[1.5]" />
                       <input
                         type="email"
                         value={email}
@@ -417,11 +374,7 @@ export default function LoginPage({ initialMode = 'login' }) {
                         placeholder="name@example.com"
                         autoComplete="email"
                         required
-                        className={`w-full pl-10 pr-4 py-3 rounded-xl text-sm border outline-none transition-all ${
-                          darkMode
-                            ? 'bg-stone-900/90 border-stone-700/80 text-white placeholder-stone-500 focus:border-amber-500'
-                            : 'bg-stone-50 border-stone-300 text-stone-900 placeholder-stone-400 focus:border-amber-600'
-                        }`}
+                        className={inputClass}
                       />
                     </div>
                   </div>
@@ -429,13 +382,13 @@ export default function LoginPage({ initialMode = 'login' }) {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold text-sm tracking-wider uppercase flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                    className="w-full py-3.5 px-4 bg-[#141311] hover:bg-[#2C2A26] text-white text-xs tracking-[0.18em] uppercase flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     {loading ? (
-                      <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-[1.5px] border-white border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <>
-                        <Send className="w-4 h-4" />
+                        <Send className="w-4 h-4 stroke-[1.5]" />
                         <span>{lang === 'ka' ? 'აღდგენის ბმულის გაგზავნა' : 'Send Reset Link'}</span>
                       </>
                     )}
@@ -448,75 +401,68 @@ export default function LoginPage({ initialMode = 'login' }) {
                         setErrorMessage('');
                         setMode('login');
                       }}
-                      className="inline-flex items-center gap-1.5 text-xs text-amber-500 hover:text-amber-400 font-medium transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs text-[#9D7B48] hover:text-[#141311] transition-colors cursor-pointer"
                     >
-                      <ArrowLeft className="w-3.5 h-3.5" />
+                      <ArrowLeft className="w-3.5 h-3.5 stroke-[1.5]" />
                       <span>{lang === 'ka' ? 'ავტორიზაციაზე დაბრუნება' : 'Back to Sign In'}</span>
                     </button>
                   </div>
                 </form>
               )}
 
-              {/* Back to store */}
-              <div className="mt-5 pt-4 border-t border-stone-500/15 text-center">
-                <a
-                  href="/"
-                  className="inline-flex items-center gap-1.5 text-xs opacity-60 hover:opacity-100 hover:text-amber-500 transition-all"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
+              <div className="mt-6 pt-4 border-t border-[#E8E3DB] text-center">
+                <a href="/" className="inline-flex items-center gap-1.5 text-xs text-[#847E75] hover:text-[#141311] transition-colors">
+                  <ArrowLeft className="w-3.5 h-3.5 stroke-[1.5]" />
                   <span>{lang === 'ka' ? 'საიტზე დაბრუნება' : 'Back to Store'}</span>
                 </a>
               </div>
             </>
           ) : (
-            /* Mode === 'new-password' */
             <>
-              {/* Header */}
-              <div className="text-center mb-7">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-500 mb-3 shadow-inner">
-                  <ShieldCheck className="w-6 h-6" />
-                </div>
-                <h1 className="font-serif text-2xl sm:text-3xl font-medium tracking-wide">
+              <div className="text-center mb-8 space-y-2">
+                <span className="text-[10px] uppercase tracking-[0.26em] text-[#9D7B48] font-medium block">
+                  {lang === 'ka' ? 'უსაფრთხოება' : 'Security'}
+                </span>
+                <h1 className="font-serif text-3xl font-light text-[#141311]">
                   {lang === 'ka' ? 'ახალი პაროლის დაყენება' : 'Set New Password'}
                 </h1>
                 {verifiedEmail ? (
-                  <div className="mt-2.5">
-                    <span className="text-xs px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 font-mono inline-flex items-center gap-1.5">
-                      <Mail className="w-3 h-3" />
+                  <div className="mt-2">
+                    <span className="text-xs px-3 py-1 bg-[#F8F6F2] border border-[#E8E3DB] text-[#4A4640] font-mono inline-flex items-center gap-1.5">
+                      <Mail className="w-3 h-3 text-[#9D7B48]" />
                       <span>{verifiedEmail}</span>
                     </span>
                   </div>
                 ) : (
-                  <p className="text-xs sm:text-sm opacity-70 mt-1.5">
+                  <p className="text-xs sm:text-sm text-[#5C574F] font-light">
                     {lang === 'ka' ? 'შეიყვანეთ თქვენი ახალი პაროლი' : 'Enter your new password'}
                   </p>
                 )}
               </div>
 
-              {/* Error Message */}
               {errorMessage && (
-                <div className="mb-5 p-3.5 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-400 text-xs flex items-start gap-2.5 animate-fadeIn">
+                <div className="mb-5 p-3.5 bg-[#FDF6F6] border border-[#E8C8C8] text-[#8E2424] text-xs flex items-start gap-2.5 animate-fadeIn">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span className="leading-relaxed">{errorMessage}</span>
+                  <span>{errorMessage}</span>
                 </div>
               )}
 
               {verifyingCode ? (
                 <div className="py-12 text-center space-y-3">
-                  <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
-                  <p className="text-xs opacity-70">
+                  <div className="w-7 h-7 border-[1.5px] border-[#9D7B48] border-t-transparent rounded-full animate-spin mx-auto" />
+                  <p className="text-xs text-[#847E75]">
                     {lang === 'ka' ? 'მოწმდება პაროლის აღდგენის ბმული...' : 'Verifying reset link...'}
                   </p>
                 </div>
               ) : passwordResetSuccess ? (
                 <div className="space-y-5 animate-fadeIn">
-                  <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs sm:text-sm flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-400" />
+                  <div className="p-4 bg-[#F4F8F5] border border-[#D4E2D9] text-[#2B5C40] text-xs sm:text-sm flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
                     <div className="leading-relaxed">
-                      <p className="font-semibold mb-1">
+                      <p className="font-medium mb-1">
                         {lang === 'ka' ? 'პაროლი წარმატებით შეიცვალა!' : 'Password updated successfully!'}
                       </p>
-                      <p className="opacity-90">
+                      <p className="opacity-85">
                         {lang === 'ka'
                           ? 'თქვენი ახალი პაროლი გააქტიურებულია. შეგიძლიათ გაიაროთ ავტორიზაცია.'
                           : 'Your new password is now active. You can now sign in.'}
@@ -529,59 +475,39 @@ export default function LoginPage({ initialMode = 'login' }) {
                       <button
                         type="button"
                         onClick={() => navigateTo('/admin')}
-                        className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold text-sm tracking-wider uppercase flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.99] transition-all"
+                        className="w-full py-3.5 px-4 bg-[#141311] text-white text-xs tracking-[0.18em] uppercase flex items-center justify-center gap-2 cursor-pointer"
                       >
-                        <ShieldCheck className="w-4 h-4" />
+                        <ShieldCheck className="w-4 h-4 stroke-[1.5]" />
                         <span>{lang === 'ka' ? 'ადმინ პანელზე შესვლა →' : 'Go to Admin Panel →'}</span>
                       </button>
                     ) : (
                       <>
                         <button
                           type="button"
-                          onClick={() => {
-                            navigateTo('/login');
-                          }}
-                          className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold text-sm tracking-wider uppercase flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.99] transition-all"
+                          onClick={() => navigateTo('/login')}
+                          className="w-full py-3.5 px-4 bg-[#141311] text-white text-xs tracking-[0.18em] uppercase flex items-center justify-center gap-2 cursor-pointer"
                         >
-                          <LogIn className="w-4 h-4" />
+                          <LogIn className="w-4 h-4 stroke-[1.5]" />
                           <span>{lang === 'ka' ? 'ავტორიზაციაზე გადასვლა' : 'Go to Sign In'}</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => navigateTo('/admin')}
-                          className="w-full py-2.5 px-4 rounded-xl border border-stone-700/60 hover:border-amber-500/60 text-stone-300 hover:text-white text-xs font-medium tracking-wider uppercase flex items-center justify-center gap-2 transition-all"
+                          className="w-full py-3 px-4 border border-[#141311] text-[#141311] hover:bg-[#F8F6F2] text-xs tracking-[0.16em] uppercase flex items-center justify-center gap-2 cursor-pointer"
                         >
-                          <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
+                          <ShieldCheck className="w-3.5 h-3.5 stroke-[1.5]" />
                           <span>{lang === 'ka' ? 'ადმინ პანელზე შესვლა' : 'Go to Admin Panel'}</span>
                         </button>
                       </>
                     )}
                   </div>
                 </div>
-              ) : !codeValid && !oobCode ? (
-                <div className="space-y-5 text-center py-4">
-                  <p className="text-xs opacity-75">
-                    {lang === 'ka'
-                      ? 'აღდგენის კოდი არ მოიძებნა. გთხოვთ გამოიყენოთ თქვენს ელფოსტაზე მიღებული ბმული.'
-                      : 'No reset code found. Please use the link sent to your email.'}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setErrorMessage('');
-                      setMode('forgot');
-                    }}
-                    className="w-full py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-semibold text-xs tracking-wider uppercase transition-all"
-                  >
-                    {lang === 'ka' ? 'ბმულის ხელახლა მოთხოვნა' : 'Request New Link'}
-                  </button>
-                </div>
               ) : !codeValid ? (
                 <div className="space-y-5 text-center py-4">
-                  <p className="text-xs opacity-75">
-                    {lang === 'ka'
-                      ? 'ბმულის მოქმედების ვადა ამოიწურა ან ის უკვე გამოყენებულია.'
-                      : 'The link has expired or has already been used.'}
+                  <p className="text-xs text-[#5C574F]">
+                    {!oobCode
+                      ? (lang === 'ka' ? 'აღდგენის კოდი არ მოიძებნა. გთხოვთ გამოიყენოთ ელფოსტაზე მიღებული ბმული.' : 'No reset code found.')
+                      : (lang === 'ka' ? 'ბმულის მოქმედების ვადა ამოიწურა ან უკვე გამოყენებულია.' : 'The link has expired or has already been used.')}
                   </p>
                   <button
                     type="button"
@@ -589,7 +515,7 @@ export default function LoginPage({ initialMode = 'login' }) {
                       setErrorMessage('');
                       setMode('forgot');
                     }}
-                    className="w-full py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-semibold text-xs tracking-wider uppercase transition-all"
+                    className="w-full py-3 px-4 bg-[#141311] text-white text-xs tracking-[0.18em] uppercase cursor-pointer"
                   >
                     {lang === 'ka' ? 'ახალი ბმულის მოთხოვნა' : 'Request New Link'}
                   </button>
@@ -597,11 +523,11 @@ export default function LoginPage({ initialMode = 'login' }) {
               ) : (
                 <form onSubmit={handleConfirmNewPassword} className="space-y-4">
                   <div>
-                    <label className="block text-xs uppercase tracking-wider font-semibold opacity-80 mb-1.5">
+                    <label className="block text-[10px] uppercase tracking-[0.16em] text-[#5C574F] font-medium mb-1.5">
                       {lang === 'ka' ? 'ახალი პაროლი (მინ. 8 სიმბოლო)' : 'New Password (min 8 chars)'}
                     </label>
                     <div className="relative">
-                      <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500" />
+                      <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#847E75] stroke-[1.5]" />
                       <input
                         type={showNewPassword ? 'text' : 'password'}
                         value={newPassword}
@@ -609,30 +535,25 @@ export default function LoginPage({ initialMode = 'login' }) {
                         placeholder="••••••••"
                         autoComplete="new-password"
                         required
-                        className={`w-full pl-10 pr-10 py-3 rounded-xl text-sm border outline-none transition-all ${
-                          darkMode
-                            ? 'bg-stone-900/90 border-stone-700/80 text-white placeholder-stone-500 focus:border-amber-500'
-                            : 'bg-stone-50 border-stone-300 text-stone-900 placeholder-stone-400 focus:border-amber-600'
-                        }`}
+                        className={`${inputClass} pr-10`}
                       />
                       <button
                         type="button"
                         onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-200 transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#847E75] hover:text-[#141311] cursor-pointer"
                       >
-                        {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showNewPassword ? <EyeOff className="w-4 h-4 stroke-[1.5]" /> : <Eye className="w-4 h-4 stroke-[1.5]" />}
                       </button>
                     </div>
-
-                    <PasswordStrengthIndicator password={newPassword} lang={lang} darkMode={darkMode} />
+                    <PasswordStrengthIndicator password={newPassword} lang={lang} darkMode={false} />
                   </div>
 
                   <div>
-                    <label className="block text-xs uppercase tracking-wider font-semibold opacity-80 mb-1.5">
+                    <label className="block text-[10px] uppercase tracking-[0.16em] text-[#5C574F] font-medium mb-1.5">
                       {lang === 'ka' ? 'გაიმეორეთ ახალი პაროლი' : 'Confirm New Password'}
                     </label>
                     <div className="relative">
-                      <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500" />
+                      <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#847E75] stroke-[1.5]" />
                       <input
                         type={showConfirmPassword ? 'text' : 'password'}
                         value={confirmPassword}
@@ -640,18 +561,14 @@ export default function LoginPage({ initialMode = 'login' }) {
                         placeholder="••••••••"
                         autoComplete="new-password"
                         required
-                        className={`w-full pl-10 pr-10 py-3 rounded-xl text-sm border outline-none transition-all ${
-                          darkMode
-                            ? 'bg-stone-900/90 border-stone-700/80 text-white placeholder-stone-500 focus:border-amber-500'
-                            : 'bg-stone-50 border-stone-300 text-stone-900 placeholder-stone-400 focus:border-amber-600'
-                        }`}
+                        className={`${inputClass} pr-10`}
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-200 transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#847E75] hover:text-[#141311] cursor-pointer"
                       >
-                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4 stroke-[1.5]" /> : <Eye className="w-4 h-4 stroke-[1.5]" />}
                       </button>
                     </div>
                   </div>
@@ -659,13 +576,13 @@ export default function LoginPage({ initialMode = 'login' }) {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold text-sm tracking-wider uppercase flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                    className="w-full py-3.5 px-4 bg-[#141311] hover:bg-[#2C2A26] text-white text-xs tracking-[0.18em] uppercase flex items-center justify-center gap-2 transition-colors disabled:opacity-50 mt-2 cursor-pointer"
                   >
                     {loading ? (
-                      <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-[1.5px] border-white border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <>
-                        <ShieldCheck className="w-4 h-4" />
+                        <ShieldCheck className="w-4 h-4 stroke-[1.5]" />
                         <span>{lang === 'ka' ? 'პაროლის განახლება' : 'Update Password'}</span>
                       </>
                     )}
@@ -673,13 +590,9 @@ export default function LoginPage({ initialMode = 'login' }) {
                 </form>
               )}
 
-              {/* Back to store */}
-              <div className="mt-5 pt-4 border-t border-stone-500/15 text-center">
-                <a
-                  href="/"
-                  className="inline-flex items-center gap-1.5 text-xs opacity-60 hover:opacity-100 hover:text-amber-500 transition-all"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
+              <div className="mt-6 pt-4 border-t border-[#E8E3DB] text-center">
+                <a href="/" className="inline-flex items-center gap-1.5 text-xs text-[#847E75] hover:text-[#141311] transition-colors">
+                  <ArrowLeft className="w-3.5 h-3.5 stroke-[1.5]" />
                   <span>{lang === 'ka' ? 'საიტზე დაბრუნება' : 'Back to Store'}</span>
                 </a>
               </div>
@@ -688,7 +601,7 @@ export default function LoginPage({ initialMode = 'login' }) {
         </div>
       </main>
 
-      <Footer darkMode={darkMode} lang={lang} siteSettings={siteSettings} />
+      <Footer lang={lang} siteSettings={siteSettings} />
     </div>
   );
 }

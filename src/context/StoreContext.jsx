@@ -78,7 +78,7 @@ const writeCache = (key, value) => {
 };
 
 export function StoreProvider({ children }) {
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const [lang, setLang] = useState(() => {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname;

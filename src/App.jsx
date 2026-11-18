@@ -12,6 +12,7 @@ const AboutPage = lazy(() => import('./pages/AboutPage'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
 const SizeGuidePage = lazy(() => import('./pages/SizeGuidePage'));
+const FaqPage = lazy(() => import('./pages/FaqPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const CompareModal = lazy(() => import('./components/modals/CompareModal'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -24,8 +25,8 @@ const MyItemsPage = lazy(() => import('./pages/MyItemsPage'));
 
 // მსუბუქი ჩამტვირთავი ეკრანი გვერდებს შორის გადასვლისას
 const PageLoader = () => (
-  <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-    <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+  <div className="min-h-screen bg-white flex items-center justify-center">
+    <div className="w-7 h-7 border-[1.5px] border-[#9D7B48] border-t-transparent rounded-full animate-spin"></div>
   </div>
 );
 
@@ -94,6 +95,12 @@ export default function App() {
     content = (
       <Suspense fallback={<PageLoader />}>
         <SizeGuidePage />
+      </Suspense>
+    );
+  } else if (route === "/faq") {
+    content = (
+      <Suspense fallback={<PageLoader />}>
+        <FaqPage />
       </Suspense>
     );
   } else if (route === "/product" || route.startsWith("/product/") || route.startsWith("/product?")) {

@@ -6,9 +6,11 @@ import InfoCards from '../components/store/InfoCards';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import HeroCarousel from '../components/store/HeroCarousel';
+import EditorialCategories from '../components/store/EditorialCategories';
 import CatalogSection from '../components/store/CatalogSection';
 import CraftsmanshipSection from '../components/store/CraftsmanshipSection';
-import FaqSection from '../components/store/FaqSection';
+import JournalPreviewSection from '../components/store/JournalPreviewSection';
+import ConciergeBannerSection from '../components/store/ConciergeBannerSection';
 
 const FavoritesModal = lazy(() => import('../components/modals/FavoritesModal'));
 
@@ -24,7 +26,6 @@ export default function StorePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showFavoritesModal, setShowFavoritesModal] = useState(false);
 
-  // თუ ვინმე ძველი გაზიარებული ლინკით (?item=AUR-101) შემოვიდა, გადავამისამართოთ ახალ გვერდზე
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const itemCode = params.get("item");
@@ -34,7 +35,6 @@ export default function StorePage() {
     }
   }, [lang]);
 
-  // პროდუქტზე დაჭერისას გადავდივართ ცალკე გვერდზე (SPA კლიენტური ნავიგაცია მომენტალური გახსნისთვის)
   const openProductModal = (product) => {
     const code = product.sku || product.id;
     const prefix = lang === "en" ? "/en" : "";
@@ -44,7 +44,7 @@ export default function StorePage() {
   const slides = siteSettings?.heroSlides?.length > 0 ? siteSettings.heroSlides : DEFAULT_SETTINGS.heroSlides;
 
   return (
-    <div className={`min-h-screen w-full overflow-x-hidden transition-colors duration-300 ${darkMode ? "bg-[#0c0b0a] text-[#f5f0e6]" : "bg-[#faf7f2] text-[#1c1917]"}`}>
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#FAF8F4] text-[#1F1C18]">
       <Navbar
         lang={lang}
         setLang={setLang}
@@ -56,7 +56,6 @@ export default function StorePage() {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      {/* ძირითადი კონტენტი (Main Landmark - აუცილებელია Screen Readers & Accessibility-სთვის) */}
       <main id="main-content">
         <HeroCarousel
           slides={slides}
@@ -65,11 +64,12 @@ export default function StorePage() {
           lang={lang}
         />
 
+        <EditorialCategories />
+
         <CatalogSection openProductModal={openProductModal} />
 
-        <CraftsmanshipSection darkMode={darkMode} lang={lang} siteSettings={siteSettings} />
+        <CraftsmanshipSection lang={lang} siteSettings={siteSettings} />
 
-        {/* მთავარი გვერდის ღირებულებების ბარათები (დამოუკიდებელი) */}
         <InfoCards
           badgeKey="homeValuesBadge"
           badgeKeyEn="homeValuesBadgeEn"
@@ -84,11 +84,12 @@ export default function StorePage() {
           ]}
         />
 
-        {/* FAQ - ხშირად დასმული კითხვები & Google FAQPage Schema */}
-        <FaqSection darkMode={darkMode} lang={lang} siteSettings={siteSettings} />
+        <JournalPreviewSection />
+
+        <ConciergeBannerSection />
       </main>
 
-      <Footer darkMode={darkMode} lang={lang} siteSettings={siteSettings} />
+      <Footer lang={lang} siteSettings={siteSettings} />
 
       {showFavoritesModal && (
         <Suspense fallback={null}>

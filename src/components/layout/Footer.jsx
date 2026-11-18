@@ -1,34 +1,39 @@
 import React from 'react';
-import { Instagram, Facebook, MapPin, Phone, Clock, MessageCircle, Send } from 'lucide-react';
+import { Instagram, Facebook, MapPin, Phone, Clock, MessageCircle, Send, ArrowUpRight } from 'lucide-react';
 import { pick } from '../../utils/i18n';
 
-export default function Footer({ darkMode, lang, siteSettings }) {
-  const isDark = darkMode !== false;
-  const textColor = isDark ? "text-stone-300" : "text-stone-700";
-  const subtextColor = isDark ? "text-stone-400" : "text-stone-600";
-  const linkHover = isDark ? "hover:text-amber-400" : "hover:text-amber-600";
+export default function Footer({ lang, siteSettings = {} }) {
+  const prefix = lang === "en" ? "/en" : "";
 
   return (
-    <footer id="contact" className={`pt-16 pb-12 border-t ${isDark ? "bg-[#090807] text-[#f5f0e6] border-stone-800" : "bg-stone-100 text-stone-900 border-stone-200"}`}>
-      <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 pb-12 border-b border-stone-500/15">
-          <div className="space-y-3">
-            <div className="font-serif text-2xl tracking-[0.2em] font-semibold">
-              {siteSettings.brandName}
+    <footer id="contact" className="bg-[#F3EEE6] text-[#1F1C18] border-t border-[#E6DFD3]">
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pt-16 pb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-12 border-b border-[#E3DBCE]">
+          {/* Brand Column */}
+          <div className="lg:col-span-4 space-y-4">
+            <div>
+              <div className="font-serif text-2xl sm:text-3xl font-semibold text-[#1F1C18] tracking-[0.06em]">
+                {siteSettings.brandName || "მატარე"}
+              </div>
+              <div className="text-xs text-[#9A7742] font-medium mt-1">
+                {lang === "ka" ? siteSettings.brandSubtitle : (siteSettings.brandSubtitleEn || siteSettings.brandSubtitle)}
+              </div>
             </div>
-            <p className={`text-sm leading-relaxed ${textColor}`}>
+
+            <p className="text-sm leading-relaxed text-[#4A453E] max-w-sm">
               {lang === "ka" ? siteSettings.footerDesc : (siteSettings.footerDescEn || siteSettings.footerDesc)}
             </p>
-            <div className="flex items-center gap-3 pt-2">
+
+            <div className="flex items-center gap-2.5 pt-1">
               {siteSettings.instagram && (
                 <a
                   href={siteSettings.instagram}
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Instagram"
-                  className="p-2.5 rounded-full bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-black transition-all"
+                  className="w-9 h-9 rounded-full bg-white border border-[#E3DBCE] text-[#1F1C18] hover:bg-[#1F1C18] hover:text-white hover:border-[#1F1C18] flex items-center justify-center transition-colors"
                 >
-                  <Instagram className="w-4 h-4" />
+                  <Instagram className="w-4 h-4 stroke-[1.75]" />
                 </a>
               )}
               {siteSettings.facebook && (
@@ -37,111 +42,96 @@ export default function Footer({ darkMode, lang, siteSettings }) {
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Facebook"
-                  className="p-2.5 rounded-full bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-black transition-all"
+                  className="w-9 h-9 rounded-full bg-white border border-[#E3DBCE] text-[#1F1C18] hover:bg-[#1F1C18] hover:text-white hover:border-[#1F1C18] flex items-center justify-center transition-colors"
                 >
-                  <Facebook className="w-4 h-4" />
+                  <Facebook className="w-4 h-4 stroke-[1.75]" />
                 </a>
               )}
             </div>
           </div>
 
-          <div className="space-y-3 text-sm">
-            <h4 className="font-serif text-base text-amber-400 uppercase tracking-wider">
+          {/* Navigation Column */}
+          <div className="lg:col-span-2 space-y-3.5">
+            <h4 className="text-xs font-semibold text-[#9A7742]">
               {lang === "ka" ? "ნავიგაცია" : "Navigation"}
             </h4>
-            <ul className={`space-y-2 text-xs ${textColor}`}>
-              <li>
-                <a href={lang === "en" ? "/en" : "/"} className={`${linkHover} transition-colors`}>
-                  {lang === "ka" ? "მთავარი" : "Home"}
-                </a>
-              </li>
-              <li>
-                <a href={lang === "en" ? "/en/catalog" : "/catalog"} className={`${linkHover} transition-colors`}>
-                  {lang === "ka" ? "კოლექცია" : "Collection"}
-                </a>
-              </li>
-              <li>
-                <a href={lang === "en" ? "/en/about" : "/about"} className={`${linkHover} transition-colors`}>
-                  {lang === "ka" ? "ჩვენ შესახებ" : "About Us"}
-                </a>
-              </li>
-              <li>
-                <a href={lang === "en" ? "/en/blog" : "/blog"} className={`${linkHover} transition-colors`}>
-                  {lang === "ka" ? "ბლოგი / რჩევები" : "Blog / Journal"}
-                </a>
-              </li>
-              <li>
-                <a href={lang === "en" ? "/en/size-guide" : "/size-guide"} className={`${linkHover} transition-colors`}>
-                  {lang === "ka" ? "ზომის გზამკვლევი" : "Size Guide"}
-                </a>
-              </li>
-              <li>
-                <a href={lang === "en" ? "/en/#faq" : "/#faq"} className={`${linkHover} transition-colors`}>
-                  {lang === "ka" ? "კითხვა-პასუხი (FAQ)" : "FAQ"}
-                </a>
-              </li>
-              <li>
-                <a href={lang === "en" ? "/en/track" : "/track"} className={`${linkHover} transition-colors flex items-center gap-1.5 text-amber-500/90 font-medium`}>
-                  <span>{lang === "ka" ? "შეკვეთის თრექინგი 🚚" : "Track Order 🚚"}</span>
+            <ul className="space-y-2.5 text-sm text-[#4A453E]">
+              <li><a href={prefix || "/"} className="hover:text-[#1F1C18] transition-colors">{lang === "ka" ? "მთავარი" : "Home"}</a></li>
+              <li><a href={`${prefix}/catalog`} className="hover:text-[#1F1C18] transition-colors">{lang === "ka" ? "კოლექცია" : "Collection"}</a></li>
+              <li><a href={`${prefix}/about`} className="hover:text-[#1F1C18] transition-colors">{lang === "ka" ? "ჩვენ შესახებ" : "About Us"}</a></li>
+              <li><a href={`${prefix}/blog`} className="hover:text-[#1F1C18] transition-colors">{lang === "ka" ? "ბლოგი / რჩევები" : "Journal"}</a></li>
+              <li><a href={`${prefix}/size-guide`} className="hover:text-[#1F1C18] transition-colors">{lang === "ka" ? "ზომის გზამკვლევი" : "Size Guide"}</a></li>
+              <li><a href={`${prefix}/faq`} className="hover:text-[#1F1C18] transition-colors">{lang === "ka" ? "კითხვა-პასუხი" : "FAQ"}</a></li>
+              <li className="pt-1">
+                <a href={`${prefix}/track`} className="inline-flex items-center gap-1 text-[#1F1C18] font-medium hover:text-[#9A7742] transition-colors">
+                  <span>{lang === "ka" ? "შეკვეთის თრექინგი" : "Track Order"}</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
                 </a>
               </li>
             </ul>
           </div>
 
-          <div className="space-y-3 text-sm">
-            <h4 className="font-serif text-base text-amber-400 uppercase tracking-wider">
-              {lang === "ka" ? "საკონტაქტო ინფორმაცია" : "Contact Information"}
+          {/* Contact Column */}
+          <div className="lg:col-span-3 space-y-3.5">
+            <h4 className="text-xs font-semibold text-[#9A7742]">
+              {lang === "ka" ? "საკონტაქტო ინფორმაცია" : "Boutique & Contact"}
             </h4>
-            <p className={`flex items-center gap-2.5 ${textColor}`}>
-              <MapPin className="w-4 h-4 text-amber-400 shrink-0" />
-              {pick(siteSettings, "address", lang)}
-            </p>
-            <p className={`flex items-center gap-2.5 ${textColor}`}>
-              <Phone className="w-4 h-4 text-amber-400 shrink-0" />
-              <a href={`tel:${siteSettings.phone || "+995555000000"}`} className={`${linkHover} transition-colors`}>
-                {siteSettings.phone}
-              </a>
-            </p>
-            <p className={`flex items-center gap-2.5 ${textColor}`}>
-              <Clock className="w-4 h-4 text-amber-400 shrink-0" />
-              {lang === "ka" ? siteSettings.hours : (siteSettings.hoursEn || siteSettings.hours)}
-            </p>
+            <div className="space-y-3 text-sm text-[#4A453E]">
+              <p className="flex items-start gap-2.5">
+                <MapPin className="w-4 h-4 text-[#9A7742] shrink-0 mt-0.5 stroke-[1.75]" />
+                <span>{pick(siteSettings, "address", lang)}</span>
+              </p>
+              <p className="flex items-center gap-2.5">
+                <Phone className="w-4 h-4 text-[#9A7742] shrink-0 stroke-[1.75]" />
+                <a href={`tel:${siteSettings.phone || "+995555000000"}`} className="hover:text-[#1F1C18] transition-colors">
+                  {siteSettings.phone}
+                </a>
+              </p>
+              <p className="flex items-center gap-2.5">
+                <Clock className="w-4 h-4 text-[#9A7742] shrink-0 stroke-[1.75]" />
+                <span>{lang === "ka" ? siteSettings.hours : (siteSettings.hoursEn || siteSettings.hours)}</span>
+              </p>
+            </div>
           </div>
 
-          <div className="space-y-3">
-            <h4 className="font-serif text-base text-amber-400 uppercase tracking-wider">
-              {lang === "ka" ? "სწრაფი კონსულტაცია" : "Quick Consultation"}
+          {/* Concierge Column */}
+          <div className="lg:col-span-3 space-y-3.5">
+            <h4 className="text-xs font-semibold text-[#9A7742]">
+              {lang === "ka" ? "სწრაფი კონსულტაცია" : "Private Concierge"}
             </h4>
-            <p className={`text-xs ${textColor}`}>
-              {lang === "ka" ? "მოგვწერეთ პირდაპირ WhatsApp-ში ან Messenger-ში:" : "Message us directly via WhatsApp or Messenger:"}
+            <p className="text-sm text-[#4A453E] leading-relaxed">
+              {lang === "ka"
+                ? "მოგვწერეთ პირდაპირ WhatsApp-ში ან Messenger-ში ზომისა და მოდელის შერჩევაზე:"
+                : "Message us directly via WhatsApp or Messenger for personalized sizing and bespoke inquiries:"}
             </p>
-            <div className="flex flex-wrap gap-3 pt-1">
+            <div className="flex flex-wrap gap-2.5 pt-1">
               <a
                 href={`https://wa.me/${(siteSettings.whatsapp || "").replace(/[^0-9]/g, "")}`}
                 target="_blank"
                 rel="noreferrer"
                 aria-label="WhatsApp კონსულტაცია"
-                className="px-4 py-2.5 rounded-full bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold flex items-center gap-2 shadow-md transition-all"
+                className="px-5 py-2.5 rounded-full bg-[#1F1C18] hover:bg-[#35302A] text-white text-xs font-medium flex items-center gap-2 transition-colors"
               >
-                <MessageCircle className="w-4 h-4" />
-                WhatsApp
+                <MessageCircle className="w-3.5 h-3.5 stroke-[1.75]" />
+                <span>WhatsApp</span>
               </a>
               <a
                 href={siteSettings.messenger || "https://m.me/"}
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Messenger კონსულტაცია"
-                className="px-4 py-2.5 rounded-full bg-blue-700 hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-2 shadow-md transition-all"
+                className="px-5 py-2.5 rounded-full bg-white border border-[#D9D1C5] text-[#1F1C18] hover:border-[#1F1C18] text-xs font-medium flex items-center gap-2 transition-colors"
               >
-                <Send className="w-4 h-4" />
-                Messenger
+                <Send className="w-3.5 h-3.5 stroke-[1.75]" />
+                <span>Messenger</span>
               </a>
             </div>
           </div>
         </div>
 
-        <div className={`pt-8 text-center text-xs ${subtextColor}`}>
-          {siteSettings.copyright}
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#787168]">
+          <span>{siteSettings.copyright}</span>
+          <span>Tbilisi • Fine Jewelry House</span>
         </div>
       </div>
     </footer>

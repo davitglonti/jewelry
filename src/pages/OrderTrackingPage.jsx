@@ -4,7 +4,7 @@ import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import OrderTrackingTimeline from '../components/order/OrderTrackingTimeline';
 import { useStore } from '../context/StoreContext';
-import { Search, Package, ArrowLeft, Truck, HelpCircle, PhoneCall } from 'lucide-react';
+import { Search, Package, ArrowLeft, PhoneCall } from 'lucide-react';
 
 export default function OrderTrackingPage() {
   const {
@@ -23,7 +23,6 @@ export default function OrderTrackingPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Read local stored orders for quick suggestion
   const localOrders = useMemo(() => {
     try {
       if (typeof window === 'undefined') return [];
@@ -33,7 +32,6 @@ export default function OrderTrackingPage() {
     }
   }, []);
 
-  // Check URL query param e.g. /track?id=MTR-123456
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
@@ -42,9 +40,7 @@ export default function OrderTrackingPage() {
       setSearchQuery(idParam);
       handleFindOrder(idParam);
     } else if (localOrders.length > 0) {
-      // Pre-select most recent local order if available
       const first = localOrders[0];
-      // Check if there is an updated version in inquiries
       const live = (inquiries || []).find((inq) => inq.id === first.id);
       setSelectedOrder(live || first);
     }
@@ -55,11 +51,8 @@ export default function OrderTrackingPage() {
     if (!q) return;
 
     setHasSearched(true);
-
-    // Clean phone lookup
     const cleanedDigits = q.replace(/[^0-9]/g, '');
 
-    // Search live inquiries first
     let match = (inquiries || []).find((inq) => {
       if (inq.id && inq.id.toLowerCase().replace('#', '') === q) return true;
       if (cleanedDigits && cleanedDigits.length >= 8 && inq.clientPhone) {
@@ -69,7 +62,6 @@ export default function OrderTrackingPage() {
       return false;
     });
 
-    // Fallback to local storage orders
     if (!match && localOrders.length > 0) {
       match = localOrders.find((ord) => {
         if (ord.id && ord.id.toLowerCase().replace('#', '') === q) return true;
@@ -90,11 +82,7 @@ export default function OrderTrackingPage() {
   };
 
   return (
-    <div
-      className={`min-h-screen flex flex-col justify-between transition-colors duration-300 ${
-        darkMode ? 'bg-[#0c0b0a] text-[#f5f0e6]' : 'bg-[#faf7f2] text-[#1c1917]'
-      }`}
-    >
+    <div className="min-h-screen flex flex-col justify-between bg-white text-[#141311]">
       <Navbar
         lang={lang}
         setLang={setLang}
@@ -106,69 +94,60 @@ export default function OrderTrackingPage() {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 space-y-8">
-        {/* Navigation Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs opacity-60">
-          <a href={lang === 'en' ? '/en' : '/'} className="hover:text-amber-500 transition-colors flex items-center gap-1.5">
-            <ArrowLeft className="w-3.5 h-3.5" />
+      <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-[140px] sm:pt-[156px] pb-24 space-y-10">
+        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-[#847E75]">
+          <a href={lang === 'en' ? '/en' : '/'} className="hover:text-[#141311] transition-colors flex items-center gap-1.5">
+            <ArrowLeft className="w-3.5 h-3.5 stroke-[1.5]" />
             <span>{lang === 'ka' ? 'მთავარი' : 'Home'}</span>
           </a>
           <span>/</span>
-          <span className="font-semibold text-amber-500">
+          <span className="text-[#141311]">
             {lang === 'ka' ? 'შეკვეთის თრექინგი' : 'Order Tracking'}
           </span>
         </div>
 
-        {/* Hero Header */}
         <div className="text-center space-y-3 max-w-xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-500 text-xs font-bold uppercase tracking-wider">
-            <Truck className="w-3.5 h-3.5" />
-            <span>{lang === 'ka' ? 'სად არის ჩემი ნივთი?' : 'Where is my jewelry?'}</span>
-          </div>
+          <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.26em] text-[#9D7B48] font-medium block">
+            {lang === 'ka' ? 'სად არის ჩემი ნივთი?' : 'Where is my jewelry?'}
+          </span>
 
-          <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-wide">
+          <h1 className="font-serif text-3xl sm:text-5xl font-light text-[#141311]">
             {lang === 'ka' ? 'შეკვეთის სტატუსის შემოწმება' : 'Track Your Order Live'}
           </h1>
 
-          <p className="text-xs sm:text-sm opacity-70 leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#5C574F] leading-relaxed font-light">
             {lang === 'ka'
-              ? 'შეიყვანეთ თქვენი შეკვეთის უნიკალური ნომერი (მაგ: MTR-982341) ან ტელეფონის ნომერი, რომ გაიგოთ ნივთის ზუსტი სტატუსი, კონდიცია და სავარაუდო მიტანის დრო.'
-              : 'Enter your Order Code (e.g. MTR-982341) or phone number to see real-time atelier crafting status, delivery progress and ETA.'}
+              ? 'შეიყვანეთ თქვენი შეკვეთის უნიკალური ნომერი (მაგ: MTR-982341) ან ტელეფონის ნომერი, რომ გაიგოთ ნივთის ზუსტი სტატუსი და სავარაუდო მიტანის დრო.'
+              : 'Enter your Order Code (e.g. MTR-982341) or phone number to see real-time atelier crafting status and delivery progress.'}
           </p>
         </div>
 
-        {/* Search Bar Card */}
         <form
           onSubmit={handleFormSubmit}
-          className={`p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl border flex flex-col sm:flex-row items-center gap-2 shadow-xl ${
-            darkMode ? 'bg-[#151413] border-stone-800' : 'bg-white border-stone-300'
-          }`}
+          className="p-2 bg-[#FAF9F6] border border-[#E8E3DB] flex flex-col sm:flex-row items-center gap-2"
         >
           <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 text-amber-500 absolute left-4 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#9D7B48] stroke-[1.5] absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={lang === 'ka' ? 'ჩაწერეთ შეკვეთის კოდი (MTR-XXXXXX) ან ტელეფონი...' : 'Enter Order Code (MTR-XXXXXX) or phone...'}
-              className={`w-full pl-11 pr-4 py-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm outline-none transition-colors ${
-                darkMode ? 'bg-stone-900/60 text-white placeholder-stone-500' : 'bg-stone-100 text-stone-900 placeholder-stone-400'
-              }`}
+              className="w-full pl-11 pr-4 py-3.5 bg-white border border-[#E8E3DB] focus:border-[#141311] text-xs sm:text-sm text-[#141311] placeholder-[#9C958B] outline-none transition-colors"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full sm:w-auto px-7 py-3 rounded-xl sm:rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition-all active:scale-95 shadow-md shadow-amber-500/20 shrink-0"
+            className="w-full sm:w-auto px-8 py-3.5 bg-[#141311] hover:bg-[#2C2A26] text-white text-[11px] uppercase tracking-[0.2em] font-medium transition-colors shrink-0 cursor-pointer"
           >
             {lang === 'ka' ? 'შემოწმება' : 'Track Order'}
           </button>
         </form>
 
-        {/* Quick Recent Orders Chips (if user has any saved locally) */}
         {localOrders.length > 0 && (
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-none text-xs pb-1">
-            <span className="opacity-60 shrink-0">{lang === 'ka' ? 'თქვენი ბოლო შეკვეთები:' : 'Recent orders:'}</span>
+            <span className="text-[#847E75] shrink-0">{lang === 'ka' ? 'თქვენი ბოლო შეკვეთები:' : 'Recent orders:'}</span>
             {localOrders.slice(0, 3).map((ord) => (
               <button
                 key={ord.id}
@@ -177,12 +156,10 @@ export default function OrderTrackingPage() {
                   setSearchQuery(ord.id);
                   handleFindOrder(ord.id);
                 }}
-                className={`px-3 py-1 rounded-full font-mono text-[11px] font-bold border transition-all shrink-0 ${
+                className={`px-3 py-1 font-mono text-[11px] border transition-colors shrink-0 cursor-pointer ${
                   selectedOrder?.id === ord.id
-                    ? 'bg-amber-500 text-black border-amber-500'
-                    : darkMode
-                    ? 'border-stone-800 bg-stone-900 text-stone-300 hover:border-amber-500/40'
-                    : 'border-stone-300 bg-stone-100 text-stone-800 hover:border-amber-500'
+                    ? 'bg-[#141311] text-white border-[#141311]'
+                    : 'border-[#E8E3DB] bg-white text-[#4A4640] hover:border-[#141311]'
                 }`}
               >
                 #{ord.id}
@@ -191,30 +168,23 @@ export default function OrderTrackingPage() {
           </div>
         )}
 
-        {/* Order Result View */}
         {selectedOrder ? (
           <div className="animate-fadeIn">
             <OrderTrackingTimeline
               order={selectedOrder}
-              darkMode={darkMode}
+              darkMode={false}
               lang={lang}
               siteSettings={siteSettings}
             />
           </div>
         ) : hasSearched ? (
-          <div
-            className={`p-10 rounded-3xl border text-center space-y-4 ${
-              darkMode ? 'bg-[#151413] border-stone-800' : 'bg-white border-stone-200 shadow-md'
-            }`}
-          >
-            <div className="w-14 h-14 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto border border-amber-500/20">
-              <Package className="w-7 h-7" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="font-serif text-lg font-medium">
+          <div className="p-12 bg-[#FAF9F6] border border-[#E8E3DB] text-center space-y-4">
+            <Package className="w-8 h-8 text-[#9D7B48] mx-auto stroke-[1.25]" />
+            <div className="space-y-1.5">
+              <h3 className="font-serif text-2xl font-light text-[#141311]">
                 {lang === 'ka' ? 'შეკვეთა ვერ მოიძებნა' : 'Order Not Found'}
               </h3>
-              <p className="text-xs opacity-65 max-w-md mx-auto">
+              <p className="text-xs sm:text-sm text-[#5C574F] max-w-md mx-auto font-light">
                 {lang === 'ka'
                   ? `შეკვეთის კოდით „${searchQuery}“ მონაცემები ვერ მოიძებნა. გთხოვთ გადაამოწმოთ ნომერი ან დაუკავშირდეთ ჩვენს კონსიერჟს.`
                   : `No order found matching "${searchQuery}". Please verify the code or contact our concierge.`}
@@ -224,20 +194,16 @@ export default function OrderTrackingPage() {
               href={`https://wa.me/${(siteSettings?.whatsapp || '+995599000000').replace(/[^0-9]/g, '')}`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md shadow-emerald-600/20 transition-all"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#141311] hover:bg-[#2C2A26] text-white text-[11px] uppercase tracking-[0.18em] transition-colors"
             >
-              <PhoneCall className="w-3.5 h-3.5" />
+              <PhoneCall className="w-3.5 h-3.5 stroke-[1.5]" />
               <span>{lang === 'ka' ? 'კონსიერჟთან დაკავშირება' : 'Contact Concierge'}</span>
             </a>
           </div>
         ) : null}
       </main>
 
-      <Footer
-        siteSettings={siteSettings}
-        darkMode={darkMode}
-        lang={lang}
-      />
+      <Footer siteSettings={siteSettings} lang={lang} />
     </div>
   );
 }
