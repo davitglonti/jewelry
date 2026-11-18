@@ -1,5 +1,5 @@
 import React from 'react';
-import { Globe, Heart, Menu, X, LogOut, User, Package } from 'lucide-react';
+import { Globe, Heart, Menu, X, LogOut, User } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { useAuth } from '../../context/AuthContext';
 import { navigateTo, switchLanguage } from '../../utils/navigation';
@@ -49,24 +49,6 @@ export default function Navbar({
       </a>
 
       <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#EAE4DB] text-[#1F1C18] shadow-[0_1px_12px_rgba(31,28,24,0.03)]">
-        {/* Soft Champagne Announcement Bar */}
-        <div className="bg-[#F4EFE6] text-[#574E42] border-b border-[#EAE4DB]">
-          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 h-8 flex items-center justify-between text-[11px] font-medium">
-            <span className={`truncate ${isEn ? "tracking-[0.12em] uppercase text-[10px]" : "tracking-[0.01em]"}`}>
-              {lang === "ka"
-                ? "უფასო დაზღვეული მიწოდება  •  სერტიფიცირებული ოქრო და ბრილიანტები"
-                : "Complimentary Insured Delivery  •  Certified Gold & Diamonds"}
-            </span>
-            <a
-              href={`${prefix}/track`}
-              className="hidden sm:inline-flex items-center gap-1.5 text-[#8A6836] hover:text-[#1F1C18] transition-colors shrink-0 ml-4"
-            >
-              <Package className="w-3.5 h-3.5 stroke-[1.75]" />
-              <span>{lang === "ka" ? "შეკვეთის თრექინგი" : "Track Order"}</span>
-            </a>
-          </div>
-        </div>
-
         {/* Main Navigation Bar */}
         <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 h-[66px] sm:h-[70px] grid grid-cols-[1fr_auto_1fr] items-center gap-4">
           {/* Left: Mobile Trigger or Clean Nav Links */}

@@ -35,7 +35,7 @@ export default function CatalogSection({ openProductModal }) {
 
         <a
           href={lang === "en" ? "/en/catalog" : "/catalog"}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-[#D9D1C5] hover:border-[#1F1C18] hover:bg-[#1F1C18] hover:text-white text-xs sm:text-sm font-medium text-[#1F1C18] transition-all self-start sm:self-auto group whitespace-nowrap shadow-xs"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-[#D9D1C5] hover:border-[#1F1C18] hover:bg-[#1F1C18] hover:text-white text-xs sm:text-sm font-medium text-[#1F1C18] transition-all self-end sm:self-auto group whitespace-nowrap shadow-xs"
         >
           <span>{lang === "ka" ? `სრული კოლექცია (${products.length})` : `Explore All (${products.length})`}</span>
           <ArrowRight className="w-4 h-4 stroke-[1.75] group-hover:translate-x-0.5 transition-transform" />

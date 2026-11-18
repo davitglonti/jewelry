@@ -94,7 +94,7 @@ export default function OrderTrackingPage() {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-[140px] sm:pt-[156px] pb-24 space-y-10">
+      <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-[108px] sm:pt-[124px] pb-24 space-y-10">
         <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-[#847E75]">
           <a href={lang === 'en' ? '/en' : '/'} className="hover:text-[#141311] transition-colors flex items-center gap-1.5">
             <ArrowLeft className="w-3.5 h-3.5 stroke-[1.5]" />

@@ -40,29 +40,29 @@ export default function CraftsmanshipSection({
           )}
 
           {showStats && (
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-3">
-              <div className="p-4 rounded-2xl bg-[#FAF8F4] border border-[#EAE4DB] space-y-1.5">
-                <Award className="w-4 h-4 text-[#9A7742] stroke-[1.75]" />
-                <div className="font-serif text-xl sm:text-2xl font-semibold text-[#1F1C18]">100%</div>
-                <div className="text-xs text-[#6B645B] leading-snug">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-3">
+              <div className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#FAF8F4] border border-[#EAE4DB] space-y-1 sm:space-y-1.5 min-w-0 overflow-hidden">
+                <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#9A7742] stroke-[1.75]" />
+                <div className="font-serif text-sm sm:text-2xl font-semibold text-[#1F1C18] truncate">100%</div>
+                <div className="text-[10px] sm:text-xs text-[#6B645B] leading-tight break-words sm:leading-snug">
                   {lang === "ka" ? "სერტიფიცირებული" : "Certified Gems"}
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#FAF8F4] border border-[#EAE4DB] space-y-1.5">
-                <Sparkles className="w-4 h-4 text-[#9A7742] stroke-[1.75]" />
-                <div className="font-serif text-xl sm:text-2xl font-semibold text-[#1F1C18]">18K / 750°</div>
-                <div className="text-xs text-[#6B645B] leading-snug">
+              <div className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#FAF8F4] border border-[#EAE4DB] space-y-1 sm:space-y-1.5 min-w-0 overflow-hidden">
+                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#9A7742] stroke-[1.75]" />
+                <div className="font-serif text-xs sm:text-2xl font-semibold text-[#1F1C18] truncate sm:whitespace-normal">18K / 750°</div>
+                <div className="text-[10px] sm:text-xs text-[#6B645B] leading-tight break-words sm:leading-snug">
                   {lang === "ka" ? "უმაღლესი სინჯი" : "Finest Gold"}
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#FAF8F4] border border-[#EAE4DB] space-y-1.5">
-                <Gem className="w-4 h-4 text-[#9A7742] stroke-[1.75]" />
-                <div className="font-serif text-xl sm:text-2xl font-semibold text-[#1F1C18]">
+              <div className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#FAF8F4] border border-[#EAE4DB] space-y-1 sm:space-y-1.5 min-w-0 overflow-hidden">
+                <Gem className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#9A7742] stroke-[1.75]" />
+                <div className="font-serif text-xs sm:text-2xl font-semibold text-[#1F1C18] truncate">
                   {lang === "ka" ? "ხელნაკეთი" : "Handmade"}
                 </div>
-                <div className="text-xs text-[#6B645B] leading-snug">
+                <div className="text-[10px] sm:text-xs text-[#6B645B] leading-tight break-words sm:leading-snug">
                   {lang === "ka" ? "საფირმო დიზაინი" : "Atelier Design"}
                 </div>
               </div>

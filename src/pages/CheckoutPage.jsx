@@ -297,7 +297,7 @@ export default function CheckoutPage() {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pt-[136px] sm:pt-[152px] pb-24">
+      <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pt-[104px] sm:pt-[120px] pb-24">
         <div className="mb-8 flex items-center justify-between pb-4 border-b border-[#E8E3DB]">
           <button
             type="button"

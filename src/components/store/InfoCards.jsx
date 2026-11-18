@@ -39,13 +39,13 @@ export default function InfoCards({
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 overflow-x-auto sm:overflow-x-visible pb-3 sm:pb-0 snap-x snap-mandatory scrollbar-none">
           {Array.isArray(currentItems) && currentItems.map((item, i) => {
             const Icon = ICONS[i % ICONS.length];
             return (
               <div
                 key={i}
-                className="p-6 sm:p-7 rounded-2xl bg-white border border-[#EAE4DB] shadow-[0_2px_14px_rgba(31,28,24,0.03)] space-y-4"
+                className="w-[82vw] min-w-[270px] max-w-[340px] sm:w-auto sm:min-w-0 sm:max-w-none shrink-0 sm:shrink snap-center p-6 sm:p-7 rounded-2xl bg-white border border-[#EAE4DB] shadow-[0_2px_14px_rgba(31,28,24,0.03)] space-y-3.5"
               >
                 <div className="w-11 h-11 rounded-full bg-[#F5EFE4] text-[#9A7742] flex items-center justify-center">
                   <Icon className="w-5 h-5 stroke-[1.75]" />
@@ -60,6 +60,18 @@ export default function InfoCards({
             );
           })}
         </div>
+
+        {/* Mobile Scroll Hint Dots */}
+        {Array.isArray(currentItems) && currentItems.length > 1 && (
+          <div className="flex sm:hidden items-center justify-center gap-1.5 -mt-4">
+            {currentItems.map((_, dotIdx) => (
+              <span
+                key={dotIdx}
+                className="w-1.5 h-1.5 rounded-full bg-[#D9D1C5]"
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -227,7 +227,7 @@ export default function ProfilePage() {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main id="main-content" className="pt-[118px] sm:pt-[132px] pb-20 px-4 sm:px-6 lg:px-10 max-w-6xl mx-auto">
+      <main id="main-content" className="pt-[86px] sm:pt-[100px] pb-20 px-4 sm:px-6 lg:px-10 max-w-6xl mx-auto">
         <nav aria-label="Breadcrumbs" className="flex items-center gap-2 text-xs text-[#6E675E] mb-6">
           <a href={prefix || '/'} className="hover:text-[#1F1C18] transition-colors flex items-center gap-1.5">
             <Home className="w-3.5 h-3.5 stroke-[1.75]" />

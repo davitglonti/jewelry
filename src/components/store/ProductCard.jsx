@@ -69,31 +69,31 @@ export default function ProductCard({
         )}
 
         {/* Clean Soft-Pill Top-Left Badges */}
-        <div className="absolute top-2.5 left-2.5 flex flex-col items-start gap-1.5 z-10 pointer-events-none max-w-[68%]">
+        <div className={`absolute ${compact ? "top-1.5 left-1.5 gap-1 max-w-[62%]" : "top-2.5 left-2.5 gap-1.5 max-w-[68%]"} flex flex-col items-start z-10 pointer-events-none`}>
           {product.exclusive && (
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-[#1F1C18]/90 text-white backdrop-blur-xs truncate max-w-full">
+            <span className={`${compact ? "px-1.5 py-0.5 text-[8px]" : "px-2.5 py-0.5 text-[10px]"} rounded-full font-medium bg-[#1F1C18]/90 text-white backdrop-blur-xs truncate max-w-full`}>
               {lang === "ka" ? "ექსკლუზივი" : "Exclusive"}
             </span>
           )}
           {discountPct ? (
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#9E2A2B] text-white">
+            <span className={`${compact ? "px-1.5 py-0.5 text-[8px]" : "px-2.5 py-0.5 text-[10px]"} rounded-full font-semibold bg-[#9E2A2B] text-white`}>
               -{discountPct}%
             </span>
           ) : null}
-          {product.stockStatus === 'preorder' && (
+          {product.stockStatus === 'preorder' && !compact && (
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-white/95 text-[#8A6836] border border-[#E5DDCE]">
               {lang === 'ka' ? 'შეკვეთით' : 'Pre-order'}
             </span>
           )}
           {product.stockStatus === 'sold_out' && (
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-white/90 text-[#787168] border border-[#E5DDCE]">
+            <span className={`${compact ? "px-1.5 py-0.5 text-[8px]" : "px-2.5 py-0.5 text-[10px]"} rounded-full font-medium bg-white/90 text-[#787168] border border-[#E5DDCE]`}>
               {lang === 'ka' ? 'ამოიწურა' : 'Sold out'}
             </span>
           )}
         </div>
 
         {/* Soft Frosted Circular Action Pills */}
-        <div className="absolute top-2.5 right-2.5 flex flex-col items-end gap-1.5 z-10">
+        <div className={`absolute ${compact ? "top-1.5 right-1.5 gap-1" : "top-2.5 right-2.5 gap-1.5"} flex flex-col items-end z-10`}>
           <button
             type="button"
             onClick={(e) => {
@@ -110,48 +110,50 @@ export default function ProductCard({
                 ? (lang === "ka" ? `${productName} — რჩეულებიდან ამოშლა` : `Remove ${productName} from favorites`)
                 : (lang === "ka" ? `${productName} — რჩეულებში დამატება` : `Add ${productName} to favorites`)
             }
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs ${
+            className={`${compact ? "w-6 h-6" : "w-8 h-8"} rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs ${
               isFav
                 ? "bg-[#9E2A2B] text-white hover:bg-[#822021]"
                 : "bg-white/90 text-[#1F1C18] hover:bg-[#9E2A2B] hover:text-white backdrop-blur-xs"
             }`}
           >
-            <Heart className={`w-3.5 h-3.5 stroke-[1.75] ${isFav ? "fill-white text-white" : ""}`} />
+            <Heart className={`${compact ? "w-3 h-3" : "w-3.5 h-3.5"} stroke-[1.75] ${isFav ? "fill-white text-white" : ""}`} />
           </button>
 
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleCompare(product.id);
-            }}
-            title={
-              isCompared
-                ? (lang === "ka" ? "შედარებიდან ამოშლა" : "Remove from compare")
-                : (lang === "ka" ? "შედარებაში დამატება" : "Add to compare")
-            }
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs ${
-              isCompared
-                ? "bg-[#9E2A2B] text-white hover:bg-[#822021]"
-                : "bg-white/90 text-[#1F1C18] hover:bg-[#9E2A2B] hover:text-white backdrop-blur-xs"
-            }`}
-          >
-            <ArrowLeftRight className="w-3.5 h-3.5 stroke-[1.75]" />
-          </button>
+          {!compact && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleCompare(product.id);
+              }}
+              title={
+                isCompared
+                  ? (lang === "ka" ? "შედარებიდან ამოშლა" : "Remove from compare")
+                  : (lang === "ka" ? "შედარებაში დამატება" : "Add to compare")
+              }
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs ${
+                isCompared
+                  ? "bg-[#9E2A2B] text-white hover:bg-[#822021]"
+                  : "bg-white/90 text-[#1F1C18] hover:bg-[#9E2A2B] hover:text-white backdrop-blur-xs"
+              }`}
+            >
+              <ArrowLeftRight className="w-3.5 h-3.5 stroke-[1.75]" />
+            </button>
+          )}
         </div>
       </div>
 
       {/* Crisp Readable Card Body */}
-      <div className={`${compact ? "p-3 space-y-1.5" : "p-4 sm:p-5 space-y-2"} flex-1 flex flex-col justify-between`}>
+      <div className={`${compact ? "p-2 sm:p-3 space-y-1" : "p-4 sm:p-5 space-y-2"} flex-1 flex flex-col justify-between`}>
         <div>
-          <div className="flex items-center justify-between gap-2 text-[11px] text-[#787168]">
+          <div className="flex items-center justify-between gap-1 text-[10px] sm:text-[11px] text-[#787168]">
             <span className="truncate font-medium">{product.category || "სამკაული"}</span>
-            {product.sku && <span className="font-mono shrink-0 text-[#9A7742] text-[10px]">#{product.sku}</span>}
+            {product.sku && <span className="font-mono shrink-0 text-[#9A7742] text-[9px] sm:text-[10px]">#{product.sku}</span>}
           </div>
 
           <h3
-            className={`font-serif font-medium text-[#1F1C18] group-hover:text-[#9A7742] transition-colors line-clamp-1 mt-1 leading-snug ${
-              compact ? "text-sm" : "text-base sm:text-[17px]"
+            className={`font-serif font-medium text-[#1F1C18] group-hover:text-[#9A7742] transition-colors line-clamp-1 mt-0.5 leading-snug ${
+              compact ? "text-xs" : "text-base sm:text-[17px]"
             }`}
             title={productName}
           >
@@ -165,19 +167,19 @@ export default function ProductCard({
           )}
         </div>
 
-        <div className="pt-2.5 mt-1 border-t border-[#F3EFE8] flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
-            <span className="text-sm sm:text-base font-semibold text-[#1F1C18] whitespace-nowrap">
+        <div className={`${compact ? "pt-1.5 mt-0.5" : "pt-2.5 mt-1"} border-t border-[#F3EFE8] flex items-center justify-between gap-1.5`}>
+          <div className="flex items-baseline gap-1 flex-wrap min-w-0">
+            <span className={`${compact ? "text-xs font-semibold" : "text-sm sm:text-base font-semibold"} text-[#1F1C18] whitespace-nowrap`}>
               {formatPrice(product.price)}
             </span>
             {discountPct ? (
-              <span className="text-xs line-through text-[#857D73] whitespace-nowrap">
+              <span className={`${compact ? "text-[10px]" : "text-xs"} line-through text-[#857D73] whitespace-nowrap`}>
                 {formatPrice(product.oldPrice || product.originalPrice)}
               </span>
             ) : null}
           </div>
 
-          {showDetailsButton && (
+          {showDetailsButton && !compact && (
             <button
               type="button"
               onClick={(e) => {

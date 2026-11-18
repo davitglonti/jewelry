@@ -59,7 +59,7 @@ export default function BlogPage() {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main id="main-content" className="pt-[140px] sm:pt-[156px] pb-24">
+      <main id="main-content" className="pt-[108px] sm:pt-[124px] pb-24">
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-14 text-center space-y-5 border-b border-[#E8E3DB] mb-14">
           <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.26em] text-[#9D7B48] font-medium block">
             {lang === "ka" ? "საიუველირო ჟურნალი" : "Fine Jewelry Journal"}

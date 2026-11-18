@@ -55,19 +55,21 @@ export default function EditorialCategories() {
                   onError={(e) => { e.currentTarget.src = FALLBACK_CATEGORY_IMAGES[idx % FALLBACK_CATEGORY_IMAGES.length]; }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent" />
-                <div className="absolute bottom-3.5 left-4 right-4 flex items-end justify-between text-white">
-                  <div>
-                    <span className="text-[11px] opacity-90 block">
-                      {count > 0 ? `${count} ${lang === "ka" ? "მოდელი" : "Pieces"}` : (lang === "ka" ? "კოლექცია" : "Collection")}
-                    </span>
-                    <h3 className="font-serif text-lg sm:text-xl font-medium leading-tight mt-0.5">
-                      {cat}
-                    </h3>
-                  </div>
-                  <span className="w-8 h-8 rounded-full bg-white/95 text-[#1F1C18] flex items-center justify-center group-hover:bg-[#1F1C18] group-hover:text-white transition-colors shrink-0">
-                    <ArrowUpRight className="w-4 h-4 stroke-[1.75]" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
+
+                {/* Elegant Top-Right Corner Arrow Action Pill */}
+                <span className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/95 text-[#1F1C18] flex items-center justify-center group-hover:bg-[#1F1C18] group-hover:text-white transition-colors shrink-0 shadow-xs z-10">
+                  <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[1.75]" />
+                </span>
+
+                {/* Full-Width Uncramped Category Labeling */}
+                <div className="absolute bottom-2.5 sm:bottom-3.5 left-3 sm:left-4 right-3 sm:right-4 text-white z-10">
+                  <span className="text-[10px] sm:text-[11px] opacity-90 block">
+                    {count > 0 ? `${count} ${lang === "ka" ? "მოდელი" : "Pieces"}` : (lang === "ka" ? "კოლექცია" : "Collection")}
                   </span>
+                  <h3 className="font-serif text-base sm:text-xl font-medium leading-tight mt-0.5 truncate" title={cat}>
+                    {cat}
+                  </h3>
                 </div>
               </div>
             </a>

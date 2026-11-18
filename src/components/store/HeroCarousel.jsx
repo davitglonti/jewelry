@@ -30,7 +30,7 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
   const displayImg = !imgFailed && rawSlideImage ? getOptimizedImageUrl(rawSlideImage, 1200, 78) : HERO_FALLBACK_IMAGE;
 
   return (
-    <section className="w-full pt-[110px] sm:pt-[118px] pb-6 bg-[#FAF8F4]">
+    <section className="w-full pt-[78px] sm:pt-[86px] pb-6 bg-[#FAF8F4]">
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
         <div className="bg-white rounded-3xl border border-[#EAE4DB] shadow-[0_4px_28px_rgba(31,28,24,0.05)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 lg:h-[500px]">
           {/* Left Editorial Copy Panel */}
@@ -97,8 +97,17 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
             )}
           </div>
 
-          {/* Right Framed Editorial Photography — Strictly Fixed Height (Zero Layout Shift) */}
-          <div className="lg:col-span-6 relative h-[280px] sm:h-[360px] lg:h-full bg-[#F2EDE4] order-1 lg:order-2 overflow-hidden">
+          {/* Right Framed Editorial Photography — Fully Contained (Zero Cropping, Zero Layout Shift) */}
+          <div className="lg:col-span-6 relative h-[280px] sm:h-[360px] lg:h-full bg-[#FAF8F4] order-1 lg:order-2 overflow-hidden flex items-center justify-center">
+            {/* Soft ambient blur backdrop matching slide photo tones */}
+            <img
+              src={displayImg}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-30 pointer-events-none"
+            />
+
+            {/* Primary uncropped photography that fully fits inside the space */}
             <img
               src={displayImg}
               srcSet={!imgFailed && rawSlideImage ? getUnsplashSrcSet(rawSlideImage) : undefined}
@@ -108,7 +117,7 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
               fetchPriority="high"
               decoding="async"
               onError={() => setImgFailed(true)}
-              className="absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500"
+              className="relative z-1 w-full h-full object-contain object-center transition-opacity duration-500 p-2 sm:p-4"
             />
 
             {slides.length > 1 && (

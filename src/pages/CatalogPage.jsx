@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Search, Gem, ArrowUpDown, X, ChevronRight, Home
+  Search, Gem, ArrowUpDown, X, ChevronRight, Home, ChevronDown, SlidersHorizontal
 } from 'lucide-react';
 import { ALL } from '../constants';
 import { useStore } from '../context/StoreContext';
@@ -30,6 +30,9 @@ export default function CatalogPage() {
   const [searchQuery, setSearchQuery] = useState(initialParams.get("q") || "");
   const [sortBy, setSortBy] = useState(initialParams.get("sort") || "newest");
   const [popularityMap, setPopularityMap] = useState({});
+  const [showExtraFilters, setShowExtraFilters] = useState(() => {
+    return Boolean(initialParams.get("metal") || initialParams.get("exclusive") || initialParams.get("sale"));
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -178,6 +181,15 @@ export default function CatalogPage() {
     onlyOnSale ||
     searchQuery.trim() !== "";
 
+  const extraActiveCount = useMemo(() => {
+    let count = 0;
+    if (selectedMetal !== ALL) count += 1;
+    if (onlyExclusive) count += 1;
+    if (onlyOnSale) count += 1;
+    if (sortBy !== "newest") count += 1;
+    return count;
+  }, [selectedMetal, onlyExclusive, onlyOnSale, sortBy]);
+
   const resetFilters = () => {
     setSelectedCategory(ALL);
     setSelectedMetal(ALL);
@@ -200,7 +212,7 @@ export default function CatalogPage() {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main id="main-content" className="pt-[118px] sm:pt-[128px] pb-20">
+      <main id="main-content" className="pt-[86px] sm:pt-[96px] pb-20">
         <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
           {/* Breadcrumbs */}
           <nav aria-label="Breadcrumbs" className="flex items-center gap-2 text-xs text-[#787168] mb-5">
@@ -232,62 +244,81 @@ export default function CatalogPage() {
           </div>
 
           {/* Unified Tactile White Filter & Search Card */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#EAE4DB] shadow-[0_2px_16px_rgba(31,28,24,0.04)] mb-8 space-y-4">
-            {/* Row 1: Category Pills + Search Pill */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5">
-              <div className="flex flex-wrap items-center gap-2">
-                {visibleCategories.map((cat) => {
-                  const count = categoryCounts[cat] ?? 0;
-                  const isSelected = selectedCategory === cat;
-                  return (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => handleCategoryChange(cat)}
-                      className={`px-4 py-2 rounded-full text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
-                        isSelected
-                          ? "bg-[#1F1C18] text-white shadow-xs"
-                          : "bg-[#FAF8F4] text-[#4A453E] border border-[#EAE4DB] hover:border-[#9A7742] hover:text-[#1F1C18]"
-                      }`}
-                    >
-                      <span>{cat === ALL ? (lang === "ka" ? "ყველა" : "All") : cat}</span>
-                      <span className={`text-[11px] font-mono ${isSelected ? "text-[#D9C096]" : "text-[#8A8278]"}`}>
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="relative w-full lg:w-72 shrink-0">
-                <Search className="w-4 h-4 text-[#8A8278] stroke-[1.75] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    updateFilterParam("q", e.target.value);
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#EAE4DB] shadow-[0_2px_16px_rgba(31,28,24,0.04)] mb-8 space-y-3.5">
+            {/* Search Input Bar (Placed on Top) */}
+            <div className="relative w-full">
+              <Search className="w-4 h-4 text-[#8A8278] stroke-[1.75] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  updateFilterParam("q", e.target.value);
+                }}
+                placeholder={lang === "ka" ? "ძიება სახელით ან კოდით..." : "Search by name or SKU..."}
+                className="w-full pl-10 pr-9 py-2.5 rounded-full text-xs sm:text-sm bg-[#FAF8F4] border border-[#EAE4DB] focus:bg-white focus:border-[#1F1C18] outline-none text-[#1F1C18] placeholder:text-[#8A8278] transition-all"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    updateFilterParam("q", "");
                   }}
-                  placeholder={lang === "ka" ? "ძიება სახელით ან კოდით..." : "Search by name or SKU..."}
-                  className="w-full pl-10 pr-9 py-2.5 rounded-full text-xs sm:text-sm bg-[#FAF8F4] border border-[#EAE4DB] focus:bg-white focus:border-[#1F1C18] outline-none text-[#1F1C18] placeholder:text-[#8A8278] transition-all"
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSearchQuery("");
-                      updateFilterParam("q", "");
-                    }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#787168] hover:text-[#1F1C18] cursor-pointer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#787168] hover:text-[#1F1C18] cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
-            {/* Row 2: Metal Pills, Toggles & Sort */}
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-3.5 border-t border-[#F3EFE8] text-xs">
+            {/* Category Pills (Placed Below Search) */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none sm:flex-wrap">
+              {visibleCategories.map((cat) => {
+                const count = categoryCounts[cat] ?? 0;
+                const isSelected = selectedCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => handleCategoryChange(cat)}
+                    className={`px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                      isSelected
+                        ? "bg-[#1F1C18] text-white shadow-xs"
+                        : "bg-[#FAF8F4] text-[#4A453E] border border-[#EAE4DB] hover:border-[#9A7742] hover:text-[#1F1C18]"
+                    }`}
+                  >
+                    <span>{cat === ALL ? (lang === "ka" ? "ყველა" : "All") : cat}</span>
+                    <span className={`text-[11px] font-mono ${isSelected ? "text-[#D9C096]" : "text-[#8A8278]"}`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Mobile Collapsible Toggle for Metals & Extra Filters */}
+            <div className="sm:hidden pt-1">
+              <button
+                type="button"
+                onClick={() => setShowExtraFilters((prev) => !prev)}
+                className="w-full flex items-center justify-between py-2 px-3 rounded-xl bg-[#FAF8F4] text-xs font-medium text-[#4A453E] hover:text-[#1F1C18] border border-[#EAE4DB] transition-colors cursor-pointer"
+              >
+                <span className="flex items-center gap-2">
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-[#9A7742]" />
+                  <span>{lang === "ka" ? "მეტალები და დამატებითი ფილტრები" : "Metals & More Filters"}</span>
+                  {extraActiveCount > 0 && (
+                    <span className="px-1.5 py-0.2 rounded-full bg-[#9A7742] text-white text-[10px] font-bold">
+                      {extraActiveCount}
+                    </span>
+                  )}
+                </span>
+                <ChevronDown className={`w-4 h-4 text-[#787168] transition-transform duration-200 ${showExtraFilters ? "rotate-180" : ""}`} />
+              </button>
+            </div>
+
+            {/* Row 2: Metal Pills, Toggles & Sort (Collapsible on mobile, always visible on sm+) */}
+            <div className={`${showExtraFilters ? "flex" : "hidden"} sm:flex flex-wrap items-center justify-between gap-4 pt-3.5 border-t border-[#F3EFE8] text-xs`}>
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="text-xs text-[#787168] font-medium mr-1">
                   {lang === "ka" ? "მეტალი:" : "Metal:"}
@@ -423,10 +454,10 @@ export default function CatalogPage() {
                 </div>
               </div>
 
-              <div className={`grid gap-4 sm:gap-5 ${
+              <div className={`grid ${
                 mobileCols === 3
-                  ? "grid-cols-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-                  : "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+                  ? "gap-2 sm:gap-5 grid-cols-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+                  : "gap-3 sm:gap-5 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
               }`}>
                 {filteredProducts.map((product) => (
                   <ProductCard

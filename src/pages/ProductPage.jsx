@@ -206,7 +206,7 @@ export default function ProductPage({ skuProp }) {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main id="main-content" className="pt-[114px] sm:pt-[122px] pb-20">
+      <main id="main-content" className="pt-[82px] sm:pt-[90px] pb-20">
         <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
           {/* Compact Breadcrumb Row */}
           <div className="flex items-center justify-between gap-4 pb-5">

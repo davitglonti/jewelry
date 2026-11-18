@@ -141,7 +141,7 @@ export default function BlogPostPage({ slugProp }) {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main id="main-content" className="pt-[136px] sm:pt-[152px] pb-24">
+      <main id="main-content" className="pt-[104px] sm:pt-[120px] pb-24">
         <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="pb-6">
             <a

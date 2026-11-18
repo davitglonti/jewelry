@@ -84,7 +84,7 @@ export default function SizeGuidePage() {
         isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main id="main-content" className="flex-1 pt-[118px] sm:pt-[132px] pb-20">
+      <main id="main-content" className="flex-1 pt-[86px] sm:pt-[100px] pb-20">
         <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-10">
           {/* Clean Breadcrumbs */}
           <nav aria-label="Breadcrumbs" className="flex items-center gap-2 text-xs text-[#857D73] mb-6">

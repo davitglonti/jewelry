@@ -88,7 +88,7 @@ export default function RegisterPage() {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main className="flex-1 flex items-center justify-center px-4 pt-[140px] pb-24">
+      <main className="flex-1 flex items-center justify-center px-4 pt-[108px] pb-24">
         <div className="w-full max-w-md p-8 sm:p-10 bg-white border border-[#E8E3DB]">
           <div className="text-center mb-8 space-y-2">
             <span className="text-[10px] uppercase tracking-[0.26em] text-[#9D7B48] font-medium block">

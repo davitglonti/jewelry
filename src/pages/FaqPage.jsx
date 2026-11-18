@@ -44,7 +44,7 @@ export default function FaqPage() {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main id="main-content" className="flex-1 pt-[118px] sm:pt-[128px]">
+      <main id="main-content" className="flex-1 pt-[86px] sm:pt-[96px]">
         <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-2">
           <nav aria-label="Breadcrumbs" className="flex items-center gap-2 text-xs text-[#787168]">
             <a href={prefix || "/"} className="hover:text-[#1F1C18] transition-colors flex items-center gap-1.5">

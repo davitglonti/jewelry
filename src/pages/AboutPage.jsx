@@ -35,7 +35,7 @@ export default function AboutPage() {
 
       <main id="main-content">
         {/* Editorial Heritage Header */}
-        <section className="pt-[152px] pb-20 sm:pt-[172px] sm:pb-24 px-4 sm:px-6 lg:px-10 bg-white">
+        <section className="pt-[120px] pb-20 sm:pt-[140px] sm:pb-24 px-4 sm:px-6 lg:px-10 bg-white">
           <div className="max-w-3xl mx-auto text-center space-y-6">
             <a
               href={lang === "en" ? "/en" : "/"}

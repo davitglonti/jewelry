@@ -29,7 +29,7 @@ export default function JournalPreviewSection() {
 
           <a
             href={`${prefix}/blog`}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#FAF8F4] border border-[#D9D1C5] hover:border-[#1F1C18] hover:bg-[#1F1C18] hover:text-white text-xs sm:text-sm font-medium text-[#1F1C18] transition-all self-start sm:self-auto group whitespace-nowrap"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#FAF8F4] border border-[#D9D1C5] hover:border-[#1F1C18] hover:bg-[#1F1C18] hover:text-white text-xs sm:text-sm font-medium text-[#1F1C18] transition-all self-end sm:self-auto group whitespace-nowrap shadow-xs"
           >
             <span>{lang === "ka" ? "ყველა სტატია" : "Read Journal"}</span>
             <ArrowRight className="w-4 h-4 stroke-[1.75] group-hover:translate-x-0.5 transition-transform" />
