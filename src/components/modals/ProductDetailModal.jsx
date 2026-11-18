@@ -129,14 +129,7 @@ export default function ProductDetailModal({
                   {/* Compare Button */}
                   <button
                     type="button"
-                    onClick={() => {
-                      if (!user) {
-                        const current = window.location.pathname + window.location.search;
-                        navigateTo(`/login?redirect=${encodeURIComponent(current)}`);
-                        return;
-                      }
-                      toggleCompare(selectedProduct.id);
-                    }}
+                    onClick={() => toggleCompare(selectedProduct.id)}
                     className={`h-8 sm:h-9 px-2.5 sm:px-3.5 rounded-full border text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 ${
                       compareList?.includes(selectedProduct.id)
                         ? 'bg-amber-500 text-black border-amber-500 font-semibold shadow-md shadow-amber-500/20'

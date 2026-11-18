@@ -31,7 +31,7 @@ export default function Footer({ lang, siteSettings = {} }) {
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Instagram"
-                  className="w-9 h-9 rounded-full bg-white border border-[#E3DBCE] text-[#1F1C18] hover:bg-[#1F1C18] hover:text-white hover:border-[#1F1C18] flex items-center justify-center transition-colors"
+                  className="w-9 h-9 rounded-full bg-white border border-[#E3DBCE] text-[#1F1C18] hover:bg-gradient-to-tr hover:from-[#F58529] hover:via-[#DD2A7B] hover:to-[#8134AF] hover:text-white hover:border-transparent hover:shadow-[0_4px_14px_rgba(221,42,123,0.38)] flex items-center justify-center transition-all duration-300"
                 >
                   <Instagram className="w-4 h-4 stroke-[1.75]" />
                 </a>
@@ -42,7 +42,7 @@ export default function Footer({ lang, siteSettings = {} }) {
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Facebook"
-                  className="w-9 h-9 rounded-full bg-white border border-[#E3DBCE] text-[#1F1C18] hover:bg-[#1F1C18] hover:text-white hover:border-[#1F1C18] flex items-center justify-center transition-colors"
+                  className="w-9 h-9 rounded-full bg-white border border-[#E3DBCE] text-[#1F1C18] hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] hover:shadow-[0_4px_14px_rgba(24,119,242,0.38)] flex items-center justify-center transition-all duration-300"
                 >
                   <Facebook className="w-4 h-4 stroke-[1.75]" />
                 </a>
@@ -110,7 +110,7 @@ export default function Footer({ lang, siteSettings = {} }) {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="WhatsApp კონსულტაცია"
-                className="px-5 py-2.5 rounded-full bg-[#1F1C18] hover:bg-[#35302A] text-white text-xs font-medium flex items-center gap-2 transition-colors"
+                className="px-5 py-2.5 rounded-full bg-[#1F1C18] hover:bg-[#25D366] text-white hover:shadow-[0_4px_16px_rgba(37,211,102,0.38)] text-xs font-medium flex items-center gap-2 transition-all duration-300"
               >
                 <MessageCircle className="w-3.5 h-3.5 stroke-[1.75]" />
                 <span>WhatsApp</span>
@@ -120,7 +120,7 @@ export default function Footer({ lang, siteSettings = {} }) {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Messenger კონსულტაცია"
-                className="px-5 py-2.5 rounded-full bg-white border border-[#D9D1C5] text-[#1F1C18] hover:border-[#1F1C18] text-xs font-medium flex items-center gap-2 transition-colors"
+                className="px-5 py-2.5 rounded-full bg-white border border-[#D9D1C5] text-[#1F1C18] hover:bg-gradient-to-r hover:from-[#00B2FF] hover:via-[#006AFF] hover:to-[#A033FF] hover:text-white hover:border-transparent hover:shadow-[0_4px_16px_rgba(0,106,255,0.35)] text-xs font-medium flex items-center gap-2 transition-all duration-300"
               >
                 <Send className="w-3.5 h-3.5 stroke-[1.75]" />
                 <span>Messenger</span>

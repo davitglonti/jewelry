@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   User, ShieldCheck, Heart, Key, LogOut,
-  Save, AlertCircle, CheckCircle2, Eye, EyeOff, ArrowLeft,
-  ExternalLink, Calendar, Mail, Phone, MessageCircle, ChevronRight, Check, Gem, ShoppingBag,
+  Save, AlertCircle, CheckCircle2, Eye, EyeOff, Home,
+  ExternalLink, Calendar, Mail, Phone, MessageCircle, ChevronRight, Gem, ShoppingBag,
   Truck, Package
 } from 'lucide-react';
 import { useAuth, getAuthErrorMessage } from '../context/AuthContext';
@@ -104,10 +104,10 @@ export default function ProfilePage() {
   const isStaff = userRole === 'superadmin' || userRole === 'admin' || userRole === 'moderator';
 
   const getRoleDetails = () => {
-    if (userRole === 'superadmin') return { short: 'SUPER ADMIN', badgeClass: 'bg-[#141311] text-white border-[#141311]' };
-    if (userRole === 'admin') return { short: 'ADMIN', badgeClass: 'bg-[#141311] text-white border-[#141311]' };
-    if (userRole === 'moderator') return { short: 'MODERATOR', badgeClass: 'bg-[#F8F6F2] text-[#141311] border-[#D6CFC4]' };
-    return { short: 'MEMBER', badgeClass: 'bg-[#FAF7F0] text-[#9D7B48] border-[#DFD4C2]' };
+    if (userRole === 'superadmin') return { short: 'SUPER ADMIN', badgeClass: 'bg-[#1F1C18] text-white border-[#1F1C18]' };
+    if (userRole === 'admin') return { short: 'ADMIN', badgeClass: 'bg-[#1F1C18] text-white border-[#1F1C18]' };
+    if (userRole === 'moderator') return { short: 'MODERATOR', badgeClass: 'bg-[#F4EFE6] text-[#1F1C18] border-[#DFD4C2]' };
+    return { short: 'MEMBER', badgeClass: 'bg-[#F5EFE4] text-[#8A6836] border-[#E5D8C1]' };
   };
 
   const roleInfo = getRoleDetails();
@@ -209,12 +209,13 @@ export default function ProfilePage() {
     return Array.from(map.values());
   }, [inquiries, user, userInquiries]);
 
+  const prefix = lang === 'en' ? '/en' : '';
   const primaryName = displayName.trim() || user?.displayName || user?.email?.split('@')[0] || 'Member';
   const inputClass =
-    'w-full px-4 py-3 text-xs sm:text-sm bg-white border border-[#DCD6CC] focus:border-[#141311] text-[#141311] placeholder-[#9C958B] outline-none transition-colors';
+    'w-full px-4 py-3 rounded-xl text-sm bg-white border border-[#DCD5C9] focus:border-[#9A7742] text-[#1F1C18] placeholder-[#8C857B] outline-none transition-colors';
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-[#FAF9F6] text-[#141311]">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#FAF8F4] text-[#1F1C18]">
       <Navbar
         lang={lang}
         setLang={setLang}
@@ -226,22 +227,26 @@ export default function ProfilePage() {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main id="main-content" className="pt-[136px] sm:pt-[152px] pb-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
-        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-[#847E75] mb-8">
-          <a href={lang === 'en' ? '/en' : '/'} className="hover:text-[#141311] transition-colors flex items-center gap-1.5">
-            <ArrowLeft className="w-3.5 h-3.5 stroke-[1.5]" />
+      <main id="main-content" className="pt-[118px] sm:pt-[132px] pb-20 px-4 sm:px-6 lg:px-10 max-w-6xl mx-auto">
+        <nav aria-label="Breadcrumbs" className="flex items-center gap-2 text-xs text-[#6E675E] mb-6">
+          <a href={prefix || '/'} className="hover:text-[#1F1C18] transition-colors flex items-center gap-1.5">
+            <Home className="w-3.5 h-3.5 stroke-[1.75]" />
             <span>{lang === 'ka' ? 'მთავარი' : 'Home'}</span>
           </a>
-          <span>/</span>
-          <span className="text-[#141311]">{lang === 'ka' ? 'პირადი კაბინეტი' : 'Client Suite'}</span>
-        </div>
+          <ChevronRight className="w-3.5 h-3.5" />
+          <span className="text-[#1F1C18] font-medium">{lang === 'ka' ? 'პირადი კაბინეტი' : 'Client Suite'}</span>
+        </nav>
 
         {!authLoading && !user ? (
-          <div className="p-10 sm:p-14 bg-white border border-[#E8E3DB] text-center space-y-6 max-w-md mx-auto">
-            <User className="w-8 h-8 text-[#9D7B48] mx-auto stroke-[1.25]" />
+          <div className="p-10 sm:p-14 rounded-3xl bg-white border border-[#EAE4DB] shadow-[0_4px_24px_rgba(31,28,24,0.04)] text-center space-y-6 max-w-md mx-auto">
+            <div className="w-12 h-12 rounded-full bg-[#FAF8F4] border border-[#EAE4DB] flex items-center justify-center mx-auto">
+              <User className="w-6 h-6 text-[#9A7742] stroke-[1.75]" />
+            </div>
             <div className="space-y-2">
-              <h2 className="font-serif text-3xl font-light">{lang === 'ka' ? 'ავტორიზაცია აუცილებელია' : 'Authentication Required'}</h2>
-              <p className="text-xs text-[#5C574F] leading-relaxed font-light">
+              <h2 className="font-serif text-2xl sm:text-3xl font-medium text-[#1F1C18]">
+                {lang === 'ka' ? 'ავტორიზაცია აუცილებელია' : 'Authentication Required'}
+              </h2>
+              <p className="text-sm text-[#4A453E] leading-relaxed">
                 {lang === 'ka'
                   ? 'თქვენი შეკვეთების, თრექინგის და რჩეული სამკაულების სანახავად გთხოვთ გაიაროთ ავტორიზაცია.'
                   : 'Please sign in to access your orders, live tracking, and saved jewelry.'}
@@ -250,53 +255,53 @@ export default function ProfilePage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <a
                 href={lang === 'en' ? '/en/login?redirect=/en/profile' : '/login?redirect=/profile'}
-                className="w-full sm:w-auto px-7 py-3 bg-[#141311] text-white text-[11px] tracking-[0.18em] uppercase"
+                className="w-full sm:w-auto px-7 py-3 rounded-full bg-[#1F1C18] hover:bg-[#35302A] text-white text-sm font-medium transition-colors"
               >
                 {lang === 'ka' ? 'შესვლა' : 'Sign In'}
               </a>
               <a
                 href={lang === 'en' ? '/en/register' : '/register'}
-                className="w-full sm:w-auto px-7 py-3 border border-[#141311] text-[#141311] text-[11px] tracking-[0.18em] uppercase"
+                className="w-full sm:w-auto px-7 py-3 rounded-full bg-white border border-[#D9D1C5] hover:border-[#1F1C18] text-[#1F1C18] text-sm font-medium transition-colors"
               >
                 {lang === 'ka' ? 'რეგისტრაცია' : 'Register'}
               </a>
             </div>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {/* Client Suite Header Card */}
-            <section className="p-6 sm:p-9 bg-white border border-[#E8E3DB]">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <div className="flex items-center gap-5">
+            <section className="p-6 sm:p-8 rounded-3xl bg-white border border-[#EAE4DB] shadow-[0_4px_24px_rgba(31,28,24,0.04)]">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+                <div className="flex items-center gap-4 sm:gap-5">
                   <img
                     src={selectedAvatarUrl || user?.photoURL || AVATAR_PRESETS[0].url}
                     alt="Avatar"
-                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border border-[#E8E3DB] bg-[#F4F1EC]"
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-[#EAE4DB] bg-[#F4EFE6] shrink-0"
                   />
 
                   <div className="space-y-1.5 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      <h1 className="font-serif text-2xl sm:text-3xl font-light text-[#141311] truncate">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h1 className="font-serif text-2xl sm:text-3xl font-medium text-[#1F1C18] truncate">
                         {primaryName}
                       </h1>
-                      <span className={`px-2.5 py-0.5 text-[9px] uppercase tracking-[0.18em] border ${roleInfo.badgeClass}`}>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${roleInfo.badgeClass}`}>
                         {roleInfo.short}
                       </span>
                       {isGoogleUser && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] border border-[#E8E3DB] bg-[#FAF9F6] text-[#4A4640]">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border border-[#EAE4DB] bg-[#FAF8F4] text-[#4A453E]">
                           Google
                         </span>
                       )}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-4 text-xs text-[#5C574F]">
-                      <span className="flex items-center gap-1.5 font-mono">
-                        <Mail className="w-3.5 h-3.5 text-[#9D7B48] stroke-[1.5]" />
-                        {user?.email}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-[#4A453E]">
+                      <span className="flex items-center gap-1.5">
+                        <Mail className="w-4 h-4 text-[#9A7742] stroke-[1.75] shrink-0" />
+                        <span>{user?.email}</span>
                       </span>
                       {user?.metadata?.creationTime && (
                         <span className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-[#9D7B48] stroke-[1.5]" />
+                          <Calendar className="w-4 h-4 text-[#9A7742] stroke-[1.75] shrink-0" />
                           <span>{lang === 'ka' ? 'რეგისტრაცია:' : 'Member since:'} {formatCreationDate(user.metadata.creationTime)}</span>
                         </span>
                       )}
@@ -304,47 +309,67 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5 self-stretch md:self-auto justify-end">
+                <div className="flex flex-wrap items-center gap-2.5 self-stretch md:self-auto justify-end">
                   {isStaff && (
                     <a
                       href="/admin"
-                      className="px-4 py-2.5 bg-[#141311] text-white hover:bg-[#2C2A26] text-[10px] uppercase tracking-[0.18em] flex items-center gap-2 transition-colors"
+                      className="px-5 py-2.5 rounded-full bg-[#1F1C18] text-white hover:bg-[#35302A] text-xs sm:text-sm font-medium flex items-center gap-2 transition-colors"
                     >
-                      <ShieldCheck className="w-3.5 h-3.5 stroke-[1.5]" />
+                      <ShieldCheck className="w-4 h-4 stroke-[1.75]" />
                       <span>{lang === 'ka' ? 'ადმინ პანელი' : 'Admin Panel'}</span>
-                      <ExternalLink className="w-3 h-3 opacity-70" />
+                      <ExternalLink className="w-3.5 h-3.5 opacity-80" />
                     </a>
                   )}
 
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="px-4 py-2.5 border border-[#E8E3DB] text-[#5C574F] hover:border-[#8E2424] hover:text-[#8E2424] text-[10px] uppercase tracking-[0.18em] flex items-center gap-1.5 transition-colors cursor-pointer"
+                    className="px-5 py-2.5 rounded-full bg-[#FAF8F4] border border-[#D9D1C5] text-[#4A453E] hover:border-[#9E2A2B] hover:text-[#9E2A2B] hover:bg-[#FDF6F6] text-xs sm:text-sm font-medium flex items-center gap-2 transition-colors cursor-pointer"
                   >
-                    <LogOut className="w-3.5 h-3.5 stroke-[1.5]" />
+                    <LogOut className="w-4 h-4 stroke-[1.75]" />
                     <span>{lang === 'ka' ? 'გასვლა' : 'Sign Out'}</span>
                   </button>
                 </div>
               </div>
 
-              {/* 3 Metrics */}
-              <div className="grid grid-cols-3 border-t border-b border-[#E8E3DB] divide-x divide-[#E8E3DB] mt-7">
-                <button type="button" onClick={() => handleSelectTab('orders')} className="p-4 text-left hover:bg-[#FAF9F6] transition-colors cursor-pointer">
-                  <span className="text-[10px] uppercase tracking-[0.18em] text-[#9D7B48] block mb-1">{lang === 'ka' ? 'შეკვეთები' : 'Orders'}</span>
-                  <span className="font-serif text-2xl font-light text-[#141311]">{userOrders.length}</span>
+              {/* 3 Readable Metrics */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => handleSelectTab('orders')}
+                  className="p-4 rounded-2xl bg-[#FAF8F4] border border-[#EAE4DB] hover:border-[#C9AF82] text-left transition-colors cursor-pointer"
+                >
+                  <span className="text-xs font-medium text-[#8A6836] block mb-1">
+                    {lang === 'ka' ? 'შეკვეთები' : 'Orders'}
+                  </span>
+                  <span className="font-serif text-2xl font-semibold text-[#1F1C18]">{userOrders.length}</span>
                 </button>
-                <button type="button" onClick={() => handleSelectTab('favorites')} className="p-4 text-left hover:bg-[#FAF9F6] transition-colors cursor-pointer">
-                  <span className="text-[10px] uppercase tracking-[0.18em] text-[#9D7B48] block mb-1">{lang === 'ka' ? 'რჩეული' : 'Wishlist'}</span>
-                  <span className="font-serif text-2xl font-light text-[#141311]">{favorites.length}</span>
+                <button
+                  type="button"
+                  onClick={() => handleSelectTab('favorites')}
+                  className="p-4 rounded-2xl bg-[#FAF8F4] border border-[#EAE4DB] hover:border-[#C9AF82] text-left transition-colors cursor-pointer"
+                >
+                  <span className="text-xs font-medium text-[#8A6836] block mb-1">
+                    {lang === 'ka' ? 'რჩეული' : 'Wishlist'}
+                  </span>
+                  <span className="font-serif text-2xl font-semibold text-[#1F1C18]">{favorites.length}</span>
                 </button>
-                <button type="button" onClick={() => handleSelectTab('profile')} className="p-4 text-left hover:bg-[#FAF9F6] transition-colors cursor-pointer">
-                  <span className="text-[10px] uppercase tracking-[0.18em] text-[#9D7B48] block mb-1">{lang === 'ka' ? 'სტატუსი' : 'Status'}</span>
-                  <span className="text-xs sm:text-sm font-medium text-[#2B5C40] truncate block">{lang === 'ka' ? 'აქტიური წევრი' : 'Active Member'}</span>
+                <button
+                  type="button"
+                  onClick={() => handleSelectTab('profile')}
+                  className="p-4 rounded-2xl bg-[#FAF8F4] border border-[#EAE4DB] hover:border-[#C9AF82] text-left transition-colors cursor-pointer"
+                >
+                  <span className="text-xs font-medium text-[#8A6836] block mb-1">
+                    {lang === 'ka' ? 'სტატუსი' : 'Status'}
+                  </span>
+                  <span className="text-sm sm:text-base font-semibold text-[#2B5C40] truncate block mt-0.5">
+                    {lang === 'ka' ? 'აქტიური წევრი' : 'Active Member'}
+                  </span>
                 </button>
               </div>
 
-              {/* Tab Bar */}
-              <div className="flex items-center gap-1 sm:gap-2 mt-6 overflow-x-auto scrollbar-none">
+              {/* Clean Crisp Pill Tab Bar */}
+              <div className="flex items-center gap-2 mt-6 pt-5 border-t border-[#F0EAE0] overflow-x-auto scrollbar-none pb-1">
                 {[
                   ['profile', User, lang === 'ka' ? 'პირადი პროფილი' : 'Personal Details'],
                   ['orders', Truck, lang === 'ka' ? `ჩემი შეკვეთები (${userOrders.length})` : `Orders (${userOrders.length})`],
@@ -356,13 +381,13 @@ export default function ProfilePage() {
                     key={id}
                     type="button"
                     onClick={() => handleSelectTab(id)}
-                    className={`px-4 py-2.5 text-[11px] uppercase tracking-[0.14em] whitespace-nowrap flex items-center gap-2 transition-colors border cursor-pointer ${
+                    className={`px-4 py-2.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap flex items-center gap-2 transition-all border cursor-pointer ${
                       activeTab === id
-                        ? 'bg-[#141311] text-white border-[#141311]'
-                        : 'bg-white text-[#5C574F] border-[#E8E3DB] hover:border-[#141311] hover:text-[#141311]'
+                        ? 'bg-[#1F1C18] text-white border-[#1F1C18] shadow-xs'
+                        : 'bg-[#FAF8F4] text-[#3D3832] border-[#E6DFD3] hover:border-[#9A7742] hover:text-[#1F1C18]'
                     }`}
                   >
-                    <Icon className="w-3.5 h-3.5 stroke-[1.5]" />
+                    <Icon className="w-4 h-4 stroke-[1.75]" />
                     <span>{label}</span>
                   </button>
                 ))}
@@ -371,20 +396,24 @@ export default function ProfilePage() {
 
             {/* TAB 1: PROFILE */}
             {activeTab === 'profile' && (
-              <div className="p-6 sm:p-9 bg-white border border-[#E8E3DB] space-y-6 animate-fadeIn">
-                <div className="pb-4 border-b border-[#EFECE6]">
-                  <h3 className="font-serif text-2xl font-light">{lang === 'ka' ? 'პირადი მონაცემები' : 'Personal Details'}</h3>
-                  <p className="text-xs text-[#847E75] mt-1">{lang === 'ka' ? 'განაახლეთ თქვენი სახელი და საიუველირო ავატარი' : 'Update your name and signature avatar'}</p>
+              <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#EAE4DB] shadow-[0_4px_24px_rgba(31,28,24,0.04)] space-y-6 animate-fadeIn">
+                <div className="pb-4 border-b border-[#F0EAE0]">
+                  <h3 className="font-serif text-2xl font-medium text-[#1F1C18]">
+                    {lang === 'ka' ? 'პირადი მონაცემები' : 'Personal Details'}
+                  </h3>
+                  <p className="text-sm text-[#5C564E] mt-1">
+                    {lang === 'ka' ? 'განაახლეთ თქვენი სახელი და საიუველირო ავატარი' : 'Update your name and signature avatar'}
+                  </p>
                 </div>
 
                 {profileSuccessMsg && (
-                  <div className="p-3.5 bg-[#F4F8F5] border border-[#D4E2D9] text-[#2B5C40] text-xs flex items-center gap-2">
+                  <div className="p-4 rounded-2xl bg-[#F4F8F5] border border-[#D4E2D9] text-[#2B5C40] text-sm flex items-center gap-2.5">
                     <CheckCircle2 className="w-4 h-4 shrink-0" />
                     <span>{profileSuccessMsg}</span>
                   </div>
                 )}
                 {profileErrorMsg && (
-                  <div className="p-3.5 bg-[#FDF6F6] border border-[#E8C8C8] text-[#8E2424] text-xs flex items-center gap-2">
+                  <div className="p-4 rounded-2xl bg-[#FDF6F6] border border-[#E8C8C8] text-[#9E2A2B] text-sm flex items-center gap-2.5">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     <span>{profileErrorMsg}</span>
                   </div>
@@ -393,25 +422,27 @@ export default function ProfilePage() {
                 <form onSubmit={handleSaveProfile} className="space-y-6">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-[10px] uppercase tracking-[0.18em] text-[#5C574F] font-medium">
+                      <label className="text-xs sm:text-sm font-medium text-[#4A453E]">
                         {lang === 'ka' ? 'საიუველირო ავატარი:' : 'Atelier Symbol:'}
                       </label>
                       <button
                         type="button"
                         onClick={() => setShowAvatarTray(!showAvatarTray)}
-                        className="text-xs text-[#9D7B48] hover:text-[#141311] underline underline-offset-4 cursor-pointer"
+                        className="text-xs sm:text-sm font-medium text-[#8A6836] hover:text-[#1F1C18] underline underline-offset-4 cursor-pointer"
                       >
                         {showAvatarTray ? (lang === 'ka' ? 'დახურვა' : 'Close') : (lang === 'ka' ? 'სიმბოლოს შეცვლა' : 'Change Symbol')}
                       </button>
                     </div>
 
-                    <div className="flex items-center gap-3.5 p-3.5 bg-[#FAF9F6] border border-[#E8E3DB]">
-                      <img src={selectedAvatarUrl} alt="Selected" className="w-12 h-12 rounded-full object-cover border border-[#E8E3DB]" />
+                    <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#FAF8F4] border border-[#EAE4DB]">
+                      <img src={selectedAvatarUrl} alt="Selected" className="w-12 h-12 rounded-full object-cover border border-[#EAE4DB]" />
                       <div>
-                        <p className="text-sm font-serif text-[#141311]">
+                        <p className="text-sm font-medium text-[#1F1C18]">
                           {currentSelectedPreset ? (lang === 'ka' ? currentSelectedPreset.nameKa : currentSelectedPreset.nameEn) : 'სიმბოლო'}
                         </p>
-                        <p className="text-[11px] text-[#847E75]">{lang === 'ka' ? 'ექსკლუზიური საიუველირო ემბლემა' : 'Exclusive fine jewelry signature'}</p>
+                        <p className="text-xs text-[#6E675E] mt-0.5">
+                          {lang === 'ka' ? 'ექსკლუზიური საიუველირო ემბლემა' : 'Exclusive fine jewelry signature'}
+                        </p>
                       </div>
                     </div>
 
@@ -425,14 +456,14 @@ export default function ProfilePage() {
                               setSelectedAvatarUrl(preset.url);
                               setShowAvatarTray(false);
                             }}
-                            className={`p-2 border text-center transition-all cursor-pointer flex flex-col items-center gap-1.5 ${
+                            className={`p-2.5 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1.5 ${
                               selectedAvatarUrl === preset.url
-                                ? 'border-[#141311] bg-[#F8F6F2]'
-                                : 'border-[#E8E3DB] bg-white hover:border-[#9D7B48]'
+                                ? 'border-[#9A7742] bg-[#FAF8F4]'
+                                : 'border-[#EAE4DB] bg-white hover:border-[#9A7742]'
                             }`}
                           >
                             <img src={preset.url} alt={preset.nameKa} className="w-10 h-10 rounded-full object-cover" />
-                            <span className="text-[9px] text-[#5C574F] truncate max-w-full">
+                            <span className="text-xs text-[#4A453E] truncate max-w-full">
                               {lang === 'ka' ? preset.nameKa.split(' ')[0] : preset.nameEn.split(' ')[0]}
                             </span>
                           </button>
@@ -442,7 +473,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="space-y-1.5 max-w-md">
-                    <label className="text-[10px] uppercase tracking-[0.18em] text-[#5C574F] font-medium block">
+                    <label className="text-xs sm:text-sm font-medium text-[#4A453E] block">
                       {lang === 'ka' ? 'თქვენი სახელი (Display Name):' : 'Display Name:'}
                     </label>
                     <input
@@ -455,23 +486,23 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="space-y-1.5 max-w-md">
-                    <label className="text-[10px] uppercase tracking-[0.18em] text-[#5C574F] font-medium block">
+                    <label className="text-xs sm:text-sm font-medium text-[#4A453E] block">
                       {lang === 'ka' ? 'ელფოსტა:' : 'Registered Email:'}
                     </label>
                     <input
                       type="text"
                       value={user?.email || ''}
                       disabled
-                      className="w-full px-4 py-3 text-xs sm:text-sm bg-[#F8F6F2] border border-[#E8E3DB] text-[#847E75] cursor-not-allowed font-mono"
+                      className="w-full px-4 py-3 rounded-xl text-sm bg-[#FAF8F4] border border-[#EAE4DB] text-[#6E675E] cursor-not-allowed"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={savingProfile}
-                    className="px-8 py-3.5 bg-[#141311] hover:bg-[#2C2A26] text-white text-[11px] uppercase tracking-[0.18em] flex items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
+                    className="px-7 py-3 rounded-full bg-[#1F1C18] hover:bg-[#35302A] text-white text-sm font-medium flex items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
                   >
-                    <Save className="w-3.5 h-3.5 stroke-[1.5]" />
+                    <Save className="w-4 h-4 stroke-[1.75]" />
                     <span>{savingProfile ? (lang === 'ka' ? 'ინახება...' : 'Saving...') : (lang === 'ka' ? 'ცვლილებების შენახვა' : 'Save Changes')}</span>
                   </button>
                 </form>
@@ -480,30 +511,36 @@ export default function ProfilePage() {
 
             {/* TAB 2: ORDERS */}
             {activeTab === 'orders' && (
-              <div className="p-6 sm:p-9 bg-white border border-[#E8E3DB] space-y-6 animate-fadeIn">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#EFECE6]">
+              <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#EAE4DB] shadow-[0_4px_24px_rgba(31,28,24,0.04)] space-y-6 animate-fadeIn">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#F0EAE0]">
                   <div>
-                    <h3 className="font-serif text-2xl font-light">{lang === 'ka' ? 'ჩემი შეკვეთები & თრექინგი' : 'My Orders & Tracking'}</h3>
-                    <p className="text-xs text-[#847E75] mt-0.5">{lang === 'ka' ? 'აკონტროლეთ ნაკეთობის დამზადების და მიწოდების სტატუსი რეალურ დროში.' : 'Monitor atelier crafting and live delivery status.'}</p>
+                    <h3 className="font-serif text-2xl font-medium text-[#1F1C18]">
+                      {lang === 'ka' ? 'ჩემი შეკვეთები & თრექინგი' : 'My Orders & Tracking'}
+                    </h3>
+                    <p className="text-sm text-[#5C564E] mt-1">
+                      {lang === 'ka' ? 'აკონტროლეთ ნაკეთობის დამზადების და მიწოდების სტატუსი რეალურ დროში.' : 'Monitor atelier crafting and live delivery status.'}
+                    </p>
                   </div>
                   <a
-                    href={lang === 'en' ? '/en/track' : '/track'}
-                    className="px-4 py-2 border border-[#141311] text-[#141311] hover:bg-[#141311] hover:text-white text-[10px] uppercase tracking-[0.16em] flex items-center gap-1.5 transition-colors self-start"
+                    href={`${prefix}/track`}
+                    className="px-5 py-2.5 rounded-full bg-[#FAF8F4] border border-[#D9D1C5] text-[#1F1C18] hover:bg-[#1F1C18] hover:text-white hover:border-[#1F1C18] text-xs sm:text-sm font-medium flex items-center gap-2 transition-colors self-start"
                   >
-                    <Package className="w-3.5 h-3.5 stroke-[1.5]" />
+                    <Package className="w-4 h-4 stroke-[1.75]" />
                     <span>{lang === 'ka' ? 'კოდით თრექინგი' : 'Track by Code'}</span>
                   </a>
                 </div>
 
                 {userOrders.length === 0 ? (
-                  <div className="text-center py-14 space-y-4">
-                    <Package className="w-8 h-8 text-[#9D7B48] mx-auto stroke-[1.25]" />
-                    <h4 className="font-serif text-xl font-light">{lang === 'ka' ? 'აქტიური შეკვეთები არ გაქვთ' : 'No Active Orders Yet'}</h4>
+                  <div className="text-center py-14 px-6 rounded-2xl bg-[#FAF8F4] border border-dashed border-[#D9D1C5] space-y-4">
+                    <Package className="w-8 h-8 text-[#9A7742] mx-auto stroke-[1.5]" />
+                    <h4 className="font-serif text-xl font-medium text-[#1F1C18]">
+                      {lang === 'ka' ? 'აქტიური შეკვეთები არ გაქვთ' : 'No Active Orders Yet'}
+                    </h4>
                     <a
-                      href={lang === 'en' ? '/en/catalog' : '/catalog'}
-                      className="inline-flex items-center gap-2 px-7 py-3 bg-[#141311] text-white text-[11px] uppercase tracking-[0.18em]"
+                      href={`${prefix}/catalog`}
+                      className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[#1F1C18] hover:bg-[#35302A] text-white text-sm font-medium transition-colors"
                     >
-                      <ShoppingBag className="w-3.5 h-3.5 stroke-[1.5]" />
+                      <ShoppingBag className="w-4 h-4 stroke-[1.75]" />
                       <span>{lang === 'ka' ? 'კოლექციის დათვალიერება' : 'Explore Collection'}</span>
                     </a>
                   </div>
@@ -519,18 +556,20 @@ export default function ProfilePage() {
 
             {/* TAB 3: SECURITY */}
             {activeTab === 'security' && (
-              <div className="p-6 sm:p-9 bg-white border border-[#E8E3DB] space-y-6 animate-fadeIn">
-                <div className="pb-4 border-b border-[#EFECE6]">
-                  <h3 className="font-serif text-2xl font-light">{lang === 'ka' ? 'უსაფრთხოება & პაროლი' : 'Password & Security'}</h3>
+              <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#EAE4DB] shadow-[0_4px_24px_rgba(31,28,24,0.04)] space-y-6 animate-fadeIn">
+                <div className="pb-4 border-b border-[#F0EAE0]">
+                  <h3 className="font-serif text-2xl font-medium text-[#1F1C18]">
+                    {lang === 'ka' ? 'უსაფრთხოება & პაროლი' : 'Password & Security'}
+                  </h3>
                 </div>
 
                 {isGoogleUser ? (
-                  <div className="p-6 bg-[#FAF9F6] border border-[#E8E3DB] space-y-2">
-                    <div className="flex items-center gap-2 text-[#141311] font-medium text-sm">
-                      <ShieldCheck className="w-5 h-5 text-[#9D7B48] stroke-[1.5]" />
+                  <div className="p-6 rounded-2xl bg-[#FAF8F4] border border-[#EAE4DB] space-y-2">
+                    <div className="flex items-center gap-2.5 text-[#1F1C18] font-medium text-sm sm:text-base">
+                      <ShieldCheck className="w-5 h-5 text-[#9A7742] stroke-[1.75]" />
                       <span>{lang === 'ka' ? 'თქვენი ანგარიში დაცულია Google OAuth-ით' : 'Account Secured by Google'}</span>
                     </div>
-                    <p className="text-xs text-[#5C574F] leading-relaxed font-light">
+                    <p className="text-sm text-[#4A453E] leading-relaxed">
                       {lang === 'ka'
                         ? 'თქვენი ანგარიში დაკავშირებულია Google-ის ოფიციალურ სისტემასთან. პაროლის შეცვლა არ არის საჭირო.'
                         : 'Your account is authenticated via Google. Password changes are managed by your Google Account.'}
@@ -539,10 +578,10 @@ export default function ProfilePage() {
                 ) : (
                   <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
                     {passwordSuccessMsg && (
-                      <div className="p-3.5 bg-[#F4F8F5] border border-[#D4E2D9] text-[#2B5C40] text-xs">{passwordSuccessMsg}</div>
+                      <div className="p-4 rounded-2xl bg-[#F4F8F5] border border-[#D4E2D9] text-[#2B5C40] text-sm">{passwordSuccessMsg}</div>
                     )}
                     {passwordErrorMsg && (
-                      <div className="p-3.5 bg-[#FDF6F6] border border-[#E8C8C8] text-[#8E2424] text-xs">{passwordErrorMsg}</div>
+                      <div className="p-4 rounded-2xl bg-[#FDF6F6] border border-[#E8C8C8] text-[#9E2A2B] text-sm">{passwordErrorMsg}</div>
                     )}
 
                     {[
@@ -551,7 +590,7 @@ export default function ProfilePage() {
                       [lang === 'ka' ? 'გაიმეორეთ ახალი პაროლი:' : 'Confirm New Password:', confirmPassword, setConfirmPassword, showConfirmPassword, setShowConfirmPassword]
                     ].map(([label, val, setter, shown, toggle], i) => (
                       <div key={i} className="space-y-1.5">
-                        <label className="text-[10px] uppercase tracking-[0.16em] text-[#5C574F] font-medium block">{label}</label>
+                        <label className="text-xs sm:text-sm font-medium text-[#4A453E] block">{label}</label>
                         <div className="relative">
                           <input
                             type={shown ? 'text' : 'password'}
@@ -564,9 +603,9 @@ export default function ProfilePage() {
                           <button
                             type="button"
                             onClick={() => toggle(!shown)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#847E75] hover:text-[#141311] p-1 cursor-pointer"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6E675E] hover:text-[#1F1C18] p-1 cursor-pointer"
                           >
-                            {shown ? <EyeOff className="w-4 h-4 stroke-[1.5]" /> : <Eye className="w-4 h-4 stroke-[1.5]" />}
+                            {shown ? <EyeOff className="w-4 h-4 stroke-[1.75]" /> : <Eye className="w-4 h-4 stroke-[1.75]" />}
                           </button>
                         </div>
                         {i === 1 && <PasswordStrengthIndicator password={newPassword} lang={lang} darkMode={false} />}
@@ -576,9 +615,9 @@ export default function ProfilePage() {
                     <button
                       type="submit"
                       disabled={savingPassword || !currentPassword || !newPassword || !confirmPassword}
-                      className="px-8 py-3.5 bg-[#141311] hover:bg-[#2C2A26] text-white text-[11px] uppercase tracking-[0.18em] flex items-center gap-2 transition-colors disabled:opacity-40 cursor-pointer"
+                      className="px-7 py-3 rounded-full bg-[#1F1C18] hover:bg-[#35302A] text-white text-sm font-medium flex items-center gap-2 transition-colors disabled:opacity-40 cursor-pointer"
                     >
-                      <Key className="w-3.5 h-3.5 stroke-[1.5]" />
+                      <Key className="w-4 h-4 stroke-[1.75]" />
                       <span>{savingPassword ? (lang === 'ka' ? 'მოწმდება...' : 'Verifying...') : (lang === 'ka' ? 'პაროლის განახლება' : 'Update Password')}</span>
                     </button>
                   </form>
@@ -588,10 +627,10 @@ export default function ProfilePage() {
 
             {/* TAB 4: WISHLIST */}
             {activeTab === 'favorites' && (
-              <div className="p-6 sm:p-9 bg-white border border-[#E8E3DB] space-y-6 animate-fadeIn">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#EFECE6]">
+              <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#EAE4DB] shadow-[0_4px_24px_rgba(31,28,24,0.04)] space-y-6 animate-fadeIn">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#F0EAE0]">
                   <div>
-                    <h3 className="font-serif text-2xl font-light">
+                    <h3 className="font-serif text-2xl font-medium text-[#1F1C18]">
                       {lang === 'ka' ? `თქვენი რჩეული სამკაულები (${favoriteProducts.length})` : `Saved Jewelry (${favoriteProducts.length})`}
                     </h3>
                   </div>
@@ -600,35 +639,45 @@ export default function ProfilePage() {
                     {favoriteProducts.length > 0 && (
                       <button
                         type="button"
-                        onClick={() => navigateTo(`${lang === 'en' ? '/en' : ''}/checkout?from=favorites`)}
-                        className="px-5 py-2.5 bg-[#141311] text-white text-[10px] uppercase tracking-[0.16em] flex items-center gap-2 cursor-pointer"
+                        onClick={() => navigateTo(`${prefix}/checkout?from=favorites`)}
+                        className="px-5 py-2.5 rounded-full bg-[#1F1C18] hover:bg-[#35302A] text-white text-xs sm:text-sm font-medium flex items-center gap-2 transition-colors cursor-pointer"
                       >
-                        <ShoppingBag className="w-3.5 h-3.5 stroke-[1.5]" />
+                        <ShoppingBag className="w-4 h-4 stroke-[1.75]" />
                         <span>{lang === 'ka' ? 'რჩეულების შეძენა' : 'Buy Saved Items'}</span>
                       </button>
                     )}
                     <a
-                      href={lang === 'en' ? '/en/catalog' : '/catalog'}
-                      className="px-4 py-2.5 border border-[#E8E3DB] text-[#141311] hover:border-[#141311] text-[10px] uppercase tracking-[0.16em] flex items-center gap-1"
+                      href={`${prefix}/catalog`}
+                      className="px-5 py-2.5 rounded-full bg-[#FAF8F4] border border-[#D9D1C5] text-[#1F1C18] hover:border-[#1F1C18] text-xs sm:text-sm font-medium flex items-center gap-1 transition-colors"
                     >
                       <span>{lang === 'ka' ? 'კატალოგი' : 'Catalog'}</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
+                      <ChevronRight className="w-4 h-4" />
                     </a>
                   </div>
                 </div>
 
                 {favoriteProducts.length === 0 ? (
-                  <div className="py-14 px-6 text-center bg-[#FAF9F6] border border-dashed border-[#D6CFC4] space-y-4">
-                    <Gem className="w-7 h-7 text-[#9D7B48] mx-auto stroke-[1.25]" />
-                    <h4 className="font-serif text-xl font-light">{lang === 'ka' ? 'თქვენს რჩეულებში ჯერ არაფერია დამატებული' : 'Your wishlist is empty'}</h4>
-                    <a href={lang === 'en' ? '/en/catalog' : '/catalog'} className="inline-block px-7 py-3 bg-[#141311] text-white text-[11px] uppercase tracking-[0.18em]">
+                  <div className="py-14 px-6 rounded-2xl text-center bg-[#FAF8F4] border border-dashed border-[#D9D1C5] space-y-4">
+                    <Gem className="w-8 h-8 text-[#9A7742] mx-auto stroke-[1.5]" />
+                    <h4 className="font-serif text-xl font-medium text-[#1F1C18]">
+                      {lang === 'ka' ? 'თქვენს რჩეულებში ჯერ არაფერია დამატებული' : 'Your wishlist is empty'}
+                    </h4>
+                    <a
+                      href={`${prefix}/catalog`}
+                      className="inline-block px-7 py-3 rounded-full bg-[#1F1C18] hover:bg-[#35302A] text-white text-sm font-medium transition-colors"
+                    >
                       {lang === 'ka' ? 'კოლექციის ნახვა' : 'Browse Collection'}
                     </a>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {favoriteProducts.map((product) => (
-                      <ProductCard key={product.id} product={product} onClick={(p) => navigateTo(`/product/${p.id}`)} showDetailsButton={true} />
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        onClick={(p) => navigateTo(`${prefix}/product/${encodeURIComponent(p.sku || p.id)}`)}
+                        showDetailsButton={true}
+                      />
                     ))}
                   </div>
                 )}
@@ -637,10 +686,12 @@ export default function ProfilePage() {
 
             {/* TAB 5: CONCIERGE */}
             {activeTab === 'concierge' && (
-              <div className="p-6 sm:p-9 bg-white border border-[#E8E3DB] space-y-6 animate-fadeIn">
-                <div className="pb-4 border-b border-[#EFECE6]">
-                  <h3 className="font-serif text-2xl font-light">{lang === 'ka' ? 'პირადი საიუველირო კონსიერჟი' : 'Private Jewelry Concierge'}</h3>
-                  <p className="text-xs text-[#847E75] mt-1">
+              <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#EAE4DB] shadow-[0_4px_24px_rgba(31,28,24,0.04)] space-y-6 animate-fadeIn">
+                <div className="pb-4 border-b border-[#F0EAE0]">
+                  <h3 className="font-serif text-2xl font-medium text-[#1F1C18]">
+                    {lang === 'ka' ? 'პირადი საიუველირო კონსიერჟი' : 'Private Jewelry Concierge'}
+                  </h3>
+                  <p className="text-sm text-[#5C564E] mt-1">
                     {lang === 'ka' ? 'ინდივიდუალური შეკვეთა, ზომის მორგება და ექსპერტის პირდაპირი კონსულტაცია.' : 'Custom bespoke pieces, resizing, and dedicated client service.'}
                   </p>
                 </div>
@@ -650,30 +701,34 @@ export default function ProfilePage() {
                     href={`https://wa.me/${(siteSettings.whatsapp || '+995599000000').replace(/[^0-9]/g, '')}?text=${encodeURIComponent('გამარჯობა, მატარეს პირადი კაბინეტიდან გიკავშირდებით კონსულტაციისთვის.')}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-6 bg-[#FAF9F6] border border-[#E8E3DB] hover:border-[#141311] flex items-center justify-between gap-4 transition-colors"
+                    className="p-6 rounded-2xl bg-[#FAF8F4] border border-[#EAE4DB] hover:border-[#9A7742] flex items-center justify-between gap-4 transition-colors"
                   >
                     <div className="flex items-center gap-3.5">
-                      <MessageCircle className="w-5 h-5 text-[#9D7B48] stroke-[1.5]" />
+                      <div className="w-10 h-10 rounded-full bg-white border border-[#EAE4DB] flex items-center justify-center text-[#9A7742] shrink-0">
+                        <MessageCircle className="w-5 h-5 stroke-[1.75]" />
+                      </div>
                       <div>
-                        <p className="text-xs uppercase tracking-[0.16em] font-medium text-[#141311]">WhatsApp Concierge</p>
-                        <p className="text-xs text-[#5C574F] font-mono mt-0.5">{siteSettings.whatsapp || '+995 599 00 00 00'}</p>
+                        <p className="text-sm font-medium text-[#1F1C18]">WhatsApp კონსიერჟი</p>
+                        <p className="text-xs text-[#5C564E] font-mono mt-0.5">{siteSettings.whatsapp || '+995 599 00 00 00'}</p>
                       </div>
                     </div>
-                    <ExternalLink className="w-4 h-4 text-[#847E75]" />
+                    <ExternalLink className="w-4 h-4 text-[#787168]" />
                   </a>
 
                   <a
                     href={`tel:${(siteSettings.phone || '+995599000000').replace(/[^0-9+]/g, '')}`}
-                    className="p-6 bg-[#FAF9F6] border border-[#E8E3DB] hover:border-[#141311] flex items-center justify-between gap-4 transition-colors"
+                    className="p-6 rounded-2xl bg-[#FAF8F4] border border-[#EAE4DB] hover:border-[#9A7742] flex items-center justify-between gap-4 transition-colors"
                   >
                     <div className="flex items-center gap-3.5">
-                      <Phone className="w-5 h-5 text-[#9D7B48] stroke-[1.5]" />
+                      <div className="w-10 h-10 rounded-full bg-white border border-[#EAE4DB] flex items-center justify-center text-[#9A7742] shrink-0">
+                        <Phone className="w-5 h-5 stroke-[1.75]" />
+                      </div>
                       <div>
-                        <p className="text-xs uppercase tracking-[0.16em] font-medium text-[#141311]">{lang === 'ka' ? 'პირდაპირი ზარი' : 'Direct Call'}</p>
-                        <p className="text-xs text-[#5C574F] font-mono mt-0.5">{siteSettings.phone || '+995 599 00 00 00'}</p>
+                        <p className="text-sm font-medium text-[#1F1C18]">{lang === 'ka' ? 'პირდაპირი ზარი' : 'Direct Call'}</p>
+                        <p className="text-xs text-[#5C564E] font-mono mt-0.5">{siteSettings.phone || '+995 599 00 00 00'}</p>
                       </div>
                     </div>
-                    <Phone className="w-4 h-4 text-[#847E75]" />
+                    <Phone className="w-4 h-4 text-[#787168]" />
                   </a>
                 </div>
               </div>
@@ -687,7 +742,7 @@ export default function ProfilePage() {
       <FavoritesModal
         isOpen={showFavoritesModal}
         onClose={() => setShowFavoritesModal(false)}
-        onSelectProduct={(p) => navigateTo(`/product/${p.sku || p.id}`)}
+        onSelectProduct={(p) => navigateTo(`${prefix}/product/${encodeURIComponent(p.sku || p.id)}`)}
       />
 
       <QuickBuyModal

@@ -276,8 +276,8 @@ export default function ProductPage({ skuProp }) {
                       }}
                       className={`w-9 h-9 rounded-full border flex items-center justify-center transition-colors cursor-pointer ${
                         isFav
-                          ? "bg-[#9E2A2B] text-white border-[#9E2A2B]"
-                          : "border-[#EAE4DB] bg-[#FAF8F4] text-[#4A453E] hover:border-[#1F1C18] hover:text-[#1F1C18]"
+                          ? "bg-[#9E2A2B] text-white border-[#9E2A2B] hover:bg-[#822021]"
+                          : "border-[#EAE4DB] bg-[#FAF8F4] text-[#4A453E] hover:bg-[#9E2A2B] hover:border-[#9E2A2B] hover:text-white"
                       }`}
                       title={isFav ? (lang === "ka" ? "რჩეულებშია" : "In Favorites") : (lang === "ka" ? "რჩეულებში დამატება" : "Add to favorites")}
                     >
@@ -286,18 +286,11 @@ export default function ProductPage({ skuProp }) {
 
                     <button
                       type="button"
-                      onClick={() => {
-                        if (!user) {
-                          const current = window.location.pathname + window.location.search;
-                          navigateTo(`/login?redirect=${encodeURIComponent(current)}`);
-                          return;
-                        }
-                        toggleCompare(selectedProduct.id);
-                      }}
+                      onClick={() => toggleCompare(selectedProduct.id)}
                       className={`w-9 h-9 rounded-full border flex items-center justify-center transition-colors cursor-pointer ${
                         isCompared
-                          ? "bg-[#9A7742] text-white border-[#9A7742]"
-                          : "border-[#EAE4DB] bg-[#FAF8F4] text-[#4A453E] hover:border-[#1F1C18] hover:text-[#1F1C18]"
+                          ? "bg-[#9E2A2B] text-white border-[#9E2A2B] hover:bg-[#822021]"
+                          : "border-[#EAE4DB] bg-[#FAF8F4] text-[#4A453E] hover:bg-[#9E2A2B] hover:border-[#9E2A2B] hover:text-white"
                       }`}
                       title={lang === "ka" ? "შედარება" : "Compare"}
                     >

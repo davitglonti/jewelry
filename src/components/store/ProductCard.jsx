@@ -112,8 +112,8 @@ export default function ProductCard({
             }
             className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs ${
               isFav
-                ? "bg-[#9E2A2B] text-white"
-                : "bg-white/90 text-[#1F1C18] hover:bg-[#1F1C18] hover:text-white backdrop-blur-xs"
+                ? "bg-[#9E2A2B] text-white hover:bg-[#822021]"
+                : "bg-white/90 text-[#1F1C18] hover:bg-[#9E2A2B] hover:text-white backdrop-blur-xs"
             }`}
           >
             <Heart className={`w-3.5 h-3.5 stroke-[1.75] ${isFav ? "fill-white text-white" : ""}`} />
@@ -123,11 +123,6 @@ export default function ProductCard({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              if (!user) {
-                const current = window.location.pathname + window.location.search;
-                navigateTo(`/login?redirect=${encodeURIComponent(current)}`);
-                return;
-              }
               toggleCompare(product.id);
             }}
             title={
@@ -137,8 +132,8 @@ export default function ProductCard({
             }
             className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs ${
               isCompared
-                ? "bg-[#9A7742] text-white"
-                : "bg-white/90 text-[#1F1C18] hover:bg-[#1F1C18] hover:text-white backdrop-blur-xs"
+                ? "bg-[#9E2A2B] text-white hover:bg-[#822021]"
+                : "bg-white/90 text-[#1F1C18] hover:bg-[#9E2A2B] hover:text-white backdrop-blur-xs"
             }`}
           >
             <ArrowLeftRight className="w-3.5 h-3.5 stroke-[1.75]" />
@@ -170,13 +165,13 @@ export default function ProductCard({
           )}
         </div>
 
-        <div className="pt-2.5 mt-1 border-t border-[#F3EFE8] flex items-center justify-between gap-2">
-          <div className="flex items-baseline gap-2">
+        <div className="pt-2.5 mt-1 border-t border-[#F3EFE8] flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
             <span className="text-sm sm:text-base font-semibold text-[#1F1C18] whitespace-nowrap">
               {formatPrice(product.price)}
             </span>
             {discountPct ? (
-              <span className="text-xs line-through text-[#9E978D] whitespace-nowrap">
+              <span className="text-xs line-through text-[#857D73] whitespace-nowrap">
                 {formatPrice(product.oldPrice || product.originalPrice)}
               </span>
             ) : null}
@@ -190,7 +185,7 @@ export default function ProductCard({
                 onClick && onClick(product);
               }}
               aria-label={`${lang === "ka" ? "დეტალურად ნახვა" : "View details"}: ${productName}`}
-              className="hidden sm:inline-flex px-3 py-1 rounded-full text-[11px] font-medium bg-[#FAF8F4] text-[#1F1C18] border border-[#EAE4DB] group-hover:bg-[#1F1C18] group-hover:text-white group-hover:border-[#1F1C18] transition-colors cursor-pointer shrink-0"
+              className="inline-flex items-center justify-center px-3.5 py-1.5 rounded-full text-xs font-medium bg-[#FAF8F4] text-[#1F1C18] border border-[#D9D1C5] group-hover:bg-[#1F1C18] group-hover:text-white group-hover:border-[#1F1C18] transition-colors cursor-pointer shrink-0"
             >
               {lang === "ka" ? "დეტალურად" : "View"}
             </button>
