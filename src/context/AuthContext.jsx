@@ -161,24 +161,54 @@ export function AuthProvider({ children }) {
       }
     };
 
-    // Defer auth initialization using requestIdleCallback with ~800ms fallback
-    // to avoid blocking First Paint, LCP, and initial product browsing
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      idleId = window.requestIdleCallback(
-        () => {
-          initAuthListener();
-        },
-        { timeout: 1500 }
-      );
+    // Check if user has previously logged in
+    const hasExistingAuthSession = () => {
+      try {
+        if (typeof window === 'undefined') return false;
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && (k.startsWith('firebase:authUser') || k.startsWith('aurelia_auth'))) {
+            return true;
+          }
+        }
+        return false;
+      } catch {
+        return false;
+      }
+    };
+
+    let started = false;
+    const startAuth = () => {
+      if (started) return;
+      started = true;
+      initAuthListener();
+      removeInteractionListeners();
+    };
+
+    const removeInteractionListeners = () => {
+      if (typeof window === 'undefined') return;
+      window.removeEventListener('pointerdown', startAuth);
+      window.removeEventListener('keydown', startAuth);
+      window.removeEventListener('touchstart', startAuth);
+      window.removeEventListener('scroll', startAuth);
+    };
+
+    if (hasExistingAuthSession()) {
+      timerId = setTimeout(startAuth, 50);
     } else {
-      timerId = setTimeout(initAuthListener, 800);
+      // Defer auth initialization on initial load to avoid blocking FCP/LCP with 93 KiB iframe.js
+      if (typeof window !== 'undefined') {
+        window.addEventListener('pointerdown', startAuth, { once: true, passive: true });
+        window.addEventListener('keydown', startAuth, { once: true, passive: true });
+        window.addEventListener('touchstart', startAuth, { once: true, passive: true });
+        window.addEventListener('scroll', startAuth, { once: true, passive: true });
+      }
+      timerId = setTimeout(startAuth, 4000);
     }
 
     return () => {
       isCancelled = true;
-      if (idleId && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
-        window.cancelIdleCallback(idleId);
-      }
+      removeInteractionListeners();
       if (timerId) {
         clearTimeout(timerId);
       }

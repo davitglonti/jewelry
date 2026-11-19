@@ -107,8 +107,8 @@ export default function ProductCard({
             }
             className={`${compact ? "w-6 h-6" : "w-8 h-8"} rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs ${
               isFav
-                ? "bg-[#9E2A2B] text-white hover:bg-[#822021]"
-                : "bg-white/90 text-[#1F1C18] hover:bg-[#9E2A2B] hover:text-white backdrop-blur-xs"
+                ? "bg-[#E25567] text-white hover:bg-[#D44759]"
+                : "bg-white/90 text-[#1F1C18] hover:bg-[#E25567] hover:text-white backdrop-blur-xs"
             }`}
           >
             <Heart className={`${compact ? "w-3 h-3" : "w-3.5 h-3.5"} stroke-[1.75] ${isFav ? "fill-white text-white" : ""}`} />

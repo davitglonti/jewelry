@@ -98,15 +98,7 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
           </div>
 
           {/* Right Framed Editorial Photography — Fully Contained (Zero Cropping, Zero Layout Shift) */}
-          <div className="lg:col-span-6 relative h-[280px] sm:h-[360px] lg:h-full bg-[#FAF8F4] order-1 lg:order-2 overflow-hidden flex items-center justify-center">
-            {/* Soft ambient blur backdrop matching slide photo tones */}
-            <img
-              src={displayImg}
-              alt=""
-              aria-hidden="true"
-              className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-30 pointer-events-none"
-            />
-
+          <div className="lg:col-span-6 relative h-[280px] sm:h-[360px] lg:h-full bg-gradient-to-br from-[#FAF8F4] via-[#F5EFE4]/35 to-[#FAF8F4] order-1 lg:order-2 overflow-hidden flex items-center justify-center">
             {/* Primary uncropped photography that fully fits inside the space */}
             <img
               src={displayImg}

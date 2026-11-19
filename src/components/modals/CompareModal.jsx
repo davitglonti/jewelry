@@ -91,7 +91,7 @@ export default function CompareModal() {
                 }}
                 aria-label="რჩეულებში დამატება"
                 className={`w-7 h-7 border flex items-center justify-center transition-colors cursor-pointer ${
-                  isFav ? "bg-[#141311] text-white border-[#141311]" : "bg-white/90 text-[#141311] border-[#E8E3DB] hover:bg-[#141311] hover:text-white"
+                  isFav ? "bg-[#E25567] text-white border-[#E25567]" : "bg-white/90 text-[#141311] border-[#E8E3DB] hover:bg-[#E25567] hover:text-white hover:border-[#E25567]"
                 }`}
               >
                 <Heart className={`w-3.5 h-3.5 stroke-[1.5] ${isFav ? "fill-white" : ""}`} />

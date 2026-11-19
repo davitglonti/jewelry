@@ -235,8 +235,8 @@ export default function ProductPage({ skuProp }) {
 
           {/* 2-Column Split Showcase (Exact Mockup Layout) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
-            {/* Left 6 Cols: Product Gallery */}
-            <div className="lg:col-span-6 lg:sticky lg:top-[106px]">
+            {/* Left 6 Cols: Product Gallery & Guarantee Standard */}
+            <div className="lg:col-span-6 lg:sticky lg:top-[106px] space-y-6">
               <ProductMediaGallery
                 images={selectedProduct.images}
                 productName={selectedProduct.name}
@@ -248,6 +248,27 @@ export default function ProductPage({ skuProp }) {
                 setLightboxImage={setLightboxImage}
                 lang={lang}
               />
+
+              {/* Matare Standard & Guarantee (Under gallery in yellow marked area) */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#FAF8F5] border border-[#EAE4DB] shadow-xs">
+                <h3 className="font-serif text-base font-normal text-[#1F1C18] tracking-wide mb-3.5">
+                  {lang === 'ka' ? 'მატარეს სტანდარტი და გარანტია' : 'Matare Standard & Guarantee'}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-medium text-[#4A453E]">
+                  <div className="flex items-center gap-2.5">
+                    <ArrowLeftRight className="w-4 h-4 text-[#9A7742] shrink-0 stroke-[1.5]" />
+                    <span>{lang === 'ka' ? 'მიწოდება და გადაცვლა' : 'Delivery & Exchange'}</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <ShieldCheck className="w-4 h-4 text-[#9A7742] shrink-0 stroke-[1.5]" />
+                    <span>{lang === 'ka' ? 'სერტიფიცირებული სინჯი' : 'Certified Purity'}</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <Heart className="w-4 h-4 text-[#9A7742] shrink-0 stroke-[1.5]" />
+                    <span>{lang === 'ka' ? 'უვადო მოვლა' : 'Lifetime Care'}</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Right 6 Cols: Product Details */}
@@ -268,10 +289,14 @@ export default function ProductPage({ skuProp }) {
                   <button
                     type="button"
                     onClick={() => toggleFavorite(selectedProduct.id)}
-                    className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[#F4EFE6] text-[#1F1C18] transition-colors cursor-pointer"
+                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                      isFav
+                        ? 'bg-[#FDF2F4] text-[#E25567] hover:bg-[#FCE7EB] shadow-xs'
+                        : 'hover:bg-[#FDF2F4] text-[#1F1C18] hover:text-[#E25567]'
+                    }`}
                     title={isFav ? (lang === "ka" ? "რჩეულებშია" : "In Favorites") : (lang === "ka" ? "რჩეულებში დამატება" : "Add to favorites")}
                   >
-                    <Heart className={`w-[19px] h-[19px] stroke-[1.5] ${isFav ? "fill-[#1F1C18] text-[#1F1C18]" : ""}`} />
+                    <Heart className={`w-[19px] h-[19px] stroke-[1.5] transition-colors ${isFav ? "fill-[#E25567] text-[#E25567]" : ""}`} />
                   </button>
 
                   <button
@@ -354,26 +379,7 @@ export default function ProductPage({ skuProp }) {
             </div>
           </div>
 
-          {/* Bottom Bar: Matare Standard & Guarantee (Mockup 1-to-1) */}
-          <section className="mt-16 pt-8 pb-10 border-t border-[#EAE4DB] flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-[#1F1C18]">
-            <div className="font-serif text-lg font-normal tracking-wide">
-              {lang === 'ka' ? 'Matare Standard & Guarantee' : 'Matare Standard & Guarantee'}
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-medium text-[#4A453E]">
-              <div className="flex items-center gap-2">
-                <ArrowLeftRight className="w-4 h-4 text-[#787168]" />
-                <span>{lang === 'ka' ? 'Delivery & Exchange' : 'Delivery & Exchange'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#787168]" />
-                <span>{lang === 'ka' ? 'Certified Purity' : 'Certified Purity'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Heart className="w-4 h-4 text-[#787168]" />
-                <span>{lang === 'ka' ? 'Lifetime Care' : 'Lifetime Care'}</span>
-              </div>
-            </div>
-          </section>
+
 
           {/* Similar Pieces Carousel/Grid */}
           {relatedProducts.length > 0 && (

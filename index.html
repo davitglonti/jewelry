@@ -65,17 +65,25 @@
     <link
       rel="preload"
       as="image"
-      href="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&fm=webp&w=1200&q=60"
-      imagesrcset="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&fm=webp&w=360&q=60 360w, https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&fm=webp&w=500&q=60 500w, https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&fm=webp&w=720&q=60 720w, https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&fm=webp&w=1200&q=60 1200w"
-      imagesizes="100vw"
+      href="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&fm=webp&w=1200&q=60"
+      imagesrcset="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&fm=webp&w=360&q=60 360w, https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&fm=webp&w=500&q=60 500w, https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&fm=webp&w=720&q=60 720w, https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&fm=webp&w=1200&q=60 1200w"
+      imagesizes="(max-width: 1024px) 100vw, 50vw"
       fetchpriority="high"
     />
 
-    <!-- Refined Luxury Typography (Latin + Georgian with crisp legible weights) -->
+    <!-- Non-render-blocking Luxury Typography (Eliminates 770ms render blocking) -->
     <link
-      rel="stylesheet"
+      rel="preload"
+      as="style"
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Sans+Georgian:wght@400;500;600;700&family=Noto+Serif+Georgian:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Sans+Georgian:wght@400;500;600;700&family=Noto+Serif+Georgian:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap"
+      />
+    </noscript>
 
     <style>
       body {

@@ -320,12 +320,18 @@ export default function Navbar({
               type="button"
               onClick={handleFavoritesClick}
               aria-label={lang === "ka" ? `რჩეული სამკაულები (${favorites.length})` : `Saved items (${favorites.length})`}
-              className="relative w-9 h-9 rounded-full flex items-center justify-center hover:bg-[#F4EFE6] transition-colors cursor-pointer"
+              className={`relative w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+                favorites.length > 0 ? 'hover:bg-[#FDF2F4]' : 'hover:bg-[#F4EFE6]'
+              }`}
               title={lang === "ka" ? "რჩეულები" : "Wishlist"}
             >
-              <Heart className={`w-[19px] h-[19px] stroke-[1.5] ${favorites.length > 0 ? "fill-[#1F1C18] text-[#1F1C18]" : ""}`} />
+              <Heart
+                className={`w-[19px] h-[19px] stroke-[1.5] transition-colors ${
+                  favorites.length > 0 ? "fill-[#E25567] text-[#E25567]" : "text-[#1F1C18] hover:text-[#E25567]"
+                }`}
+              />
               {favorites.length > 0 && (
-                <span className="absolute top-1 right-1 min-w-[15px] h-[15px] px-1 rounded-full bg-[#1F1C18] text-white text-[9px] font-semibold flex items-center justify-center">
+                <span className="absolute top-1 right-1 min-w-[15px] h-[15px] px-1 rounded-full bg-[#E25567] text-white text-[9px] font-semibold flex items-center justify-center shadow-xs">
                   {favorites.length}
                 </span>
               )}
