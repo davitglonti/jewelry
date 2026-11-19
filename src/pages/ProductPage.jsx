@@ -6,7 +6,6 @@ import {
 import { pick, formatPrice, calculateDiscountPercent } from '../utils/i18n';
 import { shareProductLink } from '../utils/shareUtils';
 import { navigateTo } from '../utils/navigation';
-import { trackProductView } from '../lib/stats';
 import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
 import { DEFAULT_PRODUCT_ASSURANCE } from '../data/defaultSettings';
@@ -84,7 +83,9 @@ export default function ProductPage({ skuProp }) {
   useEffect(() => {
     const targetId = selectedProduct?.id || selectedProduct?.sku || currentSku;
     if (targetId) {
-      trackProductView(targetId);
+      import('../lib/stats').then(({ trackProductView }) => {
+        trackProductView(targetId);
+      }).catch(() => {});
     }
   }, [selectedProduct?.id, selectedProduct?.sku, currentSku]);
 

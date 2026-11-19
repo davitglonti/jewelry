@@ -85,10 +85,16 @@ export default defineConfig(({ mode }) => {
       target: 'esnext',
       rollupOptions: {
         output: {
-          manualChunks: {
-            'firebase-vendor': ['firebase/app', 'firebase/firestore'],
-            'react-vendor': ['react', 'react-dom'],
-            'lucide-vendor': ['lucide-react'],
+          manualChunks(id) {
+            if (id.includes('node_modules/firebase')) {
+              return 'firebase-vendor';
+            }
+            if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
+              return 'react-vendor';
+            }
+            if (id.includes('node_modules/lucide-react')) {
+              return 'lucide-vendor';
+            }
           },
         },
       },

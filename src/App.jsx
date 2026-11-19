@@ -1,12 +1,12 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import StorePage from './pages/StorePage';
-import CatalogPage from './pages/CatalogPage';
-import ProductPage from './pages/ProductPage';
 import CompareFloatingBar from './components/store/CompareFloatingBar';
 import { useStore } from './context/StoreContext';
 import { initSpaNavigation, parsePath } from './utils/navigation';
 
-// მეორადი და ადმინ გვერდების lazy ჩატვირთვა (Code Splitting)
+// მეორადი და შიდა გვერდების lazy ჩატვირთვა (Zero Unused JS on Home Page)
+const CatalogPage = lazy(() => import('./pages/CatalogPage'));
+const ProductPage = lazy(() => import('./pages/ProductPage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));

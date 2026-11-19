@@ -1,7 +1,15 @@
 // src/context/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getLazyAuth } from '../lib/firebase';
 import { isStrongPassword, getPasswordValidationMessage } from '../utils/passwordValidation';
+
+const resolveLazyAuth = async () => {
+  try {
+    const { getLazyAuth } = await import('../lib/firebase');
+    return getLazyAuth();
+  } catch {
+    return null;
+  }
+};
 
 export const AuthContext = createContext(null);
 
@@ -111,7 +119,7 @@ export function AuthProvider({ children }) {
 
     const initAuthListener = async () => {
       try {
-        const auth = await getLazyAuth();
+        const auth = await resolveLazyAuth();
         if (!auth || isCancelled) {
           if (!isCancelled) setLoading(false);
           return;
@@ -225,7 +233,7 @@ export function AuthProvider({ children }) {
       err.code = 'auth/weak-password';
       throw err;
     }
-    const auth = await getLazyAuth();
+    const auth = await resolveLazyAuth();
     if (!auth) throw new Error('Firebase Auth არ არის ინიციალიზებული');
     const { createUserWithEmailAndPassword, updateProfile } = await import('firebase/auth');
     const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
@@ -252,7 +260,7 @@ export function AuthProvider({ children }) {
   };
 
   const login = async (email, password) => {
-    const auth = await getLazyAuth();
+    const auth = await resolveLazyAuth();
     if (!auth) throw new Error('Firebase Auth არ არის ინიციალიზებული');
     const { signInWithEmailAndPassword } = await import('firebase/auth');
     const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
@@ -267,7 +275,7 @@ export function AuthProvider({ children }) {
   };
 
   const loginWithGoogle = async () => {
-    const auth = await getLazyAuth();
+    const auth = await resolveLazyAuth();
     if (!auth) throw new Error('Firebase Auth არ არის ინიციალიზებული');
     const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
     const provider = new GoogleAuthProvider();
@@ -286,7 +294,7 @@ export function AuthProvider({ children }) {
   const registerWithGoogle = loginWithGoogle;
 
   const logout = async () => {
-    const auth = await getLazyAuth();
+    const auth = await resolveLazyAuth();
     if (!auth) return;
     const { signOut } = await import('firebase/auth');
     await signOut(auth);
@@ -319,14 +327,14 @@ export function AuthProvider({ children }) {
   };
 
   const verifyResetCode = async (actionCode) => {
-    const auth = await getLazyAuth();
+    const auth = await resolveLazyAuth();
     if (!auth) throw new Error('Firebase Auth არ არის ინიციალიზებული');
     const { verifyPasswordResetCode: fbVerifyPasswordResetCode } = await import('firebase/auth');
     return await fbVerifyPasswordResetCode(auth, actionCode);
   };
 
   const confirmReset = async (actionCode, newPassword) => {
-    const auth = await getLazyAuth();
+    const auth = await resolveLazyAuth();
     if (!auth) throw new Error('Firebase Auth არ არის ინიციალიზებული');
     if (!isStrongPassword(newPassword)) {
       const msg = getPasswordValidationMessage(newPassword, 'ka');
@@ -339,7 +347,7 @@ export function AuthProvider({ children }) {
   };
 
   const updateUserProfile = async ({ displayName, photoURL }) => {
-    const auth = await getLazyAuth();
+    const auth = await resolveLazyAuth();
     if (!auth || !auth.currentUser) throw new Error('ავტორიზაცია არ მოიძებნა');
     const { updateProfile } = await import('firebase/auth');
     const updates = {};
@@ -351,7 +359,7 @@ export function AuthProvider({ children }) {
   };
 
   const changePassword = async (newPassword, currentPassword = '') => {
-    const auth = await getLazyAuth();
+    const auth = await resolveLazyAuth();
     if (!auth || !auth.currentUser) throw new Error('ავტორიზაცია არ მოიძებნა');
     if (!currentPassword || !currentPassword.trim()) {
       const err = new Error('auth/missing-current-password');
