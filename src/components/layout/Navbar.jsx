@@ -304,12 +304,12 @@ export default function Navbar({
               )}
             </div>
 
-            {/* Language Switcher */}
+            {/* Language Switcher - visible on sm+ screens */}
             <button
               type="button"
               onClick={handleToggleLang}
               aria-label={lang === "ka" ? "Switch language to English" : "ენის გადართვა ქართულზე"}
-              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[#F4EFE6] transition-colors cursor-pointer"
+              className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center hover:bg-[#F4EFE6] transition-colors cursor-pointer"
               title={lang === "ka" ? "Switch to English" : "ქართულზე გადართვა"}
             >
               <Globe className="w-[19px] h-[19px] stroke-[1.5]" />
@@ -337,10 +337,10 @@ export default function Navbar({
               )}
             </button>
 
-            {/* User Account / Profile */}
+            {/* User Account / Profile - visible on sm+ screens */}
             <a
               href={user ? `${prefix}/profile` : `${prefix}/login`}
-              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[#F4EFE6] transition-colors cursor-pointer"
+              className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center hover:bg-[#F4EFE6] transition-colors cursor-pointer"
               title={user ? (lang === "ka" ? "ჩემი პროფილი" : "Profile") : (lang === "ka" ? "შესვლა" : "Sign In")}
               aria-label={user ? (lang === "ka" ? "ჩემი პროფილი" : "Profile") : (lang === "ka" ? "შესვლა" : "Sign In")}
             >
@@ -420,7 +420,61 @@ export default function Navbar({
               <a href={`${prefix}/size-guide`} onClick={() => setIsMobileMenuOpen(false)} className="py-3 hover:text-[#9A7742]">
                 {lang === "ka" ? "ზომის გზამკვლევი" : "Size Guide"}
               </a>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  handleFavoritesClick();
+                }}
+                className="py-3 flex items-center justify-between text-left hover:text-[#9A7742] cursor-pointer"
+              >
+                <span className="flex items-center gap-2.5">
+                  <Heart className={`w-4 h-4 stroke-[1.5] ${favorites.length > 0 ? 'fill-[#E25567] text-[#E25567]' : 'text-[#1F1C18]'}`} />
+                  {lang === "ka" ? "რჩეული სამკაულები" : "Wishlist"}
+                </span>
+                {favorites.length > 0 && (
+                  <span className="min-w-[18px] h-[18px] px-1.5 rounded-full bg-[#E25567] text-white text-[10px] font-semibold flex items-center justify-center">
+                    {favorites.length}
+                  </span>
+                )}
+              </button>
             </nav>
+
+            {/* Mobile Language Switcher */}
+            <div className="pt-4 border-t border-[#EAE4DB] flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs text-[#787168] font-medium">
+                <Globe className="w-4 h-4 stroke-[1.5] text-[#9A7742]" />
+                <span>{lang === 'ka' ? 'ენა / Language' : 'Language'}</span>
+              </div>
+              <div className="inline-flex p-1 bg-[#F4EFE6] rounded-full text-xs font-medium">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (lang !== 'ka') handleToggleLang();
+                  }}
+                  className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
+                    lang === 'ka'
+                      ? 'bg-[#1F1C18] text-white shadow-xs'
+                      : 'text-[#787168] hover:text-[#1F1C18]'
+                  }`}
+                >
+                  ქართული
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (lang !== 'en') handleToggleLang();
+                  }}
+                  className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
+                    lang === 'en'
+                      ? 'bg-[#1F1C18] text-white shadow-xs'
+                      : 'text-[#787168] hover:text-[#1F1C18]'
+                  }`}
+                >
+                  English
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </header>
