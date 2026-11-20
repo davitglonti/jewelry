@@ -90,7 +90,11 @@ export default function App() {
       </Suspense>
     );
   } else if (route === "/catalog" || route === "/collection") {
-    content = <CatalogPage />;
+    content = (
+      <Suspense fallback={<PageLoader />}>
+        <CatalogPage />
+      </Suspense>
+    );
   } else if (route === "/size-guide" || route === "/sizes" || route === "/ring-size") {
     content = (
       <Suspense fallback={<PageLoader />}>
@@ -104,7 +108,11 @@ export default function App() {
       </Suspense>
     );
   } else if (route === "/product" || route.startsWith("/product/") || route.startsWith("/product?")) {
-    content = <ProductPage key={window.location.pathname} />;
+    content = (
+      <Suspense fallback={<PageLoader />}>
+        <ProductPage key={window.location.pathname} />
+      </Suspense>
+    );
   } else if (route === "/login") {
     content = (
       <Suspense fallback={<PageLoader />}>
