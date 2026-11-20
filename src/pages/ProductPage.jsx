@@ -94,26 +94,50 @@ export default function ProductPage({ skuProp }) {
 
     const brand = siteSettings.brandName || "MATARE";
     const prodName = lang === "ka" ? selectedProduct.name : (selectedProduct.nameEn || selectedProduct.name);
-    const prodDesc = lang === "ka"
+    const seoTitle = selectedProduct.metaTitle || `${prodName} — ${brand}`;
+    const seoDesc = selectedProduct.metaDescription || (lang === "ka"
       ? (selectedProduct.description || `${prodName} — ექსკლუზიური ხელნაკეთი საიუველირო ნაკეთობა.`)
-      : (selectedProduct.descriptionEn || `${prodName} — handcrafted fine jewelry by ${brand}.`);
+      : (selectedProduct.descriptionEn || `${prodName} — handcrafted fine jewelry by ${brand}.`));
 
     const numericPrice = (selectedProduct.price || "").toString().replace(/[^0-9.]/g, "") || "0";
     const langPrefix = lang === "en" ? "/en" : "";
     const productUrl = `https://www.matare.store${langPrefix}/product/${encodeURIComponent(selectedProduct.sku || selectedProduct.id)}`;
-    const mainImage = (selectedProduct.images && selectedProduct.images[0]) || "https://www.matare.store/brand-logo.jpg";
+    const mainImage = selectedProduct.ogImage || (selectedProduct.images && selectedProduct.images[0]) || "https://www.matare.store/brand-logo.jpg";
 
-    document.title = `${prodName} — ${brand}`;
+    document.title = seoTitle;
     const metaDesc = document.querySelector('meta[name="description"]');
     const oldDesc = metaDesc?.getAttribute("content");
-    if (metaDesc) metaDesc.setAttribute("content", prodDesc);
+    if (metaDesc) metaDesc.setAttribute("content", seoDesc);
+
+    const setMetaTag = (attrName, attrVal, contentVal) => {
+      let el = document.querySelector(`meta[${attrName}="${attrVal}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attrName, attrVal);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', contentVal);
+    };
+
+    if (selectedProduct.metaKeywords) {
+      setMetaTag('name', 'keywords', selectedProduct.metaKeywords);
+    }
+    setMetaTag('property', 'og:title', seoTitle);
+    setMetaTag('property', 'og:description', seoDesc);
+    setMetaTag('property', 'og:image', mainImage);
+    setMetaTag('property', 'og:url', productUrl);
+    setMetaTag('property', 'og:type', 'product');
+    setMetaTag('name', 'twitter:card', 'summary_large_image');
+    setMetaTag('name', 'twitter:title', seoTitle);
+    setMetaTag('name', 'twitter:description', seoDesc);
+    setMetaTag('name', 'twitter:image', mainImage);
 
     const schemaData = {
       "@context": "https://schema.org/",
       "@type": "Product",
       "name": prodName,
       "image": (selectedProduct.images && selectedProduct.images.length > 0) ? selectedProduct.images : [mainImage],
-      "description": prodDesc,
+      "description": seoDesc,
       "sku": selectedProduct.sku || selectedProduct.id,
       "brand": { "@type": "Brand", "name": brand },
       "category": selectedProduct.category || "სამკაულები",

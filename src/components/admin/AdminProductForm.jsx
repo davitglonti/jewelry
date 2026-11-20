@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Link as LinkIcon, X, RotateCw, Trash2, Sparkles, Star } from 'lucide-react';
+import { Upload, Link as LinkIcon, X, RotateCw, Trash2, Sparkles, Star, Globe } from 'lucide-react';
 import { handleFileUpload } from '../../utils/imageUtils';
 
 export default function AdminProductForm({
@@ -475,6 +475,117 @@ export default function AdminProductForm({
               რომ კლიენტი ტყუილად არ ელოდოს
             </p>
           </button>
+        </div>
+      </div>
+
+            {/* SECTION: SEO & SOCIAL MEDIA META TAGS */}
+      <div className={`p-4 rounded-2xl border space-y-3.5 ${
+        darkMode ? 'bg-stone-900/60 border-stone-800' : 'bg-white border-stone-200'
+      }`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-amber-500 font-semibold text-xs">
+            <Globe className="w-4 h-4" />
+            <span>SEO & სოციალური ქსელების მეტა-მონაცემები (Google & Social Preview)</span>
+          </div>
+          <span className="text-[10px] opacity-60">არასავალდებულო (ავტომატურად ივსება)</span>
+        </div>
+
+        {/* Live Google Search Preview Box */}
+        <div className="p-3.5 rounded-xl bg-white border border-stone-200 text-stone-900 shadow-xs space-y-1">
+          <span className="text-[10px] text-stone-500 flex items-center gap-1 font-mono">
+            <span>https://www.matare.store</span>
+            <span>›</span>
+            <span>product</span>
+            <span>›</span>
+            <span>{editingProduct.sku || 'sku'}</span>
+          </span>
+          <div className="text-sm font-medium text-[#1a0dab] truncate">
+            {editingProduct.metaTitle || `${editingProduct.name || 'სამკაულის სახელი'} — მატარე`}
+          </div>
+          <p className="text-xs text-[#4d5156] line-clamp-2 leading-relaxed">
+            {editingProduct.metaDescription || editingProduct.description || 'ექსკლუზიური ხელნაკეთი საიუველირო ნაკეთობა, უმაღლესი სინჯის ოქრო და სერტიფიცირებული ბრილიანტები.'}
+          </p>
+        </div>
+
+        <div className="space-y-3 text-xs">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="font-medium opacity-80">Google სათაური (Meta Title):</label>
+              <span className={`text-[10px] font-mono ${(editingProduct.metaTitle || '').length > 65 ? 'text-amber-500' : 'opacity-60'}`}>
+                {(editingProduct.metaTitle || '').length} / 60 სიმბოლო
+              </span>
+            </div>
+            <input
+              type="text"
+              value={editingProduct.metaTitle || ''}
+              onChange={(e) => setEditingProduct({ ...editingProduct, metaTitle: e.target.value })}
+              placeholder={editingProduct.name ? `${editingProduct.name} — მატარე` : 'მაგ: სოლიტერის ბრილიანტის ბეჭედი 18K | მატარე'}
+              className={`w-full p-2.5 rounded-xl border outline-none ${
+                darkMode ? 'bg-stone-800 border-stone-700 text-white focus:border-amber-500' : 'bg-stone-50 border-stone-300 text-stone-900 focus:border-amber-500'
+              }`}
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="font-medium opacity-80">Google აღწერა (Meta Description):</label>
+              <span className={`text-[10px] font-mono ${(editingProduct.metaDescription || '').length > 165 ? 'text-amber-500' : 'opacity-60'}`}>
+                {(editingProduct.metaDescription || '').length} / 160 სიმბოლო
+              </span>
+            </div>
+            <textarea
+              rows={2}
+              value={editingProduct.metaDescription || ''}
+              onChange={(e) => setEditingProduct({ ...editingProduct, metaDescription: e.target.value })}
+              placeholder={editingProduct.description || 'დაწერეთ მიმზიდველი აღწერა Google-ის საძიებო შედეგებისთვის...'}
+              className={`w-full p-2.5 rounded-xl border outline-none ${
+                darkMode ? 'bg-stone-800 border-stone-700 text-white focus:border-amber-500' : 'bg-stone-50 border-stone-300 text-stone-900 focus:border-amber-500'
+              }`}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block mb-1 font-medium opacity-80">საკვანძო სიტყვები (Keywords):</label>
+              <input
+                type="text"
+                value={editingProduct.metaKeywords || ''}
+                onChange={(e) => setEditingProduct({ ...editingProduct, metaKeywords: e.target.value })}
+                placeholder="ბრილიანტი, ოქროს ბეჭედი, 18K"
+                className={`w-full p-2.5 rounded-xl border outline-none ${
+                  darkMode ? 'bg-stone-800 border-stone-700 text-white focus:border-amber-500' : 'bg-stone-50 border-stone-300 text-stone-900 focus:border-amber-500'
+                }`}
+              />
+            </div>
+
+            <div>
+              <label className="block mb-1 font-medium opacity-80">Social Share Cover (OpenGraph Image URL):</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={editingProduct.ogImage || ''}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, ogImage: e.target.value })}
+                  placeholder={editingProduct.images?.[0] || 'სურათის URL (ცარიელი = პირველი ფოტო)'}
+                  className={`flex-1 p-2.5 rounded-xl border outline-none ${
+                    darkMode ? 'bg-stone-800 border-stone-700 text-white focus:border-amber-500' : 'bg-stone-50 border-stone-300 text-stone-900 focus:border-amber-500'
+                  }`}
+                />
+                <label className="px-3 py-2 rounded-xl bg-amber-500/20 text-amber-400 cursor-pointer hover:bg-amber-500/30 transition-colors shrink-0 flex items-center justify-center">
+                  <Upload className="w-3.5 h-3.5" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      handleFileUpload(e.target.files?.[0], (b64) => {
+                        setEditingProduct({ ...editingProduct, ogImage: b64 });
+                      });
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

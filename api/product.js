@@ -31,13 +31,25 @@ export default async function handler(req, res) {
         const f = doc.fields;
         productName = f.name?.stringValue || productName;
         productPrice = f.price?.stringValue || '';
-        productDesc = f.description?.stringValue || `${productName} — ${productPrice}. ექსკლუზიური საიუველირო ნაკეთობა.`;
-        const firstImg = f.images?.arrayValue?.values?.[0]?.stringValue;
-        if (firstImg) {
-          if (firstImg.startsWith('http')) {
-            imageUrl = firstImg;
-          } else if (firstImg.startsWith('data:image')) {
-            imageUrl = `${baseUrl}/api/og-image?sku=${encodeURIComponent(targetSku)}`;
+        const customTitle = f.metaTitle?.stringValue;
+        const customDesc = f.metaDescription?.stringValue;
+        const customOgImage = f.ogImage?.stringValue;
+
+        if (customTitle) {
+          productName = customTitle;
+        }
+        productDesc = customDesc || f.description?.stringValue || `${productName} — ${productPrice}. ექსკლუზიური საიუველირო ნაკეთობა.`;
+
+        if (customOgImage) {
+          imageUrl = customOgImage;
+        } else {
+          const firstImg = f.images?.arrayValue?.values?.[0]?.stringValue;
+          if (firstImg) {
+            if (firstImg.startsWith('http')) {
+              imageUrl = firstImg;
+            } else if (firstImg.startsWith('data:image')) {
+              imageUrl = `${baseUrl}/api/og-image?sku=${encodeURIComponent(targetSku)}`;
+            }
           }
         }
       }

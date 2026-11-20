@@ -594,7 +594,7 @@ export default function AdminInquiriesTab({
                     {order.promoApplied && (
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
                         <Tag className="w-3 h-3" />
-                        <span>VIP: {order.promoApplied}</span>
+                        <span>პრომო: {order.promoApplied}{order.discountAmount ? ` (-${order.discountAmount} ₾)` : ''}</span>
                       </span>
                     )}
                   </div>
@@ -1293,7 +1293,7 @@ export default function AdminInquiriesTab({
               <div className="pt-3 border-t-2 border-stone-900 space-y-1.5 text-right">
                 {printOrder.promoApplied && (
                   <div className="text-xs text-emerald-700">
-                    VIP ფასდაკლება ({printOrder.promoApplied}): -10%
+                    ფასდაკლება ({printOrder.promoApplied}): {printOrder.discountAmount ? `-${printOrder.discountAmount} ₾` : '-10%'}
                   </div>
                 )}
                 <div className="flex justify-between items-baseline pt-1">

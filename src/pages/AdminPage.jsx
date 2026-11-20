@@ -17,6 +17,7 @@ import AdminBlogTab from '../components/admin/AdminBlogTab';
 import AdminInquiriesTab from '../components/admin/AdminInquiriesTab';
 import AdminSettingsTab from '../components/admin/AdminSettingsTab';
 import AdminManagementTab from '../components/admin/AdminManagementTab';
+import AdminCouponsTab from '../components/admin/AdminCouponsTab';
 import ForcePasswordChangeModal from '../components/admin/ForcePasswordChangeModal';
 import StatsTab from '../components/admin/StatsTab';
 import Admin2FAGate from '../components/admin/Admin2FAGate';
@@ -45,7 +46,7 @@ export default function AdminPage() {
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search);
       const tab = p.get('tab');
-      if (tab && ['catalog', 'categories', 'home', 'blog', 'inquiries', 'stats', 'site', 'admins'].includes(tab)) {
+      if (tab && ['catalog', 'categories', 'home', 'blog', 'inquiries', 'stats', 'coupons', 'site', 'admins'].includes(tab)) {
         return tab;
       }
     }
@@ -448,6 +449,7 @@ export default function AdminPage() {
                 { id: 'blog', label: `ბლოგი & სიახლეები (${(articles || []).length})` },
                 { id: 'inquiries', label: `შეკვეთები & გაყიდვები (${inquiries.length}) 🛍️`, minRole: 'admin' },
                 { id: 'stats', label: lang === 'ka' ? 'სტატისტიკა 📊' : 'Statistics 📊', minRole: 'admin' },
+                { id: 'coupons', label: 'პრომო კოდები 🎟️', minRole: 'admin' },
                 { id: 'site', label: 'საიტის პარამეტრები', minRole: 'admin' },
                 { id: 'admins', label: 'უფლებების მართვა 🛡️', minRole: 'admin' }
               ]
@@ -536,6 +538,17 @@ export default function AdminPage() {
                 syncData={syncData}
                 darkMode={darkMode}
                 lang={lang}
+              />
+            )}
+
+            {adminTab === 'coupons' && (
+              <AdminCouponsTab
+                siteSettings={siteSettings}
+                setSiteSettings={setSiteSettings}
+                products={products}
+                inquiries={inquiries}
+                syncData={syncData}
+                darkMode={darkMode}
               />
             )}
 

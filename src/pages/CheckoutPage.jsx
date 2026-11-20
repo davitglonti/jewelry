@@ -124,7 +124,9 @@ export default function CheckoutPage() {
   const giftPackagingPrice = parseRate(siteSettings?.giftPackagingPrice, 5);
 
   const isTbilisi = city === 'თბილისი';
-  const shippingFee = isTbilisi ? deliveryPriceTbilisi : deliveryPriceRegional;
+  const baseShippingFee = isTbilisi ? deliveryPriceTbilisi : deliveryPriceRegional;
+  const isFreeShippingPromo = appliedPromo?.type === 'free_shipping';
+  const shippingFee = isFreeShippingPromo ? 0 : baseShippingFee;
   const giftFee = isGift ? giftPackagingPrice : 0;
 
   const rawSubtotal = useMemo(() => {
@@ -138,7 +140,12 @@ export default function CheckoutPage() {
 
   const discountAmount = useMemo(() => {
     if (!appliedPromo) return 0;
-    return Math.round(rawSubtotal * appliedPromo.percent);
+    if (appliedPromo.type === 'free_shipping') return 0;
+    if (appliedPromo.type === 'fixed') {
+      return Math.min(rawSubtotal, Number(appliedPromo.value) || 0);
+    }
+    const pct = appliedPromo.percent ?? ((Number(appliedPromo.value) || 0) / 100);
+    return Math.round(rawSubtotal * pct);
   }, [rawSubtotal, appliedPromo]);
 
   const finalTotal = Math.max(0, rawSubtotal - discountAmount) + shippingFee + giftFee;
@@ -153,12 +160,67 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (code === 'VIP-AURELIA10' || code === 'MATARE10') {
-      setAppliedPromo({ code, percent: 0.1, label: '-10% VIP ფასდაკლება' });
+    const availableCodes = siteSettings?.promoCodes && Array.isArray(siteSettings.promoCodes)
+      ? siteSettings.promoCodes
+      : [
+          { code: 'VIP-AURELIA10', type: 'percentage', value: 10, percent: 0.1, label: '-10% VIP ფასდაკლება', isActive: true },
+          { code: 'MATARE10', type: 'percentage', value: 10, percent: 0.1, label: '-10% VIP ფასდაკლება', isActive: true }
+        ];
+
+    const match = availableCodes.find((c) => c.code?.toUpperCase() === code);
+
+    if (!match && (code === 'VIP-AURELIA10' || code === 'MATARE10')) {
+      setAppliedPromo({ code, type: 'percentage', percent: 0.1, value: 10, label: '-10% VIP ფასდაკლება' });
       setPromoCodeInput('');
-    } else {
-      setPromoError(lang === 'ka' ? 'არასწორი პრომო კოდი' : 'Invalid promo code');
+      return;
     }
+
+    if (!match || match.isActive === false) {
+      setPromoError(lang === 'ka' ? 'არასწორი პრომო კოდი' : 'Invalid promo code');
+      return;
+    }
+
+    if (match.expiresAt) {
+      const exp = new Date(match.expiresAt);
+      if (!isNaN(exp.getTime()) && exp < new Date()) {
+        setPromoError(lang === 'ka' ? 'პრომო კოდს ვადა გაუვიდა' : 'Promo code has expired');
+        return;
+      }
+    }
+
+    if (match.maxUses && (match.usedCount || 0) >= match.maxUses) {
+      setPromoError(lang === 'ka' ? 'პრომო კოდის გამოყენების ლიმიტი ამოწურულია' : 'Promo code usage limit reached');
+      return;
+    }
+
+    if (match.minOrderAmount && rawSubtotal < match.minOrderAmount) {
+      setPromoError(
+        lang === 'ka'
+          ? `პრომო კოდი მოითხოვს მინიმუმ ${match.minOrderAmount} ₾ შეკვეთას`
+          : `Promo code requires minimum order of ${match.minOrderAmount} GEL`
+      );
+      return;
+    }
+
+    const label =
+      match.description ||
+      (match.type === 'percentage'
+        ? `-${match.value}% ${match.code === 'VIP-AURELIA10' ? 'VIP ფასდაკლება' : 'ფასდაკლება'}`
+        : match.type === 'free_shipping'
+        ? (lang === 'ka' ? 'უფასო მიწოდება' : 'Free Shipping')
+        : `-${match.value} ₾ ფასდაკლება`);
+
+    const percent = match.type === 'percentage' ? (match.value / 100) : 0;
+
+    setAppliedPromo({
+      id: match.id,
+      code: match.code,
+      type: match.type || 'percentage',
+      value: match.value,
+      percent,
+      label
+    });
+    setPromoCodeInput('');
   };
 
   const handleSubmit = (e) => {
@@ -235,9 +297,20 @@ export default function CheckoutPage() {
     };
 
     try {
+      let nextSettings = siteSettings;
+      if (appliedPromo?.id && siteSettings?.promoCodes) {
+        const updatedCodes = siteSettings.promoCodes.map((c) => {
+          if (c.id === appliedPromo.id) {
+            return { ...c, usedCount: (c.usedCount || 0) + 1 };
+          }
+          return c;
+        });
+        nextSettings = { ...siteSettings, promoCodes: updatedCodes };
+      }
+
       const updated = [newOrder, ...(inquiries || [])];
       if (setInquiries) setInquiries(updated);
-      if (syncData) syncData(siteSettings, products, updated);
+      if (syncData) syncData(nextSettings, products, updated);
 
       try {
         const prevHistory = JSON.parse(localStorage.getItem('matare_orders') || '[]');
@@ -246,14 +319,15 @@ export default function CheckoutPage() {
         console.warn('Local storage error:', err);
       }
 
-      if (newOrder.clientEmail && typeof window !== 'undefined' && window.location?.origin) {
+      if (typeof window !== 'undefined' && window.location?.origin) {
         try {
-          fetch(`${window.location.origin}/api/send-order-tracking`, {
+          fetch(`${window.location.origin}/api/send-order-notification`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               order: newOrder,
-              origin: window.location.origin
+              origin: window.location.origin,
+              adminEmail: nextSettings?.email || nextSettings?.contactEmail
             })
           }).catch(() => {});
         } catch {}
@@ -782,8 +856,16 @@ export default function CheckoutPage() {
 
                     {appliedPromo && (
                       <div className="flex justify-between items-center text-[#2B5C40] font-medium">
-                        <span>{lang === 'ka' ? 'ფასდაკლება (-10%):' : 'Discount:'}</span>
-                        <span className="font-mono">-{formatPrice(discountAmount)}</span>
+                        <span>
+                          {lang === 'ka'
+                            ? `ფასდაკლება${appliedPromo.type === 'percentage' ? ` (-${appliedPromo.value || 10}%):` : ':'}`
+                            : `Discount${appliedPromo.type === 'percentage' ? ` (-${appliedPromo.value || 10}%):` : ':'}`}
+                        </span>
+                        <span className="font-mono">
+                          {appliedPromo.type === 'free_shipping'
+                            ? (lang === 'ka' ? 'უფასო მიწოდება' : 'Free Shipping')
+                            : `-${formatPrice(discountAmount)}`}
+                        </span>
                       </div>
                     )}
 

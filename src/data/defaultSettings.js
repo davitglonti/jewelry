@@ -1,4 +1,43 @@
 
+export const DEFAULT_PROMO_CODES = [
+  {
+    id: "promo-vip10",
+    code: "VIP-AURELIA10",
+    type: "percentage", // "percentage" | "fixed" | "free_shipping"
+    value: 10,
+    minOrderAmount: 0,
+    maxUses: null,
+    usedCount: 0,
+    isActive: true,
+    expiresAt: null,
+    description: "-10% VIP ფასდაკლება"
+  },
+  {
+    id: "promo-matare10",
+    code: "MATARE10",
+    type: "percentage",
+    value: 10,
+    minOrderAmount: 0,
+    maxUses: null,
+    usedCount: 0,
+    isActive: true,
+    expiresAt: null,
+    description: "10% ფასდაკლება პირველ შეკვეთაზე"
+  },
+  {
+    id: "promo-freeship",
+    code: "FREESHIP",
+    type: "free_shipping",
+    value: 0,
+    minOrderAmount: 200,
+    maxUses: null,
+    usedCount: 0,
+    isActive: true,
+    expiresAt: null,
+    description: "უფასო საკურიერო მიწოდება (200₾-ზე ზემოთ)"
+  }
+];
+
 export const DEFAULT_FAQ_ITEMS = [
   {
     id: "faq-1",
@@ -126,6 +165,7 @@ export const DEFAULT_SETTINGS = {
   deliveryPriceTbilisi: 6,
   deliveryPriceRegional: 10,
   giftPackagingPrice: 5,
+  promoCodes: DEFAULT_PROMO_CODES,
 
   aboutHeroTitle: "ჩვენი ისტორია და მემკვიდრეობა",
   aboutHeroTitleEn: "Our Story & Heritage",
