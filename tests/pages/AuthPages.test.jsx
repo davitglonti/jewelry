@@ -143,6 +143,28 @@ describe('Google Authentication & Error Handling', () => {
         expect(screen.getByText(/ავტორიზაციის ფანჯარა დაიხურა/i)).toBeDefined();
       });
     });
+
+    it('redirects already authenticated user away from LoginPage to /profile', () => {
+      const mockAuth = {
+        login: vi.fn(),
+        loginWithGoogle: vi.fn(),
+        resetPassword: vi.fn(),
+        verifyResetCode: vi.fn(),
+        confirmReset: vi.fn(),
+        user: { uid: 'user-123', email: 'user@example.com' },
+        loading: false
+      };
+
+      render(
+        <AuthContext.Provider value={mockAuth}>
+          <StoreContext.Provider value={mockStore}>
+            <LoginPage initialMode="login" />
+          </StoreContext.Provider>
+        </AuthContext.Provider>
+      );
+
+      expect(navigationModule.navigateTo).toHaveBeenCalledWith('/profile');
+    });
   });
 
   describe('RegisterPage with Google Authentication', () => {
@@ -212,6 +234,25 @@ describe('Google Authentication & Error Handling', () => {
         expect(mockRegisterWithGoogle).toHaveBeenCalledTimes(1);
         expect(navigationModule.navigateTo).toHaveBeenCalledWith('/');
       });
+    });
+
+    it('redirects already authenticated user away from RegisterPage to /profile', () => {
+      const mockAuth = {
+        register: vi.fn(),
+        registerWithGoogle: vi.fn(),
+        user: { uid: 'user-123', email: 'user@example.com' },
+        loading: false
+      };
+
+      render(
+        <AuthContext.Provider value={mockAuth}>
+          <StoreContext.Provider value={mockStore}>
+            <RegisterPage />
+          </StoreContext.Provider>
+        </AuthContext.Provider>
+      );
+
+      expect(navigationModule.navigateTo).toHaveBeenCalledWith('/profile');
     });
   });
 

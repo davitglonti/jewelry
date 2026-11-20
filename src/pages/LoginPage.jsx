@@ -10,13 +10,21 @@ import PasswordStrengthIndicator from '../components/auth/PasswordStrengthIndica
 import { isStrongPassword, getPasswordValidationMessage } from '../utils/passwordValidation';
 
 export default function LoginPage({ initialMode = 'login' }) {
-  const { login, loginWithGoogle, resetPassword, verifyResetCode, confirmReset } = useAuth();
+  const { user, loading: authLoading, login, loginWithGoogle, resetPassword, verifyResetCode, confirmReset } = useAuth();
   const { darkMode, setDarkMode, lang, setLang, siteSettings, favorites, setShowFavoritesModal } = useStore();
 
   const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
   const redirectTarget = params.get('redirect') || '/';
   const oobCode = params.get('oobCode');
   const actionParam = params.get('mode');
+
+  useEffect(() => {
+    if (!authLoading && user && !oobCode) {
+      const prefix = lang === 'en' ? '/en' : '';
+      const target = redirectTarget && redirectTarget !== '/' ? redirectTarget : `${prefix}/profile`;
+      navigateTo(target);
+    }
+  }, [user, authLoading, oobCode, redirectTarget, lang]);
 
   const resolvedInitialMode = (oobCode || actionParam === 'resetPassword') ? 'new-password' : initialMode;
   const [mode, setMode] = useState(resolvedInitialMode);
@@ -146,6 +154,14 @@ export default function LoginPage({ initialMode = 'login' }) {
       setLoading(false);
     }
   };
+
+  if (!authLoading && user && !oobCode) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF8F4]">
+        <div className="w-7 h-7 rounded-full border-2 border-[#9A7742] border-t-transparent animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-[#F4F1EA] text-[#1F1C18]">

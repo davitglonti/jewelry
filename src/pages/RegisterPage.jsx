@@ -1,5 +1,5 @@
 // src/pages/RegisterPage.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, ArrowLeft, AlertCircle, ChevronDown } from 'lucide-react';
 import { useAuth, getAuthErrorMessage } from '../context/AuthContext';
 import { useStore } from '../context/StoreContext';
@@ -10,7 +10,7 @@ import PasswordStrengthIndicator from '../components/auth/PasswordStrengthIndica
 import { isStrongPassword, getPasswordValidationMessage } from '../utils/passwordValidation';
 
 export default function RegisterPage() {
-  const { register, registerWithGoogle } = useAuth();
+  const { user, loading: authLoading, register, registerWithGoogle } = useAuth();
   const { darkMode, setDarkMode, lang, setLang, siteSettings, favorites, setShowFavoritesModal } = useStore();
 
   const [firstName, setFirstName] = useState('');
@@ -26,6 +26,14 @@ export default function RegisterPage() {
 
   const params = new URLSearchParams(window.location.search);
   const redirectTarget = params.get('redirect') || '/';
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      const prefix = lang === 'en' ? '/en' : '';
+      const target = redirectTarget && redirectTarget !== '/' ? redirectTarget : `${prefix}/profile`;
+      navigateTo(target);
+    }
+  }, [user, authLoading, redirectTarget, lang]);
 
   const handleGoogleRegister = async () => {
     setErrorMessage('');
@@ -68,6 +76,14 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+
+  if (!authLoading && user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF8F4]">
+        <div className="w-7 h-7 rounded-full border-2 border-[#9A7742] border-t-transparent animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-[#F4F1EA] text-[#1F1C18]">
