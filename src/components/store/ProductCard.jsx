@@ -41,7 +41,7 @@ export default function ProductCard({
           srcSet={getProductCardSrcSet(mainImg)}
           sizes={imageSizes}
           alt={productName || "სამკაული"}
-          loading="eager"
+          loading="lazy"
           decoding="async"
           width="400"
           height="420"

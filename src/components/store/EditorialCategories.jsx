@@ -47,7 +47,7 @@ export default function EditorialCategories() {
             >
               <div className="relative aspect-[4/3] overflow-hidden bg-[#F2EDE4]">
                 <img
-                  src={getOptimizedImageUrl(imgUrl, 600, 75)}
+                  src={getOptimizedImageUrl(imgUrl, 420, 70)}
                   alt={cat}
                   loading="lazy"
                   decoding="async"

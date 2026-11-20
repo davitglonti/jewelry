@@ -201,17 +201,28 @@ export function AuthProvider({ children }) {
       window.removeEventListener('scroll', startAuth);
     };
 
-    if (hasExistingAuthSession()) {
+    const isAuthRoute = () => {
+      if (typeof window === 'undefined') return false;
+      const p = window.location.pathname;
+      return (
+        p.startsWith('/admin') ||
+        p.startsWith('/login') ||
+        p.startsWith('/register') ||
+        p.startsWith('/profile') ||
+        p.startsWith('/checkout')
+      );
+    };
+
+    if (hasExistingAuthSession() || isAuthRoute()) {
       timerId = setTimeout(startAuth, 50);
     } else {
-      // Defer auth initialization on initial load to avoid blocking FCP/LCP with 93 KiB iframe.js
+      // Defer auth initialization on initial load for guests to avoid loading 214 KiB firebase-vendor and 93 KiB iframe.js
       if (typeof window !== 'undefined') {
         window.addEventListener('pointerdown', startAuth, { once: true, passive: true });
         window.addEventListener('keydown', startAuth, { once: true, passive: true });
         window.addEventListener('touchstart', startAuth, { once: true, passive: true });
         window.addEventListener('scroll', startAuth, { once: true, passive: true });
       }
-      timerId = setTimeout(startAuth, 4000);
     }
 
     return () => {

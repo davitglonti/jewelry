@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { ArrowRight, Clock, Calendar } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { navigateTo } from '../../utils/navigation';
+import { getOptimizedImageUrl } from '../../utils/imageUtils';
 
 export default function JournalPreviewSection() {
   const { lang, articles = [] } = useStore();
@@ -73,7 +74,7 @@ export default function JournalPreviewSection() {
                 <div>
                   <div className="relative aspect-[16/10] overflow-hidden bg-[#EFEAE0]">
                     <img
-                      src={art.image}
+                      src={getOptimizedImageUrl(art.image, 500, 70)}
                       alt={title}
                       loading="lazy"
                       decoding="async"
