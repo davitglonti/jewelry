@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   ArrowLeft, Heart, Check, Share2, ArrowLeftRight,
-  Truck, ShieldCheck, Sparkles, ChevronRight, Home, Package
+  Truck, ShieldCheck, Sparkles, ChevronRight, Home, Package, ShoppingBag
 } from 'lucide-react';
 import { pick, formatPrice, calculateDiscountPercent } from '../utils/i18n';
 import { shareProductLink } from '../utils/shareUtils';
@@ -183,29 +183,82 @@ export default function ProductPage({ skuProp }) {
 
   if (!selectedProduct) {
     return (
-      <div className="min-h-screen flex flex-col justify-between bg-[#FAF8F4] text-[#1F1C18]">
+      <div className="min-h-screen flex flex-col justify-between bg-[#FBF9F5] text-[#1F1C18]">
         <Navbar
           lang={lang} setLang={setLang}
           darkMode={darkMode} setDarkMode={setDarkMode}
           favorites={favorites} setShowFavoritesModal={setShowFavoritesModal}
           isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen}
         />
-        <div className="pt-36 pb-24 text-center space-y-5 px-4">
-          <h2 className="font-serif text-3xl font-medium text-[#1F1C18]">
-            {lang === "ka" ? "მოდელი ვერ მოიძებნა" : "Piece Not Found"}
-          </h2>
-          <p className="text-sm text-[#5C564E] max-w-md mx-auto">
-            {lang === "ka" ? "სამწუხაროდ, მითითებული კოდით სამკაული არ იძებნება ან უკვე გაყიდულია." : "The requested jewelry piece could not be found."}
+        <main className="flex-1 flex flex-col items-center justify-center pt-32 sm:pt-36 pb-16 px-4 sm:px-6 w-full max-w-4xl mx-auto text-center">
+          <div className="w-16 h-16 rounded-full bg-[#F3EEE6] border border-[#E3DBCE] flex items-center justify-center text-[#9A7742] shadow-[0_4px_20px_rgba(154,119,66,0.08)] mb-6">
+            <Sparkles className="w-7 h-7 stroke-[1.5]" />
+          </div>
+
+          <span className="text-[11px] uppercase tracking-[0.25em] text-[#9A7742] font-medium block mb-2">
+            {lang === "ka" ? "საიუველირო კოლექცია" : "Jewelry Collection"}
+          </span>
+
+          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-light text-[#1F1C18] tracking-tight">
+            {lang === "ka" ? "სამკაული ვერ მოიძებნა" : "Piece Not Found"}
+          </h1>
+
+          <p className="text-sm text-[#6B6357] max-w-md mx-auto leading-relaxed mt-3">
+            {lang === "ka"
+              ? "სამწუხაროდ, მითითებული კოდით სამკაული არ იძებნება. შესაძლოა ბმული არაზუსტია ან ეს ექსკლუზივი უკვე გაიყიდა."
+              : "The requested jewelry piece could not be found. It may have been sold or the link may have changed."}
           </p>
-          <button
-            onClick={goToCatalog}
-            className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[#1F1C18] text-white text-xs font-medium hover:bg-[#35302A] transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4 stroke-[1.75]" />
-            {lang === "ka" ? "კატალოგში დაბრუნება" : "Back to Catalog"}
-          </button>
-        </div>
-        <Footer lang={lang} siteSettings={siteSettings} />
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-6 w-full sm:w-auto">
+            <button
+              onClick={goToCatalog}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-[#1F1C18] hover:bg-[#35302A] text-white text-xs uppercase tracking-[0.16em] font-medium transition-all shadow-[0_4px_16px_rgba(31,28,24,0.12)] cursor-pointer"
+            >
+              <ShoppingBag className="w-4 h-4 stroke-[1.5]" />
+              <span>{lang === "ka" ? "კოლექციის დათვალიერება" : "Explore Collection"}</span>
+            </button>
+            <a
+              href={prefix || "/"}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-white border border-[#D9D1C5] hover:border-[#1F1C18] text-[#1F1C18] text-xs uppercase tracking-[0.16em] font-medium transition-all"
+            >
+              <Home className="w-4 h-4 stroke-[1.5]" />
+              <span>{lang === "ka" ? "მთავარი გვერდი" : "Back to Home"}</span>
+            </a>
+          </div>
+
+          {products && products.length > 0 && (
+            <div className="mt-14 w-full border-t border-[#EAE4DB] pt-8">
+              <span className="text-[10px] uppercase tracking-[0.24em] text-[#8A847C] font-medium block mb-6">
+                {lang === "ka" ? "რჩეული სამკაულები ჩვენი კოლექციიდან" : "Featured Pieces From Our Collection"}
+              </span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-left">
+                {products.slice(0, 4).map((item) => (
+                  <a
+                    key={item.id || item.sku}
+                    href={`${prefix}/product/${encodeURIComponent(item.sku || item.id)}`}
+                    className="group block bg-white rounded-lg p-2.5 border border-[#EAE4DB] hover:border-[#9A7742] hover:shadow-md transition-all"
+                  >
+                    <div className="aspect-square w-full rounded overflow-hidden bg-[#FAF8F5] mb-2.5">
+                      <img
+                        src={item.image || (item.images && item.images[0])}
+                        alt={pick(item, "name", lang)}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                      />
+                    </div>
+                    <p className="text-xs font-serif text-[#1F1C18] line-clamp-1 group-hover:text-[#9A7742] transition-colors">
+                      {pick(item, "name", lang)}
+                    </p>
+                    <p className="text-xs font-medium text-[#9A7742] mt-0.5">
+                      {formatPrice(item.price)}
+                    </p>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </main>
+        <Footer lang={lang} siteSettings={siteSettings} compact={true} />
       </div>
     );
   }

@@ -2,8 +2,69 @@ import React from 'react';
 import { Instagram, Facebook, MapPin, Phone, Clock, MessageCircle, Send, ArrowUpRight } from 'lucide-react';
 import { pick } from '../../utils/i18n';
 
-export default function Footer({ lang, siteSettings = {} }) {
+export default function Footer({ lang, siteSettings = {}, compact = false }) {
   const prefix = lang === "en" ? "/en" : "";
+
+  if (compact) {
+    return (
+      <footer className="w-full bg-[#FAF8F5] text-[#787168] border-t border-[#EAE4DB] py-6 px-4 sm:px-8 mt-auto">
+        <div className="w-full max-w-[1440px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5">
+            <span className="font-serif tracking-[0.16em] uppercase font-semibold text-[#1F1C18]">
+              {siteSettings.brandName || "მატარე"}
+            </span>
+            <span className="text-[#D9D1C5] hidden sm:inline">•</span>
+            <span className="text-[#8A847C]">{siteSettings.copyright || "© 2026 მატარე. ყველა უფლება დაცულია."}</span>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs font-medium text-[#5C564E]">
+            <a href={prefix || "/"} className="hover:text-[#1F1C18] transition-colors">
+              {lang === "ka" ? "მთავარი" : "Home"}
+            </a>
+            <a href={`${prefix}/catalog`} className="hover:text-[#1F1C18] transition-colors">
+              {lang === "ka" ? "კოლექცია" : "Collection"}
+            </a>
+            <a href={`${prefix}/about`} className="hover:text-[#1F1C18] transition-colors">
+              {lang === "ka" ? "ჩვენ შესახებ" : "About Us"}
+            </a>
+            <a href={`${prefix}/size-guide`} className="hover:text-[#1F1C18] transition-colors">
+              {lang === "ka" ? "ზომის გზამკვლევი" : "Size Guide"}
+            </a>
+            {siteSettings.phone && (
+              <a href={`tel:${siteSettings.phone}`} className="hover:text-[#1F1C18] transition-colors hidden sm:inline">
+                {siteSettings.phone}
+              </a>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            {siteSettings.instagram && (
+              <a
+                href={siteSettings.instagram}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Instagram"
+                className="w-7 h-7 rounded-full bg-white border border-[#E3DBCE] text-[#5C564E] hover:text-[#DD2A7B] hover:border-[#DD2A7B] flex items-center justify-center transition-colors"
+              >
+                <Instagram className="w-3.5 h-3.5" />
+              </a>
+            )}
+            {siteSettings.facebook && (
+              <a
+                href={siteSettings.facebook}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Facebook"
+                className="w-7 h-7 rounded-full bg-white border border-[#E3DBCE] text-[#5C564E] hover:text-[#1877F2] hover:border-[#1877F2] flex items-center justify-center transition-colors"
+              >
+                <Facebook className="w-3.5 h-3.5" />
+              </a>
+            )}
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer id="contact" className="bg-[#F3EEE6] text-[#1F1C18] border-t border-[#E6DFD3]">

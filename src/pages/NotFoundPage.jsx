@@ -36,7 +36,7 @@ export default function NotFoundPage() {
     : ["ბეჭდები", "სამაჯურები", "საყურეები", "ყელსაბამები"];
 
   return (
-    <div className="w-full overflow-x-hidden bg-white text-[#141311]">
+    <div className="min-h-screen flex flex-col justify-between bg-[#FBF9F5] text-[#141311]">
       <Navbar
         lang={lang}
         setLang={setLang}
@@ -48,7 +48,7 @@ export default function NotFoundPage() {
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      <main id="main-content" className="min-h-screen w-full flex flex-col items-center justify-center pt-32 pb-16 px-4 sm:px-6">
+      <main id="main-content" className="flex-1 flex flex-col items-center justify-center pt-28 pb-16 px-4 sm:px-6">
         <div className="max-w-xl w-full mx-auto text-center space-y-7 my-auto">
           <div className="space-y-3">
             <span className="font-serif text-7xl sm:text-9xl font-light tracking-[0.2em] text-[#9D7B48] block select-none">
@@ -68,7 +68,7 @@ export default function NotFoundPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <a
               href={lang === "en" ? "/en/catalog" : "/catalog"}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 bg-[#141311] hover:bg-[#2C2A26] text-white text-[11px] tracking-[0.18em] uppercase transition-colors"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full bg-[#141311] hover:bg-[#2C2A26] text-white text-[11px] tracking-[0.18em] uppercase transition-colors"
             >
               <ShoppingBag className="w-4 h-4 stroke-[1.5]" />
               <span>{lang === "ka" ? "სრული კოლექცია" : "Explore Collection"}</span>
@@ -77,7 +77,7 @@ export default function NotFoundPage() {
 
             <a
               href={lang === "en" ? "/en" : "/"}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 border border-[#141311] text-[#141311] hover:bg-[#F8F6F2] text-[11px] tracking-[0.18em] uppercase transition-colors"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full bg-white border border-[#141311] text-[#141311] hover:bg-[#F8F6F2] text-[11px] tracking-[0.18em] uppercase transition-colors"
             >
               <Home className="w-4 h-4 stroke-[1.5]" />
               <span>{lang === "ka" ? "მთავარი გვერდი" : "Back to Home"}</span>
@@ -113,7 +113,7 @@ export default function NotFoundPage() {
                   <a
                     key={cat}
                     href={`${prefix}/catalog?category=${encodeURIComponent(cat)}`}
-                    className="px-3.5 py-1.5 border border-[#E8E3DB] text-xs text-[#4A4640] hover:border-[#141311] hover:text-[#141311] transition-colors"
+                    className="px-3.5 py-1.5 rounded-full border border-[#E8E3DB] bg-white text-xs text-[#4A4640] hover:border-[#141311] hover:text-[#141311] transition-colors"
                   >
                     {cat}
                   </a>
@@ -124,7 +124,7 @@ export default function NotFoundPage() {
         </div>
       </main>
 
-      <Footer lang={lang} siteSettings={siteSettings} />
+      <Footer lang={lang} siteSettings={siteSettings} compact={true} />
 
       <FavoritesModal
         isOpen={showFavoritesModal}

@@ -45,20 +45,23 @@ export default function BlogPostPage({ slugProp }) {
 
   if (!article) {
     return (
-      <div className="min-h-screen flex flex-col justify-between bg-white text-[#141311]">
+      <div className="min-h-screen flex flex-col justify-between bg-[#FBF9F5] text-[#141311]">
         <Navbar
           lang={lang} setLang={setLang}
           darkMode={darkMode} setDarkMode={setDarkMode}
           favorites={favorites} setShowFavoritesModal={setShowFavoritesModal}
           isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen}
         />
-        <div className="pt-40 pb-24 text-center space-y-4 px-4">
-          <h2 className="font-serif text-3xl font-light">სტატია ვერ მოიძებნა</h2>
-          <a href="/blog" className="inline-flex items-center gap-2 px-6 py-3 bg-[#141311] text-white text-xs uppercase tracking-[0.18em]">
-            <ArrowLeft className="w-4 h-4" /> ბლოგზე დაბრუნება
+        <div className="flex-1 flex flex-col items-center justify-center pt-36 pb-20 text-center space-y-4 px-4">
+          <h2 className="font-serif text-3xl sm:text-4xl font-light">{lang === "ka" ? "სტატია ვერ მოიძებნა" : "Article Not Found"}</h2>
+          <p className="text-xs sm:text-sm text-[#5C574F] max-w-md mx-auto">
+            {lang === "ka" ? "მოთხოვნილი სტატია არ არსებობს ან წაშლილია." : "The requested article does not exist or has been removed."}
+          </p>
+          <a href={lang === "en" ? "/en/blog" : "/blog"} className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#141311] text-white text-xs uppercase tracking-[0.18em]">
+            <ArrowLeft className="w-4 h-4" /> {lang === "ka" ? "ბლოგზე დაბრუნება" : "Back to Blog"}
           </a>
         </div>
-        <Footer lang={lang} siteSettings={siteSettings} />
+        <Footer lang={lang} siteSettings={siteSettings} compact={true} />
       </div>
     );
   }
