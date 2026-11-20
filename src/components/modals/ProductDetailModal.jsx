@@ -153,11 +153,11 @@ export default function ProductDetailModal({
 
               <div className="flex flex-wrap items-center gap-3 mt-3">
                 <div className="flex items-baseline gap-2.5">
-                  <span className="font-serif text-3xl sm:text-4xl lg:text-5xl text-amber-500 font-semibold">
+                  <span className="text-3xl sm:text-4xl lg:text-5xl text-amber-500 font-semibold">
                     {formatPrice(selectedProduct.price)}
                   </span>
                   {selectedProduct.oldPrice && (
-                    <span className="font-serif text-lg line-through opacity-40">
+                    <span className="text-lg line-through opacity-40">
                       {formatPrice(selectedProduct.oldPrice)}
                     </span>
                   )}

@@ -409,7 +409,7 @@ export default function ProductPage({ skuProp }) {
 
               {/* Price & Stock Badge */}
               <div className="flex items-center gap-3.5">
-                <span className="text-2xl sm:text-3xl font-serif font-medium text-[#1F1C18]">
+                <span className="text-2xl sm:text-3xl font-semibold text-[#1F1C18]">
                   {formatPrice(selectedProduct.price)}
                 </span>
                 {selectedProduct.oldPrice && (

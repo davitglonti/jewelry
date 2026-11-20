@@ -181,7 +181,7 @@ export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
                     </button>
 
                     <div className="flex items-center justify-between mt-2">
-                      <span className="font-serif text-sm sm:text-base font-normal text-[#1F1C18]">
+                      <span className="text-sm sm:text-base font-semibold text-[#1F1C18]">
                         {formatPrice(item.price)}
                       </span>
 
@@ -210,7 +210,7 @@ export default function FavoritesModal({ isOpen, onClose, onSelectProduct }) {
               <span className="text-sm font-medium text-[#787168]">
                 {isEn ? "Subtotal" : "ჯამური ღირებულება"}
               </span>
-              <span className="font-serif text-xl sm:text-2xl font-normal text-[#1F1C18]">
+              <span className="text-xl sm:text-2xl font-semibold text-[#1F1C18]">
                 {formatPrice(totalValue)}
               </span>
             </div>
