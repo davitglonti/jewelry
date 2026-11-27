@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { escapeHtml, sanitizeUrl, resolveSafeOrigin } from '../../api/_lib/security.js';
 import { evaluatePromoCode, sanitizeOrderForPublicTracking } from '../../api/_lib/orders.js';
-import activateAdminHandler from '../../api/activate-admin-account.js';
 import admin2faHandler from '../../api/admin-2fa.js';
 import createOrderHandler from '../../api/create-order.js';
 import checkAdminHandler from '../../api/check-admin.js';
@@ -95,10 +94,10 @@ describe('Security helpers & server API hardening', () => {
     expect(full.address).toBe('ჭავჭავაძის 24');
   });
 
-  it('rejects unauthenticated requests to /api/activate-admin-account', async () => {
-    const req = { method: 'POST', headers: {}, body: { email: 'fake@example.com' } };
+  it('rejects unauthenticated activate action on /api/check-admin', async () => {
+    const req = { method: 'POST', headers: {}, body: { action: 'activate', email: 'fake@example.com' } };
     const res = createMockRes();
-    await activateAdminHandler(req, res);
+    await checkAdminHandler(req, res);
     expect(res.statusCode).toBe(401);
   });
 

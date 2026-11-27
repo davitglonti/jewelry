@@ -144,13 +144,13 @@ export default function LoginPage({ initialMode = 'login' }) {
           const authInst = await getLazyAuth();
           const token = await authInst?.currentUser?.getIdToken?.();
           if (token) {
-            await fetch('/api/activate-admin-account', {
+            await fetch('/api/check-admin', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`,
               },
-              body: JSON.stringify({ email: verifiedEmail })
+              body: JSON.stringify({ action: 'activate', email: verifiedEmail })
             });
           }
         } catch (actErr) {

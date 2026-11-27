@@ -49,7 +49,7 @@
     }
   ],
   "functions": {
-    "api/*.js": {
+    "api/product.js": {
       "includeFiles": "dist/**"
     }
   },

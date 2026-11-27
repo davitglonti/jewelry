@@ -19,6 +19,27 @@ export default async function handler(req, res) {
       });
     }
 
+    const body = parseBody(req);
+    const callerEmail = decoded.email.toLowerCase().trim();
+
+    if (body.action === 'activate') {
+      const requestedEmail = String(body.email || callerEmail).trim().toLowerCase();
+      if (requestedEmail !== callerEmail && callerEmail !== SUPER_ADMIN_EMAIL.toLowerCase()) {
+        return res.status(403).json({ error: 'სხვა მომხმარებლის ანგარიშის გააქტიურება აკრძალულია' });
+      }
+      const db = getAdminDb();
+      const docRef = db.collection('admins').doc(requestedEmail);
+      const snap = await docRef.get();
+      if (!snap.exists || snap.data()?.isActive === false) {
+        return res.status(403).json({ error: 'ადმინისტრატორის ჩანაწერი ვერ მოიძებნა ან გაუქმებულია' });
+      }
+      await docRef.set(
+        { status: 'active', hasJoined: true, joinedAt: Date.now() },
+        { merge: true }
+      );
+      return res.status(200).json({ success: true, email: requestedEmail });
+    }
+
     const adminCtx = await verifyAdminRole(req, ['superadmin', 'admin', 'moderator']);
     if (!adminCtx) {
       return res.status(200).json({
@@ -26,11 +47,10 @@ export default async function handler(req, res) {
         isSuperAdmin: false,
         role: '',
         mustChangePassword: false,
-        email: decoded.email.toLowerCase().trim(),
+        email: callerEmail,
       });
     }
 
-    const body = parseBody(req);
     const db = getAdminDb();
 
     // Activate pending invited admin on first verified login if needed
