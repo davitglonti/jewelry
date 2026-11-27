@@ -11,6 +11,7 @@ import { formatPrice } from '../utils/i18n';
 import { navigateTo } from '../utils/navigation';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
+import FavoritesModal from '../components/modals/FavoritesModal';
 import OrderTrackingTimeline from '../components/order/OrderTrackingTimeline';
 
 export default function CheckoutPage() {
@@ -21,16 +22,27 @@ export default function CheckoutPage() {
     products,
     favorites,
     inquiries, setInquiries,
-    syncData,
-    setShowFavoritesModal
+    syncData
   } = useStore();
   const { user } = useAuth();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showFavoritesModal, setShowFavoritesModal] = useState(false);
+  const [locationSearch, setLocationSearch] = useState(
+    typeof window !== 'undefined' ? window.location.search : ''
+  );
+
+  useEffect(() => {
+    const syncLocationSearch = () => {
+      setLocationSearch(window.location.search);
+    };
+    window.addEventListener('popstate', syncLocationSearch);
+    return () => window.removeEventListener('popstate', syncLocationSearch);
+  }, []);
 
   const searchParams = useMemo(() => {
-    return new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
-  }, []);
+    return new URLSearchParams(locationSearch);
+  }, [locationSearch]);
 
   const productIdParam = searchParams.get('productId') || searchParams.get('id') || searchParams.get('sku') || '';
   const initialSizeParam = searchParams.get('size') || '';
@@ -929,6 +941,11 @@ export default function CheckoutPage() {
       </main>
 
       <Footer lang={lang} siteSettings={siteSettings} />
+
+      <FavoritesModal
+        isOpen={showFavoritesModal}
+        onClose={() => setShowFavoritesModal(false)}
+      />
     </div>
   );
 }

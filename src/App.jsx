@@ -15,6 +15,7 @@ const SizeGuidePage = lazy(() => import('./pages/SizeGuidePage'));
 const FaqPage = lazy(() => import('./pages/FaqPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const CompareModal = lazy(() => import('./components/modals/CompareModal'));
+const FavoritesModal = lazy(() => import('./components/modals/FavoritesModal'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
@@ -31,7 +32,7 @@ const PageLoader = () => (
 );
 
 export default function App() {
-  const { showCompareModal, lang, setLang } = useStore();
+  const { showCompareModal, showFavoritesModal, setShowFavoritesModal, lang, setLang } = useStore();
   const [currentInfo, setCurrentInfo] = useState(() => parsePath(window.location.pathname));
 
   useEffect(() => {
@@ -175,6 +176,14 @@ export default function App() {
       {showCompareModal && (
         <Suspense fallback={null}>
           <CompareModal />
+        </Suspense>
+      )}
+      {showFavoritesModal && (
+        <Suspense fallback={null}>
+          <FavoritesModal
+            isOpen={showFavoritesModal}
+            onClose={() => setShowFavoritesModal(false)}
+          />
         </Suspense>
       )}
     </>

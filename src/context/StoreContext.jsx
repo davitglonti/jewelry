@@ -96,6 +96,7 @@ export function StoreProvider({ children }) {
   const [products, setProducts] = useState(() => sortNewestFirst(readCache(KEYS.products) || DEFAULT_PRODUCTS));
   const [articles, setArticles] = useState(() => readCache(KEYS.articles) || DEFAULT_ARTICLES);
   const [favorites, setFavorites] = useState(() => readCache(KEYS.favs) || []);
+  const [showFavoritesModal, setShowFavoritesModal] = useState(false);
   const [compareList, setCompareList] = useState(() => readCache(KEYS.compare) || []);
   const [showCompareModal, setShowCompareModal] = useState(false);
   const [inquiries, setInquiries] = useState(() => readCache(KEYS.inquiries) || []);
@@ -454,6 +455,7 @@ export function StoreProvider({ children }) {
         products, setProducts,
         articles, setArticles, syncArticles,
         favorites, toggleFavorite,
+        showFavoritesModal, setShowFavoritesModal,
         compareList, toggleCompare, clearCompare,
         showCompareModal, setShowCompareModal,
         inquiries, setInquiries,

@@ -160,4 +160,14 @@ describe('CheckoutPage', () => {
     expect(screen.getByText(/შეკვეთის ლაივ-თრექინგი/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /WhatsApp-ით დაკავშირება/i })).toBeInTheDocument();
   });
+
+  it('opens FavoritesModal when clicking the wishlist heart icon on CheckoutPage', () => {
+    renderWithProviders();
+
+    const favButton = screen.getByRole('button', { name: /რჩეული სამკაულები \(1\)/i });
+    fireEvent.click(favButton);
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText(/რჩეულები \(1\)/i)).toBeInTheDocument();
+  });
 });

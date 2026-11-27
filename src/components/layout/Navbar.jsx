@@ -10,7 +10,7 @@ export default function Navbar({
   favorites = [], setShowFavoritesModal,
   isMobileMenuOpen, setIsMobileMenuOpen
 }) {
-  const { siteSettings, products } = useStore();
+  const { siteSettings, products, setShowFavoritesModal: storeSetShowFavoritesModal } = useStore();
   const { user, userRole, logout } = useAuth();
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -25,7 +25,8 @@ export default function Navbar({
   };
 
   const handleFavoritesClick = () => {
-    setShowFavoritesModal(true);
+    const openFavorites = setShowFavoritesModal || storeSetShowFavoritesModal;
+    openFavorites?.(true);
   };
 
   const handleLogout = async () => {
@@ -112,6 +113,73 @@ export default function Navbar({
       }).slice(0, 5)
     : [];
 
+  const renderSearchResults = (onCloseContainer, isCompact = false) => (
+    <>
+      <div className={`flex items-center justify-between px-2 ${isCompact ? 'pb-1.5 border-[#EAE4DB]' : 'pb-2 mb-1 border-[#F3EFE8]'} border-b text-[11px] font-medium text-[#787168]`}>
+        <span>{lang === 'ka' ? 'ნაპოვნია სამკაულები' : 'Search Results'}</span>
+        <span>{searchResults.length}</span>
+      </div>
+
+      {searchResults.length > 0 ? (
+        <div className={`space-y-1 ${isCompact ? 'pt-1' : ''}`}>
+          {searchResults.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => {
+                onCloseContainer();
+                setSearchQuery('');
+                navigateTo(`${prefix}/product/${encodeURIComponent(item.sku || item.id)}`);
+              }}
+              className={`w-full p-2 rounded-xl flex items-center gap-3 ${isCompact ? 'hover:bg-white' : 'hover:bg-[#FAF8F5]'} transition-colors text-left cursor-pointer group`}
+            >
+              <img
+                src={item.images?.[0] || '/brand-logo.jpg'}
+                alt={item.name}
+                className={`${isCompact ? 'w-10 h-10 bg-white' : 'w-11 h-11 bg-[#F7F5F0]'} rounded-lg object-cover border border-[#EAE4DB] shrink-0`}
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-[#1F1C18] truncate group-hover:text-[#9A7742] transition-colors">
+                  {lang === 'ka' ? item.name : (item.nameEn || item.name)}
+                </p>
+                <div className="flex items-center gap-1.5 text-[11px] text-[#787168] mt-0.5">
+                  <span className="font-mono text-[#9A7742]">#{item.sku}</span>
+                  <span>•</span>
+                  <span className="truncate">{item.category}</span>
+                </div>
+              </div>
+              <div className="text-xs font-semibold text-[#1F1C18] shrink-0">
+                {formatPrice(item.price)}
+              </div>
+            </button>
+          ))}
+
+          <div className={`${isCompact ? 'pt-1.5 border-[#EAE4DB]' : 'pt-2 border-[#F3EFE8]'} border-t text-center`}>
+            <button
+              type="button"
+              onClick={() => {
+                onCloseContainer();
+                navigateTo(`${prefix}/catalog?search=${encodeURIComponent(trimmedQuery)}`);
+              }}
+              className={`text-xs font-medium text-[#9A7742] hover:text-[#1F1C18] transition-colors cursor-pointer ${isCompact ? 'py-1' : ''}`}
+            >
+              {lang === 'ka' ? 'ყველა შედეგის ნახვა კატალოგში →' : 'View all results in catalog →'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className={`${isCompact ? 'py-4 space-y-0.5' : 'py-5 space-y-1'} text-center text-xs text-[#787168]`}>
+          <p className="font-medium text-[#1F1C18]">
+            {lang === 'ka' ? 'სამკაული ვერ მოიძებნა' : 'No pieces found'}
+          </p>
+          <p className="text-[11px]">
+            {lang === 'ka' ? 'სცადეთ სხვა სიტყვა ან კოდი' : 'Try searching by a different term or SKU'}
+          </p>
+        </div>
+      )}
+    </>
+  );
+
   return (
     <>
       <a
@@ -167,8 +235,8 @@ export default function Navbar({
 
           {/* Right: Expandable Search & Utility Icons */}
           <div className="flex items-center justify-end gap-1 sm:gap-2 text-[#1F1C18]">
-            {/* Expandable Smooth Search Bar with Dropdown */}
-            <div ref={searchContainerRef} className="relative flex items-center">
+            {/* Expandable Smooth Search Bar with Dropdown - hidden on mobile (moved inside hamburger drawer) */}
+            <div ref={searchContainerRef} className="relative hidden sm:flex items-center">
               <div
                 className={`flex items-center transition-all duration-300 ease-out overflow-hidden ${
                   isSearchOpen
@@ -238,68 +306,7 @@ export default function Navbar({
               {/* Live Search Results Dropdown */}
               {isSearchOpen && trimmedQuery.length > 0 && (
                 <div className="absolute right-0 top-[calc(100%+10px)] w-[290px] sm:w-[350px] bg-white rounded-2xl shadow-[0_15px_50px_rgba(31,28,24,0.12)] border border-[#EAE4DB] p-3 z-50 animate-fadeIn">
-                  <div className="flex items-center justify-between px-2 pb-2 mb-1 border-b border-[#F3EFE8] text-[11px] font-medium text-[#787168]">
-                    <span>{lang === 'ka' ? 'ნაპოვნია სამკაულები' : 'Search Results'}</span>
-                    <span>{searchResults.length}</span>
-                  </div>
-
-                  {searchResults.length > 0 ? (
-                    <div className="space-y-1">
-                      {searchResults.map((item) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => {
-                            setIsSearchOpen(false);
-                            setSearchQuery('');
-                            navigateTo(`${prefix}/product/${encodeURIComponent(item.sku || item.id)}`);
-                          }}
-                          className="w-full p-2 rounded-xl flex items-center gap-3 hover:bg-[#FAF8F5] transition-colors text-left cursor-pointer group"
-                        >
-                          <img
-                            src={item.images?.[0] || '/brand-logo.jpg'}
-                            alt={item.name}
-                            className="w-11 h-11 rounded-lg object-cover bg-[#F7F5F0] border border-[#EAE4DB] shrink-0"
-                          />
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-medium text-[#1F1C18] truncate group-hover:text-[#9A7742] transition-colors">
-                              {lang === 'ka' ? item.name : (item.nameEn || item.name)}
-                            </p>
-                            <div className="flex items-center gap-1.5 text-[11px] text-[#787168] mt-0.5">
-                              <span className="font-mono text-[#9A7742]">#{item.sku}</span>
-                              <span>•</span>
-                              <span className="truncate">{item.category}</span>
-                            </div>
-                          </div>
-                          <div className="text-xs font-semibold text-[#1F1C18] shrink-0 font-serif">
-                            {formatPrice(item.price)}
-                          </div>
-                        </button>
-                      ))}
-
-                      <div className="pt-2 border-t border-[#F3EFE8] text-center">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsSearchOpen(false);
-                            navigateTo(`${prefix}/catalog?search=${encodeURIComponent(trimmedQuery)}`);
-                          }}
-                          className="text-xs font-medium text-[#9A7742] hover:text-[#1F1C18] transition-colors cursor-pointer"
-                        >
-                          {lang === 'ka' ? 'ყველა შედეგის ნახვა კატალოგში →' : 'View all results in catalog →'}
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="py-5 text-center text-xs text-[#787168] space-y-1">
-                      <p className="font-medium text-[#1F1C18]">
-                        {lang === 'ka' ? 'სამკაული ვერ მოიძებნა' : 'No pieces found'}
-                      </p>
-                      <p className="text-[11px]">
-                        {lang === 'ka' ? 'სცადეთ სხვა სიტყვა ან კოდი' : 'Try searching by a different term or SKU'}
-                      </p>
-                    </div>
-                  )}
+                  {renderSearchResults(() => setIsSearchOpen(false), false)}
                 </div>
               )}
             </div>
@@ -351,7 +358,44 @@ export default function Navbar({
 
         {/* Mobile Dropdown Drawer */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden bg-white border-t border-[#EAE4DB] px-5 py-6 space-y-5 animate-fadeIn shadow-xl">
+          <div className="lg:hidden bg-white border-t border-[#EAE4DB] px-5 py-6 space-y-5 animate-fadeIn shadow-xl max-h-[calc(100vh-68px)] overflow-y-auto">
+            {/* Mobile Search inside Hamburger Drawer */}
+            <div className="space-y-2">
+              <div className="flex items-center bg-[#FAF8F5] border border-[#DCD6CC] focus-within:border-[#9A7742] rounded-full px-3.5 py-2 transition-colors">
+                <Search className="w-4 h-4 text-[#787168] shrink-0 stroke-[1.75]" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && searchQuery.trim()) {
+                      setIsMobileMenuOpen(false);
+                      navigateTo(`${prefix}/catalog?search=${encodeURIComponent(searchQuery.trim())}`);
+                    }
+                  }}
+                  placeholder={lang === 'ka' ? 'მოძებნეთ სამკაული, კოდი...' : 'Search jewelry, SKU...'}
+                  aria-label={lang === "ka" ? "ძიება" : "Search"}
+                  className="w-full bg-transparent text-xs text-[#1F1C18] outline-none px-2.5 placeholder-[#9E978D]"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="p-0.5 text-[#9E978D] hover:text-[#1F1C18] cursor-pointer"
+                    aria-label={lang === 'ka' ? 'გასუფთავება' : 'Clear search'}
+                  >
+                    <X className="w-3.5 h-3.5 stroke-[1.75]" />
+                  </button>
+                )}
+              </div>
+
+              {trimmedQuery.length > 0 && (
+                <div className="bg-[#FAF8F5] rounded-2xl border border-[#EAE4DB] p-2.5 space-y-1">
+                  {renderSearchResults(() => setIsMobileMenuOpen(false), true)}
+                </div>
+              )}
+            </div>
+
             {user ? (
               <div className="pb-4 border-b border-[#EAE4DB] flex items-center justify-between gap-3">
                 <a
