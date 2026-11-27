@@ -13,6 +13,7 @@ const DEV_API_ROUTES = {
   '/api/send-order-tracking': () => import('./api/send-order-tracking.js'),
   '/api/activate-admin-account': () => import('./api/activate-admin-account.js'),
   '/api/create-admin-account': () => import('./api/create-admin-account.js'),
+  '/api/check-admin': () => import('./api/check-admin.js'),
   '/api/admin-2fa': () => import('./api/admin-2fa.js'),
   '/api/product': () => import('./api/product.js'),
   '/api/og-image': () => import('./api/og-image.js'),

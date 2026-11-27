@@ -1,7 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
-  SUPER_ADMIN_EMAIL,
-  isSuperAdmin,
   checkUserIsAdmin,
   generateSecureTempPassword,
   removeAdminAccount,
@@ -12,34 +10,37 @@ import {
 } from '../../src/lib/adminAuth';
 
 describe('Admin & Moderator RBAC Authorization', () => {
-  describe('isSuperAdmin', () => {
-    it('returns true for datiglonti@gmail.com regardless of case or spaces', () => {
-      expect(isSuperAdmin('datiglonti@gmail.com')).toBe(true);
-      expect(isSuperAdmin('DATIGLONTI@GMAIL.COM')).toBe(true);
-      expect(isSuperAdmin('  datiglonti@gmail.com  ')).toBe(true);
-    });
-
-    it('returns false for other emails', () => {
-      expect(isSuperAdmin('moderator@matare.store')).toBe(false);
-      expect(isSuperAdmin('admin@matare.store')).toBe(false);
-      expect(isSuperAdmin('')).toBe(false);
-      expect(isSuperAdmin(null)).toBe(false);
-    });
+  beforeEach(() => {
+    vi.restoreAllMocks();
   });
 
   describe('generateSecureTempPassword', () => {
-    it('generates secure temporary password containing characters, numbers and symbol', () => {
+    it('generates cryptographically strong temporary password containing letters, numbers and symbol', () => {
       const pwd = generateSecureTempPassword();
       expect(typeof pwd).toBe('string');
-      expect(pwd.length).toBeGreaterThanOrEqual(8);
+      expect(pwd.length).toBeGreaterThanOrEqual(12);
       expect(/[0-9]/.test(pwd)).toBe(true);
       expect(/[#$@!]/.test(pwd)).toBe(true);
     });
   });
 
-  describe('checkUserIsAdmin & Role Assignment', () => {
-    it('recognizes Super Admin with superadmin role and mustChangePassword=false', async () => {
-      const user = { email: 'datiglonti@gmail.com' };
+  describe('checkUserIsAdmin & Server-Verified Role Assignment', () => {
+    it('verifies Super Admin via /api/check-admin without exposing owner email in client bundle', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          isAdmin: true,
+          isSuperAdmin: true,
+          role: 'superadmin',
+          mustChangePassword: false,
+          email: 'owner@example.com',
+        }),
+      });
+
+      const user = {
+        email: 'owner@example.com',
+        getIdToken: async () => 'fake-id-token',
+      };
       const res = await checkUserIsAdmin(user, null);
       expect(res.isAdmin).toBe(true);
       expect(res.isSuperAdmin).toBe(true);
@@ -48,29 +49,42 @@ describe('Admin & Moderator RBAC Authorization', () => {
     });
 
     it('rejects unauthenticated or non-admin users', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          isAdmin: false,
+          isSuperAdmin: false,
+          role: '',
+          mustChangePassword: false,
+          email: 'user@example.com',
+        }),
+      });
+
       expect((await checkUserIsAdmin(null, null)).isAdmin).toBe(false);
-      expect((await checkUserIsAdmin({ email: 'user@example.com' }, null)).isAdmin).toBe(false);
+      expect(
+        (await checkUserIsAdmin({ email: 'user@example.com', getIdToken: async () => 'tok' }, null)).isAdmin
+      ).toBe(false);
     });
   });
 
   describe('Super Admin Protection Rules', () => {
-    it('strictly forbids deleting the super admin', async () => {
+    it('strictly forbids deleting the protected super admin', async () => {
       const dummyDb = {};
-      await expect(removeAdminAccount(dummyDb, 'datiglonti@gmail.com')).rejects.toThrow(
+      await expect(removeAdminAccount(dummyDb, 'owner@example.com', 'owner@example.com')).rejects.toThrow(
         /მთავარი ადმინისტრატორის წაშლა შეუძლებელია/
       );
     });
 
-    it('strictly forbids changing the role of the super admin', async () => {
+    it('strictly forbids changing the role of the protected super admin', async () => {
       const dummyDb = {};
-      await expect(updateAdminRole(dummyDb, 'datiglonti@gmail.com', 'moderator')).rejects.toThrow(
+      await expect(updateAdminRole(dummyDb, 'owner@example.com', 'moderator', 'owner@example.com')).rejects.toThrow(
         /მთავარი ადმინისტრატორის როლის შეცვლა შეუძლებელია/
       );
     });
 
-    it('strictly forbids deactivating the super admin', async () => {
+    it('strictly forbids deactivating the protected super admin', async () => {
       const dummyDb = {};
-      await expect(toggleAdminAccountStatus(dummyDb, 'datiglonti@gmail.com', false)).rejects.toThrow(
+      await expect(toggleAdminAccountStatus(dummyDb, 'owner@example.com', false, 'owner@example.com')).rejects.toThrow(
         /მთავარი ადმინისტრატორის სტატუსის შეცვლა შეუძლებელია/
       );
     });

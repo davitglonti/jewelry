@@ -1,14 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { DEFAULT_PROMO_CODES } from '../../src/data/defaultSettings';
+import { DEFAULT_PROMO_CODES, evaluatePromoCode } from '../../api/_lib/orders.js';
 
-describe('Promo Codes & Discounts logic', () => {
-  it('includes default active promo codes', () => {
+describe('Promo Codes & Discounts logic (Server-side only)', () => {
+  it('includes default active promo codes strictly on server', () => {
     expect(DEFAULT_PROMO_CODES.length).toBeGreaterThan(0);
     const matare10 = DEFAULT_PROMO_CODES.find((c) => c.code === 'MATARE10');
     expect(matare10).toBeDefined();
     expect(matare10.type).toBe('percentage');
     expect(matare10.value).toBe(10);
     expect(matare10.isActive).toBe(true);
+    expect(evaluatePromoCode(DEFAULT_PROMO_CODES, 'MATARE10', 500, 'ka').valid).toBe(true);
   });
 
   it('correctly calculates percentage discount', () => {

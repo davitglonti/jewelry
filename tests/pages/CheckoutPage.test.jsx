@@ -99,7 +99,36 @@ describe('CheckoutPage', () => {
     expect(sizeSelect.value).toBe('17.5');
   });
 
-  it('validates and applies VIP promo code VIP-AURELIA10 giving 10% discount', async () => {
+  it('validates and applies VIP promo code via server endpoint giving 10% discount', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (url, opts) => {
+      if (String(url).includes('/api/validate-promo')) {
+        const body = JSON.parse(opts?.body || '{}');
+        if (body.code === 'VIP-AURELIA10') {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({
+              valid: true,
+              promo: {
+                id: 'promo-vip10',
+                code: 'VIP-AURELIA10',
+                type: 'percentage',
+                value: 10,
+                percent: 0.1,
+                label: '-10% VIP ფასდაკლება',
+              },
+            }),
+          };
+        }
+        return {
+          ok: false,
+          status: 400,
+          json: async () => ({ valid: false, error: 'არასწორი პრომო კოდი' }),
+        };
+      }
+      throw new Error('Network disabled in unit tests');
+    });
+
     renderWithProviders();
 
     const promoInput = screen.getByPlaceholderText(/VIP პრომო კოდი/i);

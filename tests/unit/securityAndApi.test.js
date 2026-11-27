@@ -4,6 +4,7 @@ import { evaluatePromoCode, sanitizeOrderForPublicTracking } from '../../api/_li
 import activateAdminHandler from '../../api/activate-admin-account.js';
 import admin2faHandler from '../../api/admin-2fa.js';
 import createOrderHandler from '../../api/create-order.js';
+import checkAdminHandler from '../../api/check-admin.js';
 
 function createMockRes() {
   const headers = {};
@@ -125,5 +126,13 @@ describe('Security helpers & server API hardening', () => {
     await createOrderHandler(req, res);
     expect(res.statusCode).toBe(400);
     expect(res.body?.error).toBeTruthy();
+  });
+
+  it('rejects unauthenticated requests to /api/check-admin', async () => {
+    const req = { method: 'POST', headers: {}, body: {} };
+    const res = createMockRes();
+    await checkAdminHandler(req, res);
+    expect(res.statusCode).toBe(401);
+    expect(res.body?.isAdmin).toBe(false);
   });
 });

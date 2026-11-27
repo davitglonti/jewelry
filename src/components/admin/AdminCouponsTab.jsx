@@ -4,8 +4,6 @@ import {
   DollarSign, Calendar, AlertCircle, ToggleLeft, ToggleRight,
   Clock, Hash, Sparkles, X, ShieldCheck
 } from 'lucide-react';
-import { DEFAULT_PROMO_CODES } from '../../data/defaultSettings';
-
 export default function AdminCouponsTab({
   siteSettings = {},
   setSiteSettings,
@@ -16,7 +14,7 @@ export default function AdminCouponsTab({
 }) {
   const promoCodes = siteSettings.promoCodes && Array.isArray(siteSettings.promoCodes)
     ? siteSettings.promoCodes
-    : DEFAULT_PROMO_CODES;
+    : [];
 
   const [editingCoupon, setEditingCoupon] = useState(null);
   const [copiedCode, setCopiedCode] = useState('');

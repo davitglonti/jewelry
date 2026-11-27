@@ -5,7 +5,6 @@ import {
   AlertCircle, Lock, Power, RefreshCw, Mail, Copy, Check, Users, Send, ExternalLink
 } from 'lucide-react';
 import {
-  SUPER_ADMIN_EMAIL,
   getAdminsList,
   createAdminAccountApi,
   resendAdminInviteApi,
@@ -38,7 +37,7 @@ export default function AdminManagementTab({
   const loadAdmins = async () => {
     setLoading(true);
     try {
-      const list = await getAdminsList(db);
+      const list = await getAdminsList(db, currentUser);
       setAdmins(list);
     } catch (err) {
       console.error(err);
@@ -133,9 +132,11 @@ export default function AdminManagementTab({
       return;
     }
 
+    const protectedEmail = isSuperAdmin ? currentUserEmail : '';
+
     setActionLoading(true);
     try {
-      await removeAdminAccount(db, email);
+      await removeAdminAccount(db, email, protectedEmail);
       showFeedback('success', `მომხმარებელი ${email} წარმატებით წაიშალა`);
       await loadAdmins();
     } catch (err) {
@@ -146,9 +147,10 @@ export default function AdminManagementTab({
   };
 
   const handleToggleStatus = async (email, currentActive) => {
+    const protectedEmail = isSuperAdmin ? currentUserEmail : '';
     setActionLoading(true);
     try {
-      await toggleAdminAccountStatus(db, email, !currentActive);
+      await toggleAdminAccountStatus(db, email, !currentActive, protectedEmail);
       showFeedback('success', `სტატუსი განახლდა: ${email} ${!currentActive ? 'გააქტიურდა' : 'დეაქტივირდა'}`);
       await loadAdmins();
     } catch (err) {
@@ -159,9 +161,10 @@ export default function AdminManagementTab({
   };
 
   const handleChangeRole = async (email, newRole) => {
+    const protectedEmail = isSuperAdmin ? currentUserEmail : '';
     setActionLoading(true);
     try {
-      await updateAdminRole(db, email, newRole);
+      await updateAdminRole(db, email, newRole, protectedEmail);
       showFeedback('success', `როლი შეიცვალა: ${email} -> ${newRole === 'moderator' ? 'მოდერატორი' : 'ადმინისტრატორი'}`);
       await loadAdmins();
     } catch (err) {
@@ -434,7 +437,7 @@ export default function AdminManagementTab({
       ) : (
         <div className="p-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 text-amber-400 text-xs flex items-center gap-3">
           <Lock className="w-4 h-4 shrink-0" />
-          <span>თანამშრომლების ანგარიშების მართვა (შექმნა/წაშლა) შეუძლია მხოლოდ მთავარ ადმინისტრატორს ({SUPER_ADMIN_EMAIL}).</span>
+          <span>თანამშრომლების ანგარიშების მართვა (შექმნა/წაშლა) შეუძლია მხოლოდ მთავარ ადმინისტრატორს (Super Admin).</span>
         </div>
       )}
 
@@ -469,7 +472,7 @@ export default function AdminManagementTab({
         ) : (
           <div className={darkMode ? 'divide-y divide-stone-800/80' : 'divide-y divide-stone-200'}>
             {admins.map((adm) => {
-              const isOwner = adm.isSuperAdmin || adm.email === SUPER_ADMIN_EMAIL.toLowerCase();
+              const isOwner = Boolean(adm.isSuperAdmin || adm.role === 'superadmin');
               const isCurrent = adm.email === (currentUserEmail || '').toLowerCase();
               const isMod = adm.role === 'moderator';
 

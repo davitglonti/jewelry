@@ -3,39 +3,29 @@
 import { isStrongPassword, getPasswordValidationMessage } from '../utils/passwordValidation';
 
 /**
- * მთავარი ადმინისტრატორის (Super Admin / მფლობელი) ელფოსტა.
- * ამ ანგარიშს ყოველთვის აქვს სრული წვდომა და მისი წაშლა/დაბლოკვა შეუძლებელია.
- */
-export const SUPER_ADMIN_EMAIL = 'datiglonti@gmail.com';
-
-/**
- * შემთხვევითი დროებითი პაროლის გენერირება (მაგ: Matare#8429)
+ * შემთხვევითი დროებითი პაროლის გენერირება კრიპტოგრაფიულად უსაფრთხო გენერატორით
  */
 export function generateSecureTempPassword() {
-  const words = ['Matare', 'Aurelia', 'Jewelry', 'Gold', 'Diamond'];
-  const symbols = ['#', '$', '@', '!'];
-  const word = words[Math.floor(Math.random() * words.length)];
-  const symbol = symbols[Math.floor(Math.random() * symbols.length)];
-  const num = Math.floor(1000 + Math.random() * 9000);
-  return `${word}${symbol}${num}`;
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789#$@!';
+  const bytes = new Uint8Array(12);
+  if (typeof globalThis !== 'undefined' && globalThis.crypto?.getRandomValues) {
+    globalThis.crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  let pwd = 'Mat#9';
+  for (let i = 0; i < bytes.length; i++) {
+    pwd += chars[bytes[i] % chars.length];
+  }
+  return pwd;
 }
 
 /**
- * ამოწმებს, არის თუ არა ელფოსტა მთავარი ადმინისტრატორი
- */
-export function isSuperAdmin(email) {
-  if (!email || typeof email !== 'string') return false;
-  return email.trim().toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
-}
-
-/**
- * ამოწმებს მომხმარებლის ადმინისტრატორულ სტატუსს და როლს:
+ * ამოწმებს მომხმარებლის ადმინისტრატორულ სტატუსს და როლს სერვერის ან Firestore-ის გავლით:
  * - Super Admin (სრული წვდომა)
  * - Admin (სრული წვდომა)
  * - Moderator (შეზღუდული წვდომა: მხოლოდ პროდუქცია და ბლოგი)
- * 
- * ასევე ამოწმებს, უწევს თუ არა პირველი შესვლისას პაროლის შეცვლა (mustChangePassword)
- * 
+ *
  * @param {object|null} user - Firebase Auth user ობიექტი
  * @param {object|null} db - Firestore ობიექტი
  * @returns {Promise<{isAdmin: boolean, isSuperAdmin: boolean, role: string, mustChangePassword: boolean, email: string}>}
@@ -47,15 +37,39 @@ export async function checkUserIsAdmin(user, db) {
 
   const email = user.email.trim().toLowerCase();
 
-  // 1. მთავარი ადმინისტრატორი (Super Admin)
-  if (isSuperAdmin(email)) {
-    return {
-      isAdmin: true,
-      isSuperAdmin: true,
-      role: 'superadmin',
-      mustChangePassword: false,
-      email
-    };
+  // 1. სერვერული გადამოწმება (/api/check-admin) — არ ამჟღავნებს მფლობელის ელფოსტას კლიენტის ბანდლში
+  if (typeof user.getIdToken === 'function' && typeof fetch === 'function') {
+    try {
+      const token = await user.getIdToken();
+      if (token) {
+        const res = await fetch('/api/check-admin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({}),
+        });
+        if (res && res.ok) {
+          const data = await res.json();
+          if (data && typeof data.isAdmin === 'boolean') {
+            return {
+              isAdmin: Boolean(data.isAdmin),
+              isSuperAdmin: Boolean(data.isSuperAdmin),
+              role: data.role || '',
+              status: data.status || 'active',
+              hasJoined: Boolean(data.hasJoined),
+              mustChangePassword: Boolean(data.mustChangePassword),
+              email: data.email || email,
+              addedBy: data.addedBy || '',
+              addedAt: data.addedAt || null,
+            };
+          }
+        }
+      }
+    } catch {
+      // Fallback to Firestore /admins check below
+    }
   }
 
   // 2. დინამიური ადმინისტრატორი / მოდერატორი Firestore-ში
@@ -67,44 +81,19 @@ export async function checkUserIsAdmin(user, db) {
       if (snap.exists()) {
         const data = snap.data();
         if (data && data.isActive !== false) {
-          const role = data.role === 'moderator' ? 'moderator' : 'admin';
-
-          // თუ მომხმარებელი პირველად შემოვიდა (მოლოდინში იყო), სტატუსი აქტიურზე გადავიყვანოთ
-          if (data.status !== 'active' || !data.hasJoined) {
-            try {
-              const { updateDoc } = await import('firebase/firestore');
-              await updateDoc(docRef, {
-                status: 'active',
-                hasJoined: true,
-                joinedAt: Date.now()
-              });
-            } catch {
-              try {
-                const token = typeof user.getIdToken === 'function' ? await user.getIdToken() : '';
-                if (token) {
-                  fetch('/api/activate-admin-account', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({ email })
-                  }).catch(() => {});
-                }
-              } catch {}
-            }
-          }
+          const isOwnerRole = data.role === 'superadmin' || data.isSuperAdmin === true;
+          const role = isOwnerRole ? 'superadmin' : data.role === 'moderator' ? 'moderator' : 'admin';
 
           return {
             isAdmin: true,
-            isSuperAdmin: false,
+            isSuperAdmin: isOwnerRole,
             role,
-            status: 'active',
-            hasJoined: true,
+            status: data.status || 'active',
+            hasJoined: Boolean(data.hasJoined),
             mustChangePassword: Boolean(data.mustChangePassword),
             email,
             addedBy: data.addedBy || '',
-            addedAt: data.addedAt || null
+            addedAt: data.addedAt || null,
           };
         }
       }
@@ -146,24 +135,34 @@ export async function completePasswordChange(user, db, newPassword) {
 }
 
 /**
- * კითხულობს ყველა ადმინისტრატორისა და მოდერატორის სიას
+ * კითხულობს ყველა ადმინისტრატორისა და მოდერატორის სიას სერვერიდან ან Firestore-იდან
  */
-export async function getAdminsList(db) {
-  const list = [
-    {
-      id: 'super-admin',
-      email: SUPER_ADMIN_EMAIL,
-      role: 'superadmin',
-      isSuperAdmin: true,
-      isActive: true,
-      status: 'active',
-      hasJoined: true,
-      mustChangePassword: false,
-      addedAt: null,
-      addedBy: 'სისტემის მფლობელი'
+export async function getAdminsList(db, currentUser = null) {
+  if (currentUser && typeof currentUser.getIdToken === 'function' && typeof fetch === 'function') {
+    try {
+      const token = await currentUser.getIdToken();
+      if (token) {
+        const res = await fetch('/api/check-admin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ includeAdminsList: true }),
+        });
+        if (res && res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data?.adminsList)) {
+            return data.adminsList;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('API admins list fallback notice:', err?.message);
     }
-  ];
+  }
 
+  const list = [];
   if (!db) return list;
 
   try {
@@ -172,25 +171,24 @@ export async function getAdminsList(db) {
     snap.forEach((d) => {
       const data = d.data();
       const docEmail = (data.email || d.id).toLowerCase();
-      if (docEmail !== SUPER_ADMIN_EMAIL.toLowerCase()) {
-        const hasJoined = Boolean(data.hasJoined || data.joinedAt || data.passwordChangedAt);
-        const status = data.status ? data.status : (hasJoined ? 'active' : 'pending');
+      const hasJoined = Boolean(data.hasJoined || data.joinedAt || data.passwordChangedAt);
+      const status = data.status ? data.status : (hasJoined ? 'active' : 'pending');
+      const isOwner = Boolean(data.isSuperAdmin || data.role === 'superadmin');
 
-        list.push({
-          id: d.id,
-          email: docEmail,
-          role: data.role === 'moderator' ? 'moderator' : 'admin',
-          isSuperAdmin: false,
-          isActive: data.isActive !== false,
-          status,
-          hasJoined,
-          joinedAt: data.joinedAt || null,
-          invitedAt: data.invitedAt || data.addedAt || null,
-          mustChangePassword: Boolean(data.mustChangePassword),
-          addedAt: data.addedAt || null,
-          addedBy: data.addedBy || 'ადმინი'
-        });
-      }
+      list.push({
+        id: d.id,
+        email: docEmail,
+        role: isOwner ? 'superadmin' : (data.role === 'moderator' ? 'moderator' : 'admin'),
+        isSuperAdmin: isOwner,
+        isActive: data.isActive !== false,
+        status,
+        hasJoined,
+        joinedAt: data.joinedAt || null,
+        invitedAt: data.invitedAt || data.addedAt || null,
+        mustChangePassword: Boolean(data.mustChangePassword),
+        addedAt: data.addedAt || null,
+        addedBy: data.addedBy || 'ადმინი'
+      });
     });
   } catch (err) {
     console.error('Failed to load admins list:', err);
@@ -233,13 +231,28 @@ export async function resendAdminInviteApi(currentUser, { email, role = 'admin',
   return createAdminAccountApi(currentUser, { email, role, origin });
 }
 
+async function assertNotSuperAdminDoc(db, cleanEmail, protectedEmail = '') {
+  if (!cleanEmail) throw new Error('ელფოსტა არავალიდურია');
+  if (protectedEmail && cleanEmail === protectedEmail.trim().toLowerCase()) {
+    return true;
+  }
+  try {
+    const { doc, getDoc } = await import('firebase/firestore');
+    const snap = await getDoc(doc(db, 'admins', cleanEmail));
+    if (snap && snap.exists() && (snap.data()?.isSuperAdmin || snap.data()?.role === 'superadmin')) {
+      return true;
+    }
+  } catch {}
+  return false;
+}
+
 /**
  * როლის შეცვლა (admin <-> moderator)
  */
-export async function updateAdminRole(db, email, newRole) {
+export async function updateAdminRole(db, email, newRole, protectedEmail = '') {
   if (!db) throw new Error('მონაცემთა ბაზა მიუწვდომელია');
   const cleanEmail = (email || '').trim().toLowerCase();
-  if (cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase()) {
+  if (await assertNotSuperAdminDoc(db, cleanEmail, protectedEmail)) {
     throw new Error('მთავარი ადმინისტრატორის როლის შეცვლა შეუძლებელია');
   }
 
@@ -252,10 +265,10 @@ export async function updateAdminRole(db, email, newRole) {
 /**
  * ადმინისტრატორის წაშლა Firestore-იდან
  */
-export async function removeAdminAccount(db, email) {
+export async function removeAdminAccount(db, email, protectedEmail = '') {
   if (!db) throw new Error('მონაცემთა ბაზა მიუწვდომელია');
   const cleanEmail = (email || '').trim().toLowerCase();
-  if (cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase()) {
+  if (await assertNotSuperAdminDoc(db, cleanEmail, protectedEmail)) {
     throw new Error('მთავარი ადმინისტრატორის წაშლა შეუძლებელია');
   }
 
@@ -267,10 +280,10 @@ export async function removeAdminAccount(db, email) {
 /**
  * ადმინისტრატორის სტატუსის შეცვლა (აქტიური / დეაქტივირებული)
  */
-export async function toggleAdminAccountStatus(db, email, isActive) {
+export async function toggleAdminAccountStatus(db, email, isActive, protectedEmail = '') {
   if (!db) throw new Error('მონაცემთა ბაზა მიუწვდომელია');
   const cleanEmail = (email || '').trim().toLowerCase();
-  if (cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase()) {
+  if (await assertNotSuperAdminDoc(db, cleanEmail, protectedEmail)) {
     throw new Error('მთავარი ადმინისტრატორის სტატუსის შეცვლა შეუძლებელია');
   }
 

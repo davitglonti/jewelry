@@ -21,10 +21,6 @@ function shouldSkipTracking() {
     if (localStorage.getItem('isAdmin') === 'true' || sessionStorage.getItem('isAdmin') === 'true') {
       return true;
     }
-    const currentEmail = auth?.currentUser?.email?.toLowerCase();
-    if (currentEmail === 'datiglonti@gmail.com') {
-      return true;
-    }
   } catch (e) {
     // storage წვდომის შეცდომის უგულებელყოფა
   }
