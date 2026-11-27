@@ -1,5 +1,7 @@
 // src/lib/adminAuth.js
 
+import { isStrongPassword, getPasswordValidationMessage } from '../utils/passwordValidation';
+
 /**
  * მთავარი ადმინისტრატორის (Super Admin / მფლობელი) ელფოსტა.
  * ამ ანგარიშს ყოველთვის აქვს სრული წვდომა და მისი წაშლა/დაბლოკვა შეუძლებელია.
@@ -119,8 +121,11 @@ export async function checkUserIsAdmin(user, db) {
  */
 export async function completePasswordChange(user, db, newPassword) {
   if (!user) throw new Error('ავტორიზაცია არ მოიძებნა');
-  if (!newPassword || newPassword.length < 6) {
-    throw new Error('ახალი პაროლი უნდა შეიცავდეს მინიმუმ 6 სიმბოლოს');
+  if (!isStrongPassword(newPassword)) {
+    throw new Error(
+      getPasswordValidationMessage(newPassword, 'ka') ||
+      'ახალი პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს, დიდ და პატარა ასოებს, და ციფრს ან სიმბოლოს.'
+    );
   }
 
   // 1. Firebase Auth-ში პაროლის შეცვლა

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateTotpSecret, getTotpAuthUri, getTotpQrUrl, verifyTotpCode } from '../../src/utils/totp';
+import { generateTotpSecret, getTotpAuthUri, generateTotpQrDataUrl, verifyTotpCode } from '../../src/utils/totp';
 
 describe('TOTP (Google Authenticator) Utility', () => {
   it('generates a valid Base32 secret string of specified length', () => {
@@ -22,11 +22,10 @@ describe('TOTP (Google Authenticator) Utility', () => {
     expect(uri).toContain('digits=6');
   });
 
-  it('generates a valid QR code service URL', () => {
+  it('generates a local Data URL QR code without leaking secrets to external servers', async () => {
     const uri = 'otpauth://totp/MATARE?secret=TEST';
-    const qrUrl = getTotpQrUrl(uri);
-    expect(qrUrl).toContain('https://api.qrserver.com/v1/create-qr-code/');
-    expect(qrUrl).toContain(encodeURIComponent(uri));
+    const dataUrl = await generateTotpQrDataUrl(uri);
+    expect(dataUrl).toMatch(/^data:image\/png;base64,/);
   });
 
   it('verifies generated TOTP code correctly with verifyTotpCode', async () => {

@@ -21,8 +21,6 @@ const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 const OrderTrackingPage = lazy(() => import('./pages/OrderTrackingPage'));
-const AddProductPage = lazy(() => import('./pages/AddProductPage'));
-const MyItemsPage = lazy(() => import('./pages/MyItemsPage'));
 
 // მსუბუქი ჩამტვირთავი ეკრანი გვერდებს შორის გადასვლისას
 const PageLoader = () => (

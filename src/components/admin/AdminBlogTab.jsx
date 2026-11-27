@@ -10,8 +10,10 @@ export default function AdminBlogTab({
   setSiteSettings,
   products = [],
   syncData,
-  darkMode = true
+  darkMode = true,
+  userRole = 'admin'
 }) {
+  const isFullAdminUser = userRole !== 'moderator';
   const [editingArticle, setEditingArticle] = useState(null);
   const [articleImageInput, setArticleImageInput] = useState('');
   const [newBlogCategoryInput, setNewBlogCategoryInput] = useState('');
@@ -22,6 +24,7 @@ export default function AdminBlogTab({
       : ['გიდი', 'ოქრო', 'ბრილიანტი', 'მოვლა', 'სტილი'];
 
   const handleAddBlogCategory = () => {
+    if (!isFullAdminUser) return;
     const val = newBlogCategoryInput.trim();
     if (!val) return;
     if (currentBlogCategories.includes(val)) {
@@ -38,6 +41,7 @@ export default function AdminBlogTab({
   };
 
   const handleDeleteBlogCategory = (cat) => {
+    if (!isFullAdminUser) return;
     if (currentBlogCategories.length <= 1) {
       alert('მინიმუმ ერთი კატეგორია უნდა დარჩეს!');
       return;
@@ -145,35 +149,39 @@ export default function AdminBlogTab({
             ბლოგის კატეგორიები ({currentBlogCategories.length})
           </h4>
           <span className="text-[11px] opacity-60">
-            ეს კატეგორიები ავტომატურად გამოჩნდება სტატიის დამატებისას და საიტზე ფილტრში
+            {isFullAdminUser
+              ? 'ეს კატეგორიები ავტომატურად გამოჩნდება სტატიის დამატებისას და საიტზე ფილტრში'
+              : 'კატეგორიების შეცვლა შეუძლია მხოლოდ სრულ ადმინისტრატორს'}
           </span>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2">
-          <input
-            type="text"
-            value={newBlogCategoryInput}
-            onChange={(e) => setNewBlogCategoryInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleAddBlogCategory();
-              }
-            }}
-            placeholder="ახალი კატეგორიის სახელი (მაგ: საჩუქრების იდეები, მოვლა, ისტორია)"
-            className={`flex-1 p-2.5 rounded-xl text-xs border ${
-              darkMode ? 'bg-stone-800 border-stone-700 text-white' : 'bg-white border-stone-300 text-stone-900'
-            }`}
-          />
-          <button
-            type="button"
-            onClick={handleAddBlogCategory}
-            className="px-4 py-2.5 rounded-xl bg-amber-500 text-black text-xs font-semibold hover:brightness-110 transition-all shrink-0 flex items-center justify-center gap-1.5"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            კატეგორიის დამატება
-          </button>
-        </div>
+        {isFullAdminUser && (
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              value={newBlogCategoryInput}
+              onChange={(e) => setNewBlogCategoryInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddBlogCategory();
+                }
+              }}
+              placeholder="ახალი კატეგორიის სახელი (მაგ: საჩუქრების იდეები, მოვლა, ისტორია)"
+              className={`flex-1 p-2.5 rounded-xl text-xs border ${
+                darkMode ? 'bg-stone-800 border-stone-700 text-white' : 'bg-white border-stone-300 text-stone-900'
+              }`}
+            />
+            <button
+              type="button"
+              onClick={handleAddBlogCategory}
+              className="px-4 py-2.5 rounded-xl bg-amber-500 text-black text-xs font-semibold hover:brightness-110 transition-all shrink-0 flex items-center justify-center gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              კატეგორიის დამატება
+            </button>
+          </div>
+        )}
 
         <div className="flex flex-wrap gap-2 pt-1">
           {currentBlogCategories.map((cat) => (
@@ -186,14 +194,16 @@ export default function AdminBlogTab({
               }`}
             >
               <span className="font-medium">{cat}</span>
-              <button
-                type="button"
-                onClick={() => handleDeleteBlogCategory(cat)}
-                className="text-stone-400 hover:text-red-400 transition-colors"
-                title={`წაშლა: ${cat}`}
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
+              {isFullAdminUser && (
+                <button
+                  type="button"
+                  onClick={() => handleDeleteBlogCategory(cat)}
+                  className="text-stone-400 hover:text-red-400 transition-colors"
+                  title={`წაშლა: ${cat}`}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </span>
           ))}
         </div>

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { KeyRound, CheckCircle2, AlertCircle, Eye, EyeOff, LogOut, Lock } from 'lucide-react';
 import { completePasswordChange } from '../../lib/adminAuth';
+import PasswordStrengthIndicator from '../auth/PasswordStrengthIndicator';
+import { isStrongPassword, getPasswordValidationMessage } from '../../utils/passwordValidation';
 
 export default function ForcePasswordChangeModal({
   user,
@@ -19,8 +21,11 @@ export default function ForcePasswordChangeModal({
     e.preventDefault();
     setError('');
 
-    if (newPassword.length < 6) {
-      setError('პაროლი უნდა შედგებოდეს მინიმუმ 6 სიმბოლოსგან');
+    if (!isStrongPassword(newPassword)) {
+      setError(
+        getPasswordValidationMessage(newPassword, 'ka') ||
+        'პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს, დიდ და პატარა ასოებს, და ციფრს ან სიმბოლოს.'
+      );
       return;
     }
 
@@ -80,7 +85,7 @@ export default function ForcePasswordChangeModal({
                 type={showPassword ? 'text' : 'password'}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="მინიმუმ 6 სიმბოლო"
+                placeholder="მინიმუმ 8 სიმბოლო (დიდი/პატარა ასოები, ციფრი/სიმბოლო)"
                 required
                 disabled={loading}
                 className={`w-full px-4 py-2.5 pr-10 rounded-xl text-xs border outline-none transition-all ${
@@ -97,6 +102,7 @@ export default function ForcePasswordChangeModal({
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+            <PasswordStrengthIndicator password={newPassword} lang="ka" />
           </div>
 
           <div>

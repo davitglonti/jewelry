@@ -7,7 +7,10 @@ const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 const SESSION_COOKIE_NAME = 'matare_2fa_session';
 
 function getSigningKey() {
-  const explicit = process.env.ADMIN_2FA_SECRET || process.env.FIREBASE_PRIVATE_KEY || 'matare-dev-fallback-key';
+  const explicit = process.env.ADMIN_2FA_SECRET || process.env.FIREBASE_PRIVATE_KEY;
+  if (!explicit) {
+    throw new Error('2FA signing secret is not configured');
+  }
   return crypto.createHash('sha256').update(explicit).digest();
 }
 
@@ -107,12 +110,23 @@ function parseCookies(req) {
 
 function setSessionCookie(req, res, email, expiresAt) {
   const token = signPayload({ email, exp: expiresAt, kind: '2fa_session' });
-  const isHttps = req?.headers?.['x-forwarded-proto'] === 'https' || process.env.NODE_ENV === 'production';
+  const isLocal = /^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(String(req?.headers?.host || ''));
+  const isHttps = !isLocal && (req?.headers?.['x-forwarded-proto'] === 'https' || process.env.VERCEL === '1');
   const maxAgeSec = Math.max(60, Math.floor((expiresAt - Date.now()) / 1000));
   const flags = [`Path=/`, `HttpOnly`, `SameSite=Strict`, `Max-Age=${maxAgeSec}`];
   if (isHttps) flags.push('Secure');
   res.setHeader('Set-Cookie', `${SESSION_COOKIE_NAME}=${encodeURIComponent(token)}; ${flags.join('; ')}`);
   return token;
+}
+
+function getVerified2faSession(req, email) {
+  const cookies = parseCookies(req);
+  const token = cookies[SESSION_COOKIE_NAME] || '';
+  const verified = verifySignedPayload(token);
+  if (verified && verified.kind === '2fa_session' && verified.email === email) {
+    return verified;
+  }
+  return null;
 }
 
 function clearSessionCookie(res) {
@@ -158,10 +172,8 @@ export default async function handler(req, res) {
         });
       }
 
-      const cookies = parseCookies(req);
-      const tokenToVerify = cookies[SESSION_COOKIE_NAME] || body.sessionToken || '';
-      const verified = verifySignedPayload(tokenToVerify);
-      const unlocked = Boolean(verified && verified.kind === '2fa_session' && verified.email === email);
+      const verified = getVerified2faSession(req, email);
+      const unlocked = Boolean(verified);
 
       return res.status(200).json({
         twoFactorEnabled: true,
@@ -171,8 +183,30 @@ export default async function handler(req, res) {
     }
 
     if (action === 'init-reset') {
+      const snap = await adminRef.get();
+      const data = snap.exists ? snap.data() || {} : {};
+      const alreadyEnabled = Boolean(data.twoFactorEnabled && data.totpSecret);
+
+      if (alreadyEnabled) {
+        const verifiedSession = getVerified2faSession(req, email);
+        const hasValidCode = verifyTotpCode(data.totpSecret, body.currentCode);
+        if (!verifiedSession && !hasValidCode) {
+          const ip = getClientIp(req);
+          checkRateLimit(`admin-2fa-reset:${email}:${ip}`, 5, 5 * 60_000);
+          return res.status(403).json({
+            error: '2FA-ის გადატვირთვისთვის საჭიროა აქტიური 2FA სესია ან მიმდინარე კოდის დადასტურება',
+          });
+        }
+      }
+
       const secret = generateTotpSecret(16);
-      const setupToken = signPayload({ email, secret, exp: Date.now() + 15 * 60_000, kind: '2fa_setup' });
+      const setupToken = signPayload({
+        email,
+        secret,
+        resetAuthorized: true,
+        exp: Date.now() + 15 * 60_000,
+        kind: '2fa_setup',
+      });
       clearSessionCookie(res);
       return res.status(200).json({
         setupSecret: secret,
@@ -184,6 +218,15 @@ export default async function handler(req, res) {
       const setupData = verifySignedPayload(body.setupToken);
       if (!setupData || setupData.kind !== '2fa_setup' || setupData.email !== email) {
         return res.status(400).json({ error: '2FA დაყენების სესიას ვადა გაუვიდა. სცადეთ თავიდან.' });
+      }
+
+      const snap = await adminRef.get();
+      const data = snap.exists ? snap.data() || {} : {};
+      const alreadyEnabled = Boolean(data.twoFactorEnabled && data.totpSecret);
+      if (alreadyEnabled && !setupData.resetAuthorized) {
+        return res.status(403).json({
+          error: 'არსებული 2FA გასაღების გადასაწერად საჭიროა ავტორიზებული გადატვირთვა',
+        });
       }
 
       if (!verifyTotpCode(setupData.secret, body.code)) {
@@ -201,14 +244,13 @@ export default async function handler(req, res) {
       );
 
       const expiresAt = Date.now() + 30 * 60_000;
-      const sessionToken = setSessionCookie(req, res, email, expiresAt);
+      setSessionCookie(req, res, email, expiresAt);
 
       return res.status(200).json({
         success: true,
         twoFactorEnabled: true,
         unlocked: true,
         expiresAt,
-        sessionToken,
       });
     }
 
@@ -233,13 +275,12 @@ export default async function handler(req, res) {
 
       const ttlMs = body.remember30Mins ? 30 * 60_000 : 15 * 60_000;
       const expiresAt = Date.now() + ttlMs;
-      const sessionToken = setSessionCookie(req, res, email, expiresAt);
+      setSessionCookie(req, res, email, expiresAt);
 
       return res.status(200).json({
         success: true,
         unlocked: true,
         expiresAt,
-        sessionToken,
       });
     }
 

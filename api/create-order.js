@@ -105,6 +105,15 @@ export default async function handler(req, res) {
         });
       }
 
+      if (match.stockStatus === 'sold_out' || match.isVisible === false) {
+        return res.status(400).json({
+          error:
+            lang === 'ka'
+              ? `სამწუხაროდ, „${match.name || 'არჩეული ნივთი'}“ გაყიდულია ან მიუწვდომელია`
+              : `Sorry, "${match.nameEn || match.name || 'selected item'}" is sold out or unavailable`,
+        });
+      }
+
       const itemSize =
         String(reqItem?.size || '').trim().slice(0, 30) ||
         (Array.isArray(match.sizes) && match.sizes.length > 0 ? String(match.sizes[0]) : '') ||
@@ -120,6 +129,11 @@ export default async function handler(req, res) {
     }
 
     const rawSubtotal = resolvedItems.reduce((sum, it) => sum + parseNumericPrice(it.price), 0);
+    if (rawSubtotal <= 0) {
+      return res.status(400).json({
+        error: lang === 'ka' ? 'ნივთის ღირებულება არავალიდურია' : 'Invalid item price total',
+      });
+    }
 
     const { settings, promoCodes, promoSource } = storeConfig;
     const parseRate = (val, fallback) => {
@@ -155,10 +169,10 @@ export default async function handler(req, res) {
     const giftFee = isGift ? giftPackagingPrice : 0;
     const finalTotal = Math.max(0, rawSubtotal - discountAmount) + shippingFee + giftFee;
 
-    // Generate collision-safe order ID
+    // Generate collision-safe high-entropy order ID
     let orderId = '';
     for (let attempt = 0; attempt < 5; attempt++) {
-      const candidate = `MTR-${crypto.randomInt(100000, 1000000)}`;
+      const candidate = `MTR-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
       const existing = await db.collection('inquiries').doc(candidate).get();
       if (!existing.exists) {
         orderId = candidate;
@@ -166,7 +180,7 @@ export default async function handler(req, res) {
       }
     }
     if (!orderId) {
-      orderId = `MTR-${Date.now().toString().slice(-6)}`;
+      orderId = `MTR-${crypto.randomBytes(5).toString('hex').toUpperCase()}`;
     }
 
     const showroomAddr = settings?.address || 'თბილისი, რუსთაველის გამზ. #24';

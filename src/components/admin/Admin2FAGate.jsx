@@ -5,9 +5,7 @@ import {
   RefreshCw, AlertCircle, Unlock, RotateCcw
 } from 'lucide-react';
 import { auth, getLazyAuth } from '../../lib/firebase';
-import { getTotpAuthUri, getTotpQrUrl } from '../../utils/totp';
-
-const SESSION_TOKEN_KEY = 'matare_2fa_signed_proof';
+import { getTotpAuthUri, generateTotpQrDataUrl } from '../../utils/totp';
 
 export default function Admin2FAGate({
   children,
@@ -21,6 +19,7 @@ export default function Admin2FAGate({
   const [isSettingUp, setIsSettingUp] = useState(false);
   const [setupSecret, setSetupSecret] = useState('');
   const [setupToken, setSetupToken] = useState('');
+  const [qrDataUrl, setQrDataUrl] = useState('');
 
   // Setup state
   const [setupCode, setSetupCode] = useState('');
@@ -65,17 +64,17 @@ export default function Admin2FAGate({
 
     const check2FAStatus = async () => {
       setLoading(true);
-      // Remove any legacy insecure client-side TOTP storage
+      // Remove any legacy client-side 2FA storage (session is strictly HttpOnly cookie)
       try {
         localStorage.removeItem('matare_stats_2fa_unlocked_until');
         sessionStorage.removeItem('matare_stats_2fa_unlocked_until');
+        sessionStorage.removeItem('matare_2fa_signed_proof');
         localStorage.removeItem(`matare_2fa_secret_${adminEmail}`);
         localStorage.removeItem(`matare_2fa_enabled_${adminEmail}`);
       } catch {}
 
       try {
-        const proof = sessionStorage.getItem(SESSION_TOKEN_KEY) || '';
-        const data = await call2faApi({ action: 'status', sessionToken: proof });
+        const data = await call2faApi({ action: 'status' });
         if (isCancelled) return;
 
         setTwoFactorEnabled(Boolean(data.twoFactorEnabled));
@@ -99,6 +98,25 @@ export default function Admin2FAGate({
     };
   }, [adminEmail, call2faApi]);
 
+  useEffect(() => {
+    let cancelled = false;
+    if ((!twoFactorEnabled || isSettingUp) && setupSecret) {
+      const authUri = getTotpAuthUri(setupSecret, adminEmail, 'MATARE_STORE');
+      generateTotpQrDataUrl(authUri)
+        .then((url) => {
+          if (!cancelled) setQrDataUrl(url);
+        })
+        .catch(() => {
+          if (!cancelled) setQrDataUrl('');
+        });
+    } else {
+      setQrDataUrl('');
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [twoFactorEnabled, isSettingUp, setupSecret, adminEmail]);
+
   // 2. 2FA-ის პირველადი გააქტიურება სერვერზე
   const handleActivateSetup = async (e) => {
     e?.preventDefault();
@@ -106,21 +124,19 @@ export default function Admin2FAGate({
     setVerifying(true);
 
     try {
-      const data = await call2faApi({
+      await call2faApi({
         action: 'activate',
         setupToken,
         code: setupCode,
       });
 
-      if (data.sessionToken) {
-        sessionStorage.setItem(SESSION_TOKEN_KEY, data.sessionToken);
-      }
       setTwoFactorEnabled(true);
       setIsUnlocked(true);
       setIsSettingUp(false);
       setSetupCode('');
       setSetupSecret('');
       setSetupToken('');
+      setQrDataUrl('');
     } catch (err) {
       setSetupError(err.message || (lang === 'ka' ? 'არასწორი კოდია.' : 'Invalid code.'));
     } finally {
@@ -135,15 +151,12 @@ export default function Admin2FAGate({
     setVerifying(true);
 
     try {
-      const data = await call2faApi({
+      await call2faApi({
         action: 'verify',
         code: challengeCode,
         remember30Mins,
       });
 
-      if (data.sessionToken) {
-        sessionStorage.setItem(SESSION_TOKEN_KEY, data.sessionToken);
-      }
       setIsUnlocked(true);
       setChallengeCode('');
     } catch (err) {
@@ -155,7 +168,6 @@ export default function Admin2FAGate({
 
   // 4. ხელით დაბლოკვა (Lock Now)
   const handleLockNow = async () => {
-    sessionStorage.removeItem(SESSION_TOKEN_KEY);
     setIsUnlocked(false);
     setChallengeCode('');
     setChallengeError('');
@@ -169,7 +181,6 @@ export default function Admin2FAGate({
     if (!window.confirm(lang === 'ka' ? 'ნამდვილად გსურთ Google Authenticator 2FA-ის გადატვირთვა და ახალი გასაღების მიღება?' : 'Are you sure you want to reset your 2FA setup?')) return;
     setVerifying(true);
     try {
-      sessionStorage.removeItem(SESSION_TOKEN_KEY);
       const data = await call2faApi({ action: 'init-reset' });
       setSetupSecret(data.setupSecret || '');
       setSetupToken(data.setupToken || '');
@@ -236,9 +247,6 @@ export default function Admin2FAGate({
 
   // შემთხვევა 2: 2FA ჯერ არ არის დაყენებული (Setup Mode)
   if (!twoFactorEnabled || isSettingUp) {
-    const authUri = getTotpAuthUri(setupSecret, adminEmail, 'MATARE_STORE');
-    const qrUrl = getTotpQrUrl(authUri);
-
     return (
       <div className="max-w-xl mx-auto py-10 px-4 animate-fadeIn">
         <div className={`p-6 sm:p-8 rounded-3xl border shadow-2xl transition-all ${
@@ -268,7 +276,11 @@ export default function Admin2FAGate({
           <div className="space-y-4">
             <div className="p-4 rounded-2xl bg-black/40 border border-stone-800 flex flex-col sm:flex-row items-center gap-5">
               <div className="w-36 h-36 bg-white p-2 rounded-xl shrink-0 shadow-md flex items-center justify-center">
-                <img src={qrUrl} alt="2FA QR Code" className="w-full h-full object-contain" />
+                {qrDataUrl ? (
+                  <img src={qrDataUrl} alt="2FA QR Code" className="w-full h-full object-contain" />
+                ) : (
+                  <RefreshCw className="w-5 h-5 animate-spin text-stone-400" />
+                )}
               </div>
 
               <div className="space-y-2 text-left">

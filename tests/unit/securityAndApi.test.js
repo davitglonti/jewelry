@@ -3,6 +3,7 @@ import { escapeHtml, sanitizeUrl, resolveSafeOrigin } from '../../api/_lib/secur
 import { evaluatePromoCode, sanitizeOrderForPublicTracking } from '../../api/_lib/orders.js';
 import activateAdminHandler from '../../api/activate-admin-account.js';
 import admin2faHandler from '../../api/admin-2fa.js';
+import createOrderHandler from '../../api/create-order.js';
 
 function createMockRes() {
   const headers = {};
@@ -105,5 +106,24 @@ describe('Security helpers & server API hardening', () => {
     const res = createMockRes();
     await admin2faHandler(req, res);
     expect(res.statusCode).toBe(403);
+  });
+
+  it('rejects unauthenticated init-reset requests to /api/admin-2fa', async () => {
+    const req = { method: 'POST', headers: {}, body: { action: 'init-reset' } };
+    const res = createMockRes();
+    await admin2faHandler(req, res);
+    expect(res.statusCode).toBe(403);
+  });
+
+  it('rejects invalid / empty order payloads on /api/create-order cleanly', async () => {
+    const req = {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '127.0.0.1' },
+      body: { clientName: 'Test User', clientPhone: '123', items: [] },
+    };
+    const res = createMockRes();
+    await createOrderHandler(req, res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body?.error).toBeTruthy();
   });
 });

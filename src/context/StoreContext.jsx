@@ -367,7 +367,9 @@ export function StoreProvider({ children }) {
   }, [adminRoleContext]);
 
   // მონაცემების შენახვა (Firebase + LocalStorage)
-  const syncData = async (newSettings, newProducts, newInquiries = inquiries) => {
+  const syncData = async (newSettings, newProducts, newInquiries = undefined) => {
+    const prevProducts = products;
+    const prevInquiries = inquiries;
     const sortedProducts = sortNewestFirst(newProducts);
     setProducts(sortedProducts);
     const publicSettings = stripPrivateSettings(newSettings);
@@ -375,7 +377,7 @@ export function StoreProvider({ children }) {
     writeCache(KEYS.products, sortedProducts);
 
     try {
-      const [{ db }, { doc, setDoc, deleteDoc, getDocs, collection }] = await Promise.all([
+      const [{ db }, { doc, setDoc, deleteDoc }] = await Promise.all([
         import('../lib/firebase'),
         import('firebase/firestore')
       ]);
@@ -402,8 +404,8 @@ export function StoreProvider({ children }) {
             );
           }
 
-          // 1გ. შეკვეთების შენახვა ცალკე დაცულ /inquiries კოლექციაში (თუ შეკვეთები შეიცვალა)
-          if (Array.isArray(newInquiries)) {
+          // 1გ. შეკვეთების შენახვა მხოლოდ მაშინ, როცა შეკვეთების მასივი რეალურად შეიცვალა (არა-დესტრუქციული დიფით)
+          if (Array.isArray(newInquiries) && newInquiries !== prevInquiries) {
             const inquiryIds = new Set();
             const inquirySaves = newInquiries.map((inq) => {
               const docId = String(inq.id || `inq-${Date.now()}`);
@@ -412,46 +414,34 @@ export function StoreProvider({ children }) {
             });
             await Promise.all(inquirySaves);
 
-            try {
-              const existingInq = await getDocs(collection(db, "inquiries"));
-              const delInq = [];
-              existingInq.forEach((d) => {
-                if (!inquiryIds.has(d.id)) {
-                  delInq.push(deleteDoc(doc(db, "inquiries", d.id)));
-                }
-              });
-              if (delInq.length > 0) await Promise.all(delInq);
-            } catch (delInqErr) {
-              console.warn("შეკვეთების გასუფთავების შეცდომა:", delInqErr);
+            const removedInquiryIds = prevInquiries
+              .map((inq) => String(inq?.id || ''))
+              .filter((id) => id && !inquiryIds.has(id));
+            if (removedInquiryIds.length > 0) {
+              await Promise.all(removedInquiryIds.map((id) => deleteDoc(doc(db, "inquiries", id))));
             }
           }
         }
 
-        // 2. თითოეული პროდუქტის შენახვა ცალკე დოკუმენტად products კოლექციაში (დაშვებულია როგორც ადმინისთვის, ისე მოდერატორისთვის)
-        const savePromises = sortedProducts.map((p) => {
-          const cleanProduct = {
-            ...p,
-            createdAt: p.createdAt || (typeof p.id === 'string' && p.id.startsWith('item-') ? parseInt(p.id.replace('item-', ''), 10) || Date.now() : Date.now())
-          };
-          return setDoc(doc(db, "products", p.id), cleanProduct);
-        });
-        await Promise.all(savePromises);
-
-        // 3. თუ რომელიმე პროდუქტი წაიშალა სიიდან, წავშალოთ Firestore-იდანაც
-        try {
-          const existingDocs = await getDocs(collection(db, "products"));
-          const currentIds = new Set(sortedProducts.map((p) => p.id));
-          const deletePromises = [];
-          existingDocs.forEach((d) => {
-            if (!currentIds.has(d.id)) {
-              deletePromises.push(deleteDoc(doc(db, "products", d.id)));
-            }
+        // 2. თითოეული პროდუქტის შენახვა ცალკე დოკუმენტად products კოლექციაში (ადმინისა და მოდერატორისთვის)
+        if (sortedProducts !== prevProducts || newProducts !== prevProducts) {
+          const savePromises = sortedProducts.map((p) => {
+            const cleanProduct = {
+              ...p,
+              createdAt: p.createdAt || (typeof p.id === 'string' && p.id.startsWith('item-') ? parseInt(p.id.replace('item-', ''), 10) || Date.now() : Date.now())
+            };
+            return setDoc(doc(db, "products", p.id), cleanProduct);
           });
-          if (deletePromises.length > 0) {
-            await Promise.all(deletePromises);
+          await Promise.all(savePromises);
+
+          // 3. წავშალოთ მხოლოდ ის პროდუქტები, რომლებიც მიმდინარე მოქმედებით წაიშალა (უსაფრთხოა კონკურენტული მუშაობისას)
+          const currentIds = new Set(sortedProducts.map((p) => p.id));
+          const removedProductIds = prevProducts
+            .map((p) => p?.id)
+            .filter((id) => id && !currentIds.has(id));
+          if (removedProductIds.length > 0) {
+            await Promise.all(removedProductIds.map((id) => deleteDoc(doc(db, "products", id))));
           }
-        } catch (delErr) {
-          console.warn("წაშლილი პროდუქტების გასუფთავების შეცდომა:", delErr);
         }
 
         setSaveMessage("ყველა ცვლილება წარმატებით შეინახა!");
@@ -468,11 +458,12 @@ export function StoreProvider({ children }) {
 
   // სტატიების შენახვა
   const syncArticles = async (newArticles) => {
+    const prevArticles = articles;
     setArticles(newArticles);
     writeCache(KEYS.articles, newArticles);
 
     try {
-      const [{ db }, { doc, setDoc, deleteDoc, getDocs, collection }] = await Promise.all([
+      const [{ db }, { doc, setDoc, deleteDoc }] = await Promise.all([
         import('../lib/firebase'),
         import('firebase/firestore')
       ]);
@@ -483,20 +474,12 @@ export function StoreProvider({ children }) {
         });
         await Promise.all(savePromises);
 
-        try {
-          const existingDocs = await getDocs(collection(db, "articles"));
-          const currentIds = new Set(newArticles.map((a) => a.id));
-          const deletePromises = [];
-          existingDocs.forEach((d) => {
-            if (!currentIds.has(d.id)) {
-              deletePromises.push(deleteDoc(doc(db, "articles", d.id)));
-            }
-          });
-          if (deletePromises.length > 0) {
-            await Promise.all(deletePromises);
-          }
-        } catch (delErr) {
-          console.warn("სტატიების გასუფთავების შეცდომა:", delErr);
+        const currentIds = new Set(newArticles.map((a) => a.id));
+        const removedArticleIds = prevArticles
+          .map((a) => a?.id)
+          .filter((id) => id && !currentIds.has(id));
+        if (removedArticleIds.length > 0) {
+          await Promise.all(removedArticleIds.map((id) => deleteDoc(doc(db, "articles", id))));
         }
 
         setSaveMessage("სტატიები წარმატებით შეინახა!");

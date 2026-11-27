@@ -228,7 +228,7 @@ export default function BlogPostPage({ slugProp }) {
               alt={title}
               className="w-full h-full object-cover"
               loading="eager"
-              fetchPriority="high"
+              ref={(el) => { if (el) el.setAttribute('fetchpriority', 'high'); }}
               decoding="async"
             />
           </div>

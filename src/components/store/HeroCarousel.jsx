@@ -106,7 +106,7 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
               sizes="(max-width: 1024px) 100vw, 50vw"
               alt={pick(activeSlide, "title", lang) || "მატარე — საიუველირო კოლექცია"}
               loading="eager"
-              fetchPriority="high"
+              ref={(el) => { if (el) el.setAttribute('fetchpriority', 'high'); }}
               decoding="async"
               onError={() => setImgFailed(true)}
               className="relative z-1 w-full h-full object-contain object-center transition-opacity duration-500 p-2 sm:p-4"

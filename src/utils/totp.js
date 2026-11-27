@@ -128,8 +128,19 @@ export function getTotpAuthUri(secret, accountName = 'Admin', issuer = 'MATARE')
 }
 
 /**
- * აგენერირებს QR კოდის სურათის ბმულს.
+ * აგენერირებს QR კოდს ლოკალურად ბრაუზერში (Data URL), რათა საიდუმლო გასაღები არ გაიგზავნოს გარე სერვისებზე.
+ * @param {string} otpAuthUri - otpauth:// ბმული
+ * @returns {Promise<string>} - image/png Data URL
  */
-export function getTotpQrUrl(otpAuthUri) {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(otpAuthUri)}&margin=8`;
+export async function generateTotpQrDataUrl(otpAuthUri) {
+  if (!otpAuthUri) return '';
+  const QRCode = (await import('qrcode')).default;
+  return QRCode.toDataURL(otpAuthUri, {
+    width: 220,
+    margin: 2,
+    color: {
+      dark: '#141210',
+      light: '#FFFFFF',
+    },
+  });
 }

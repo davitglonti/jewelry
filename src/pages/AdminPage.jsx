@@ -532,6 +532,7 @@ export default function AdminPage() {
                 products={products}
                 syncData={syncData}
                 darkMode={darkMode}
+                userRole={userRole}
               />
             )}
 
