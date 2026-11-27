@@ -4,6 +4,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import LoginPage from '../../src/pages/LoginPage';
 import RegisterPage from '../../src/pages/RegisterPage';
 import ProfilePage from '../../src/pages/ProfilePage';
+import Navbar from '../../src/components/layout/Navbar';
 import AdminLoginView from '../../src/components/admin/AdminLoginView';
 import { StoreContext } from '../../src/context/StoreContext';
 import { AuthContext, getAuthErrorMessage } from '../../src/context/AuthContext';
@@ -325,6 +326,55 @@ describe('Google Authentication & Error Handling', () => {
         '',
         expect.stringContaining('tab=orders')
       );
+    });
+  });
+
+  describe('Navbar Account Indicator & Dropdown', () => {
+    const mockStore = {
+      darkMode: false,
+      setDarkMode: vi.fn(),
+      lang: 'ka',
+      setLang: vi.fn(),
+      siteSettings: {},
+      products: [],
+      favorites: [],
+      setShowFavoritesModal: vi.fn()
+    };
+
+    it('renders login link for guests and initial avatar badge + dropdown menu for authenticated users', async () => {
+      const mockLogout = vi.fn().mockResolvedValue(undefined);
+      const { rerender } = render(
+        <AuthContext.Provider value={{ user: null, userRole: 'guest', logout: mockLogout }}>
+          <StoreContext.Provider value={mockStore}>
+            <Navbar lang="ka" setLang={vi.fn()} favorites={[]} isMobileMenuOpen={false} setIsMobileMenuOpen={vi.fn()} />
+          </StoreContext.Provider>
+        </AuthContext.Provider>
+      );
+
+      const loginLink = screen.getByRole('link', { name: /შესვლა/i });
+      expect(loginLink.getAttribute('href')).toBe('/login');
+      expect(screen.queryByRole('button', { name: /ჩემი პროფილი/i })).toBeNull();
+
+      rerender(
+        <AuthContext.Provider value={{ user: { uid: 'u-1', displayName: 'Davit Glonti', email: 'davit@example.com' }, userRole: 'admin', logout: mockLogout }}>
+          <StoreContext.Provider value={mockStore}>
+            <Navbar lang="ka" setLang={vi.fn()} favorites={[]} isMobileMenuOpen={false} setIsMobileMenuOpen={vi.fn()} />
+          </StoreContext.Provider>
+        </AuthContext.Provider>
+      );
+
+      const profileBtn = screen.getByRole('button', { name: /ჩემი პროფილი/i });
+      expect(profileBtn.textContent).toContain('D');
+
+      fireEvent.click(profileBtn);
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+      expect(screen.getByText('Davit Glonti')).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /ადმინ პანელი/i })).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('menuitem', { name: /გასვლა/i }));
+      await waitFor(() => {
+        expect(mockLogout).toHaveBeenCalledTimes(1);
+      });
     });
   });
 });

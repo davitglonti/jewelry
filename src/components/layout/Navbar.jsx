@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Globe, Heart, Menu, X, LogOut, User, Search } from 'lucide-react';
+import { Globe, Heart, Menu, X, LogOut, User, Search, Package, ShieldCheck } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { useAuth } from '../../context/AuthContext';
 import { navigateTo, switchLanguage } from '../../utils/navigation';
@@ -15,8 +15,10 @@ export default function Navbar({
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const searchContainerRef = useRef(null);
   const searchInputRef = useRef(null);
+  const accountMenuRef = useRef(null);
 
   const handleToggleLang = () => {
     const nextLang = lang === "ka" ? "en" : "ka";
@@ -31,6 +33,7 @@ export default function Navbar({
 
   const handleLogout = async () => {
     try {
+      setIsAccountMenuOpen(false);
       await logout();
       navigateTo('/');
     } catch (err) {
@@ -38,20 +41,31 @@ export default function Navbar({
     }
   };
 
-  // Close search on click outside
+  // Close search and account dropdown on outside click or Escape
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
         setIsSearchOpen(false);
       }
+      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target)) {
+        setIsAccountMenuOpen(false);
+      }
     };
-    if (isSearchOpen) {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsSearchOpen(false);
+        setIsAccountMenuOpen(false);
+      }
+    };
+    if (isSearchOpen || isAccountMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isSearchOpen]);
+  }, [isSearchOpen, isAccountMenuOpen]);
 
   const prefix = lang === "en" ? "/en" : "";
   const isEn = lang === "en";
@@ -345,14 +359,116 @@ export default function Navbar({
             </button>
 
             {/* User Account / Profile - visible on sm+ screens */}
-            <a
-              href={user ? `${prefix}/profile` : `${prefix}/login`}
-              className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center hover:bg-[#F4EFE6] transition-colors cursor-pointer"
-              title={user ? (lang === "ka" ? "ჩემი პროფილი" : "Profile") : (lang === "ka" ? "შესვლა" : "Sign In")}
-              aria-label={user ? (lang === "ka" ? "ჩემი პროფილი" : "Profile") : (lang === "ka" ? "შესვლა" : "Sign In")}
-            >
-              <User className="w-[19px] h-[19px] stroke-[1.5]" />
-            </a>
+            {user ? (
+              <div ref={accountMenuRef} className="relative hidden sm:flex items-center">
+                <button
+                  type="button"
+                  onClick={() => setIsAccountMenuOpen((prev) => !prev)}
+                  aria-expanded={isAccountMenuOpen}
+                  aria-haspopup="menu"
+                  aria-label={lang === "ka" ? "ჩემი პროფილი" : "Profile"}
+                  title={user.displayName || user.email || (lang === "ka" ? "ჩემი პროფილი" : "Profile")}
+                  className={`relative w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                    isAccountMenuOpen ? 'ring-2 ring-[#9A7742]/40 bg-[#F4EFE6]' : 'hover:bg-[#F4EFE6]'
+                  }`}
+                >
+                  {user.photoURL ? (
+                    <img
+                      src={user.photoURL}
+                      alt={user.displayName || "Profile"}
+                      referrerPolicy="no-referrer"
+                      className="w-7 h-7 rounded-full object-cover border border-[#DCD6CC]"
+                    />
+                  ) : (
+                    <span className="w-7 h-7 rounded-full bg-[#F4EFE6] border border-[#9A7742]/40 text-[#1F1C18] flex items-center justify-center text-xs font-semibold tracking-wide">
+                      {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                  <span
+                    className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-[#2E7D52] ring-2 ring-white"
+                    aria-hidden="true"
+                  />
+                </button>
+
+                {isAccountMenuOpen && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 top-[calc(100%+10px)] w-60 bg-white rounded-2xl shadow-[0_15px_50px_rgba(31,28,24,0.12)] border border-[#EAE4DB] p-2 z-50 animate-fadeIn text-left"
+                  >
+                    <div className="px-3 py-2.5 border-b border-[#F3EFE8]">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs font-semibold text-[#1F1C18] truncate">
+                          {user.displayName || (user.email ? user.email.split('@')[0] : (lang === 'ka' ? 'მომხმარებელი' : 'Member'))}
+                        </p>
+                        {(userRole === 'admin' || userRole === 'superadmin') && (
+                          <span className="px-1.5 py-0.5 rounded-full bg-[#F4EFE6] text-[#9A7742] text-[9px] font-semibold uppercase tracking-wider shrink-0">
+                            Admin
+                          </span>
+                        )}
+                      </div>
+                      {user.email && (
+                        <p className="text-[11px] text-[#787168] truncate mt-0.5">{user.email}</p>
+                      )}
+                    </div>
+
+                    <div className="py-1 space-y-0.5">
+                      <a
+                        role="menuitem"
+                        href={`${prefix}/profile`}
+                        onClick={() => setIsAccountMenuOpen(false)}
+                        className="w-full px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-medium text-[#1F1C18] hover:bg-[#FAF8F5] hover:text-[#9A7742] transition-colors"
+                      >
+                        <User className="w-4 h-4 stroke-[1.5] text-[#787168]" />
+                        <span>{lang === "ka" ? "ჩემი პროფილი" : "My Profile"}</span>
+                      </a>
+
+                      <a
+                        role="menuitem"
+                        href={`${prefix}/track`}
+                        onClick={() => setIsAccountMenuOpen(false)}
+                        className="w-full px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-medium text-[#1F1C18] hover:bg-[#FAF8F5] hover:text-[#9A7742] transition-colors"
+                      >
+                        <Package className="w-4 h-4 stroke-[1.5] text-[#787168]" />
+                        <span>{lang === "ka" ? "შეკვეთის თრექინგი" : "Track Order"}</span>
+                      </a>
+
+                      {(userRole === 'admin' || userRole === 'superadmin') && (
+                        <a
+                          role="menuitem"
+                          href="/admin"
+                          onClick={() => setIsAccountMenuOpen(false)}
+                          className="w-full px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-medium text-[#9A7742] hover:bg-[#FAF8F5] transition-colors"
+                        >
+                          <ShieldCheck className="w-4 h-4 stroke-[1.5]" />
+                          <span>{lang === "ka" ? "ადმინ პანელი" : "Admin Panel"}</span>
+                        </a>
+                      )}
+                    </div>
+
+                    <div className="pt-1 border-t border-[#F3EFE8]">
+                      <button
+                        role="menuitem"
+                        type="button"
+                        onClick={handleLogout}
+                        className="w-full px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-medium text-[#787168] hover:bg-[#FDF2F2] hover:text-[#9E2A2B] transition-colors cursor-pointer"
+                      >
+                        <LogOut className="w-4 h-4 stroke-[1.5]" />
+                        <span>{lang === "ka" ? "გასვლა" : "Sign Out"}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <a
+                href={`${prefix}/login`}
+                className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center hover:bg-[#F4EFE6] transition-colors cursor-pointer"
+                title={lang === "ka" ? "შესვლა" : "Sign In"}
+                aria-label={lang === "ka" ? "შესვლა" : "Sign In"}
+              >
+                <User className="w-[19px] h-[19px] stroke-[1.5]" />
+              </a>
+            )}
           </div>
         </div>
 
