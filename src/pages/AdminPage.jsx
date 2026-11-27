@@ -30,6 +30,7 @@ export default function AdminPage() {
     products, setProducts,
     articles, setArticles, syncArticles,
     inquiries, setInquiries,
+    setAdminRoleContext,
     saveMessage, syncData
   } = useStore();
 
@@ -156,6 +157,7 @@ export default function AdminPage() {
           setUnauthorizedUser(null);
           setIsSuperAdmin(false);
           setUserRole('');
+          if (setAdminRoleContext) setAdminRoleContext('');
           setMustChangePassword(false);
           setCurrentUserObj(null);
           setCurrentUserEmail('');
@@ -172,10 +174,12 @@ export default function AdminPage() {
         if (isCancelled) return;
 
         if (adminCheck.isAdmin) {
+          const resolvedRole = adminCheck.role || (adminCheck.isSuperAdmin ? 'superadmin' : 'admin');
           setIsAdminAuthenticated(true);
           setUnauthorizedUser(null);
           setIsSuperAdmin(adminCheck.isSuperAdmin);
-          setUserRole(adminCheck.role || (adminCheck.isSuperAdmin ? 'superadmin' : 'admin'));
+          setUserRole(resolvedRole);
+          if (setAdminRoleContext) setAdminRoleContext(resolvedRole);
           setMustChangePassword(Boolean(adminCheck.mustChangePassword));
           setCurrentUserObj(user);
           setCurrentUserEmail(user.email);
@@ -195,6 +199,7 @@ export default function AdminPage() {
           setUnauthorizedUser(user.email);
           setIsSuperAdmin(false);
           setUserRole('');
+          if (setAdminRoleContext) setAdminRoleContext('');
           setMustChangePassword(false);
           setCurrentUserObj(null);
           setCurrentUserEmail(user.email);
@@ -222,6 +227,7 @@ export default function AdminPage() {
     setUnauthorizedUser(null);
     setIsSuperAdmin(false);
     setUserRole('');
+    if (setAdminRoleContext) setAdminRoleContext('');
     setMustChangePassword(false);
     setCurrentUserObj(null);
     setCurrentUserEmail('');
@@ -553,9 +559,10 @@ export default function AdminPage() {
             )}
 
             {adminTab === 'stats' && (
-              <Admin2FAGate darkMode={darkMode} lang={lang}>
+              <Admin2FAGate darkMode={darkMode} lang={lang} currentUser={currentUserObj}>
                 <StatsTab
                   products={products}
+                  inquiries={inquiries}
                   darkMode={darkMode}
                   lang={lang}
                 />

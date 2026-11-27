@@ -4,6 +4,7 @@ import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import OrderTrackingTimeline from '../components/order/OrderTrackingTimeline';
 import { useStore } from '../context/StoreContext';
+import { useAuth } from '../context/AuthContext';
 import { Search, Package, ArrowLeft, PhoneCall } from 'lucide-react';
 
 export default function OrderTrackingPage() {
@@ -17,10 +18,12 @@ export default function OrderTrackingPage() {
     inquiries = [],
     siteSettings = {}
   } = useStore();
+  const { user } = useAuth();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [searchingRemote, setSearchingRemote] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const localOrders = useMemo(() => {
@@ -32,22 +35,9 @@ export default function OrderTrackingPage() {
     }
   }, []);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    const idParam = params.get('id') || params.get('order') || params.get('code');
-    if (idParam) {
-      setSearchQuery(idParam);
-      handleFindOrder(idParam);
-    } else if (localOrders.length > 0) {
-      const first = localOrders[0];
-      const live = (inquiries || []).find((inq) => inq.id === first.id);
-      setSelectedOrder(live || first);
-    }
-  }, [inquiries, localOrders]);
-
-  const handleFindOrder = (queryToSearch) => {
-    const q = String(queryToSearch || searchQuery).trim().toLowerCase().replace('#', '');
+  const handleFindOrder = async (queryToSearch) => {
+    const rawQ = String(queryToSearch || searchQuery).trim();
+    const q = rawQ.toLowerCase().replace('#', '');
     if (!q) return;
 
     setHasSearched(true);
@@ -73,8 +63,58 @@ export default function OrderTrackingPage() {
       });
     }
 
-    setSelectedOrder(match || null);
+    if (match) {
+      setSelectedOrder(match);
+      return;
+    }
+
+    // Remote server lookup via /api/track-order when not found in local history
+    setSearchingRemote(true);
+    try {
+      if (typeof window !== 'undefined' && typeof fetch === 'function' && window.location?.origin) {
+        const headers = { 'Content-Type': 'application/json' };
+        if (user && typeof user.getIdToken === 'function') {
+          try {
+            const token = await user.getIdToken();
+            if (token) headers.Authorization = `Bearer ${token}`;
+          } catch {}
+        }
+
+        const res = await fetch(`${window.location.origin}/api/track-order`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ query: rawQ }),
+        });
+        if (res && res.ok && typeof res.json === 'function') {
+          const data = await res.json().catch(() => null);
+          if (data?.found && data.order) {
+            setSelectedOrder(data.order);
+            return;
+          }
+        }
+      }
+    } catch {
+      // Fallback safely to not found
+    } finally {
+      setSearchingRemote(false);
+    }
+
+    setSelectedOrder(null);
   };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const idParam = params.get('id') || params.get('order') || params.get('code');
+    if (idParam) {
+      setSearchQuery(idParam);
+      handleFindOrder(idParam);
+    } else if (localOrders.length > 0) {
+      const first = localOrders[0];
+      const live = (inquiries || []).find((inq) => inq.id === first.id);
+      setSelectedOrder(live || first);
+    }
+  }, [inquiries, localOrders]);
 
   const handleFormSubmit = (e) => {
     e.preventDefault();

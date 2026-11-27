@@ -7,6 +7,7 @@ import {
 import { useStore } from '../../context/StoreContext';
 import { useAuth } from '../../context/AuthContext';
 import { formatPrice } from '../../utils/i18n';
+import { submitOrderSecure } from '../../lib/ordersClient';
 
 export default function QuickBuyModal({
   isOpen,
@@ -67,7 +68,7 @@ export default function QuickBuyModal({
 
   if (!isOpen) return null;
 
-  const handleSubmitOrder = (e) => {
+  const handleSubmitOrder = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -96,20 +97,33 @@ export default function QuickBuyModal({
     setSubmitting(true);
 
     const orderId = `MTR-${Math.floor(100000 + Math.random() * 900000)}`;
-    const newOrder = {
+    const showroomAddr = siteSettings?.address || 'თბილისი, რუსთაველის გამზ. #24';
+    const mappedItems = rawProducts.map((p) => ({
+      id: p.id,
+      name: p.name,
+      price: p.price,
+      sku: p.sku || p.id,
+      size: p.sizes?.[0] || 'სტანდარტული'
+    }));
+
+    const fallbackOrder = {
       id: orderId,
       date: new Date().toLocaleString('ka-GE'),
       clientName: clientName.trim(),
       clientPhone: cleanedPhone,
+      clientEmail: user?.email ? user.email.toLowerCase().trim() : '',
       deliveryMethod: deliveryMethod === 'courier' ? 'საკურიერო მიწოდება' : 'შოურუმში გატანა',
-      address: deliveryMethod === 'courier' ? address.trim() : 'შოურუმი (მ. კოსტავას 75, თბილისი)',
+      city: 'თბილისი',
+      address: deliveryMethod === 'courier' ? address.trim() : showroomAddr,
       paymentMethod:
         paymentMethod === 'card'
           ? 'ონლაინ ბარათით'
           : paymentMethod === 'cod'
           ? 'კურიერთან ნაღდი/ტერმინალი'
           : 'შოურუმში გადახდა',
+      paymentStatus: 'გადასახდელია',
       notes: notes.trim(),
+      items: mappedItems,
       productName: rawProducts.map((p) => p.name).join(', '),
       sku: rawProducts.map((p) => p.sku || p.id).join(', '),
       totalPrice,
@@ -118,22 +132,31 @@ export default function QuickBuyModal({
     };
 
     try {
-      const updatedInquiries = [newOrder, ...(inquiries || [])];
-      if (setInquiries) setInquiries(updatedInquiries);
-      if (syncData) syncData(siteSettings, products, updatedInquiries);
+      const confirmedOrder = await submitOrderSecure({
+        serverPayload: {
+          lang,
+          clientName: clientName.trim(),
+          clientPhone: cleanedPhone,
+          clientEmail: user?.email || '',
+          deliveryType: deliveryMethod === 'showroom' ? 'showroom' : 'courier',
+          city: 'თბილისი',
+          address: deliveryMethod === 'courier' ? address.trim() : showroomAddr,
+          paymentType: paymentMethod === 'card' ? 'card' : 'cod',
+          isGift: false,
+          notes: notes.trim(),
+          items: mappedItems.map((it) => ({ id: it.id, sku: it.sku, size: it.size })),
+        },
+        fallbackOrder,
+        user,
+        inquiries,
+        setInquiries,
+      });
 
-      try {
-        const prevHistory = JSON.parse(localStorage.getItem('matare_orders') || '[]');
-        localStorage.setItem('matare_orders', JSON.stringify([newOrder, ...prevHistory]));
-      } catch (err) {
-        console.warn('Local storage order history error:', err);
-      }
-
-      setCompletedOrder(newOrder);
-      if (onSuccess) onSuccess(newOrder);
+      setCompletedOrder(confirmedOrder);
+      if (onSuccess) onSuccess(confirmedOrder);
     } catch (err) {
       console.error('Order placement error:', err);
-      setErrorMsg(lang === 'ka' ? 'შეკვეთის გაფორმებისას დაფიქსირდა შეცდომა' : 'Failed to place order');
+      setErrorMsg(err?.message || (lang === 'ka' ? 'შეკვეთის გაფორმებისას დაფიქსირდა შეცდომა' : 'Failed to place order'));
     } finally {
       setSubmitting(false);
     }

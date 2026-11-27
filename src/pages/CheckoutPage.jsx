@@ -9,6 +9,7 @@ import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
 import { formatPrice } from '../utils/i18n';
 import { navigateTo } from '../utils/navigation';
+import { validatePromoClient, submitOrderSecure } from '../lib/ordersClient';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import FavoritesModal from '../components/modals/FavoritesModal';
@@ -162,7 +163,7 @@ export default function CheckoutPage() {
 
   const finalTotal = Math.max(0, rawSubtotal - discountAmount) + shippingFee + giftFee;
 
-  const handleApplyPromo = (e) => {
+  const handleApplyPromo = async (e) => {
     e?.preventDefault();
     setPromoError('');
     const code = promoCodeInput.trim().toUpperCase();
@@ -172,70 +173,23 @@ export default function CheckoutPage() {
       return;
     }
 
-    const availableCodes = siteSettings?.promoCodes && Array.isArray(siteSettings.promoCodes)
-      ? siteSettings.promoCodes
-      : [
-          { code: 'VIP-AURELIA10', type: 'percentage', value: 10, percent: 0.1, label: '-10% VIP ფასდაკლება', isActive: true },
-          { code: 'MATARE10', type: 'percentage', value: 10, percent: 0.1, label: '-10% VIP ფასდაკლება', isActive: true }
-        ];
-
-    const match = availableCodes.find((c) => c.code?.toUpperCase() === code);
-
-    if (!match && (code === 'VIP-AURELIA10' || code === 'MATARE10')) {
-      setAppliedPromo({ code, type: 'percentage', percent: 0.1, value: 10, label: '-10% VIP ფასდაკლება' });
-      setPromoCodeInput('');
-      return;
-    }
-
-    if (!match || match.isActive === false) {
-      setPromoError(lang === 'ka' ? 'არასწორი პრომო კოდი' : 'Invalid promo code');
-      return;
-    }
-
-    if (match.expiresAt) {
-      const exp = new Date(match.expiresAt);
-      if (!isNaN(exp.getTime()) && exp < new Date()) {
-        setPromoError(lang === 'ka' ? 'პრომო კოდს ვადა გაუვიდა' : 'Promo code has expired');
-        return;
-      }
-    }
-
-    if (match.maxUses && (match.usedCount || 0) >= match.maxUses) {
-      setPromoError(lang === 'ka' ? 'პრომო კოდის გამოყენების ლიმიტი ამოწურულია' : 'Promo code usage limit reached');
-      return;
-    }
-
-    if (match.minOrderAmount && rawSubtotal < match.minOrderAmount) {
-      setPromoError(
-        lang === 'ka'
-          ? `პრომო კოდი მოითხოვს მინიმუმ ${match.minOrderAmount} ₾ შეკვეთას`
-          : `Promo code requires minimum order of ${match.minOrderAmount} GEL`
-      );
-      return;
-    }
-
-    const label =
-      match.description ||
-      (match.type === 'percentage'
-        ? `-${match.value}% ${match.code === 'VIP-AURELIA10' ? 'VIP ფასდაკლება' : 'ფასდაკლება'}`
-        : match.type === 'free_shipping'
-        ? (lang === 'ka' ? 'უფასო მიწოდება' : 'Free Shipping')
-        : `-${match.value} ₾ ფასდაკლება`);
-
-    const percent = match.type === 'percentage' ? (match.value / 100) : 0;
-
-    setAppliedPromo({
-      id: match.id,
-      code: match.code,
-      type: match.type || 'percentage',
-      value: match.value,
-      percent,
-      label
+    const result = await validatePromoClient({
+      code,
+      subtotal: rawSubtotal,
+      siteSettings,
+      lang,
     });
+
+    if (!result.valid) {
+      setPromoError(result.error || (lang === 'ka' ? 'არასწორი პრომო კოდი' : 'Invalid promo code'));
+      return;
+    }
+
+    setAppliedPromo(result.promo);
     setPromoCodeInput('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
 
@@ -270,31 +224,33 @@ export default function CheckoutPage() {
 
     const orderId = `MTR-${Math.floor(100000 + Math.random() * 900000)}`;
 
-    const newOrder = {
+    const mappedItems = orderItems.map((p) => {
+      const itemSize = itemSizes[p.id] || (p.sizes && p.sizes.length > 0 ? p.sizes[0] : '') || 'სტანდარტული';
+      return {
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        sku: p.sku || p.id,
+        size: itemSize
+      };
+    });
+
+    const fallbackOrder = {
       id: orderId,
       date: new Date().toLocaleString('ka-GE'),
       clientName: clientName.trim(),
       clientPhone: cleanedPhone,
-      clientEmail: clientEmail.trim(),
+      clientEmail: clientEmail.trim().toLowerCase(),
       deliveryMethod: `კურიერით (${city})`,
       city,
       address: `${city}, ${address.trim()}`,
       paymentMethod: paymentMethod === 'card' ? 'ონლაინ ბარათით' : 'კურიერთან გადახდა',
-      paymentStatus: paymentMethod === 'card' ? 'გადახდილია' : 'გადასახდელია',
+      paymentStatus: 'გადასახდელია',
       isGift,
       giftFee,
       shippingFee,
       notes: notes.trim(),
-      items: orderItems.map((p) => {
-        const itemSize = itemSizes[p.id] || (p.sizes && p.sizes.length > 0 ? p.sizes[0] : '') || 'სტანდარტული';
-        return {
-          id: p.id,
-          name: p.name,
-          price: p.price,
-          sku: p.sku || p.id,
-          size: itemSize
-        };
-      }),
+      items: mappedItems,
       productName: orderItems
         .map((p) => {
           const itemSize = itemSizes[p.id] || (p.sizes && p.sizes.length > 0 ? p.sizes[0] : '');
@@ -309,47 +265,32 @@ export default function CheckoutPage() {
     };
 
     try {
-      let nextSettings = siteSettings;
-      if (appliedPromo?.id && siteSettings?.promoCodes) {
-        const updatedCodes = siteSettings.promoCodes.map((c) => {
-          if (c.id === appliedPromo.id) {
-            return { ...c, usedCount: (c.usedCount || 0) + 1 };
-          }
-          return c;
-        });
-        nextSettings = { ...siteSettings, promoCodes: updatedCodes };
-      }
+      const confirmedOrder = await submitOrderSecure({
+        serverPayload: {
+          lang,
+          clientName: clientName.trim(),
+          clientPhone: cleanedPhone,
+          clientEmail: clientEmail.trim(),
+          deliveryType: 'courier',
+          city,
+          address: address.trim(),
+          paymentType: paymentMethod,
+          isGift,
+          notes: notes.trim(),
+          items: mappedItems.map((it) => ({ id: it.id, sku: it.sku, size: it.size })),
+          promoCode: appliedPromo?.code || '',
+        },
+        fallbackOrder,
+        user,
+        inquiries,
+        setInquiries,
+      });
 
-      const updated = [newOrder, ...(inquiries || [])];
-      if (setInquiries) setInquiries(updated);
-      if (syncData) syncData(nextSettings, products, updated);
-
-      try {
-        const prevHistory = JSON.parse(localStorage.getItem('matare_orders') || '[]');
-        localStorage.setItem('matare_orders', JSON.stringify([newOrder, ...prevHistory]));
-      } catch (err) {
-        console.warn('Local storage error:', err);
-      }
-
-      if (typeof window !== 'undefined' && window.location?.origin) {
-        try {
-          fetch(`${window.location.origin}/api/send-order-notification`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              order: newOrder,
-              origin: window.location.origin,
-              adminEmail: nextSettings?.email || nextSettings?.contactEmail
-            })
-          }).catch(() => {});
-        } catch {}
-      }
-
-      setCompletedOrder(newOrder);
+      setCompletedOrder(confirmedOrder);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       console.error('Order placement error:', err);
-      setFormError(lang === 'ka' ? 'შეკვეთის გაფორმება ვერ მოხერხდა' : 'Failed to place order');
+      setFormError(err?.message || (lang === 'ka' ? 'შეკვეთის გაფორმება ვერ მოხერხდა' : 'Failed to place order'));
     } finally {
       setSubmitting(false);
     }

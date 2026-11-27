@@ -138,11 +138,21 @@ export default function LoginPage({ initialMode = 'login' }) {
       await confirmReset(oobCode, newPassword);
       if (verifiedEmail) {
         try {
-          await fetch('/api/activate-admin-account', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: verifiedEmail })
-          });
+          // If activating an admin invite or user just reset password, authenticate to obtain Firebase ID token
+          await login(verifiedEmail, newPassword);
+          const { getLazyAuth } = await import('../lib/firebase');
+          const authInst = await getLazyAuth();
+          const token = await authInst?.currentUser?.getIdToken?.();
+          if (token) {
+            await fetch('/api/activate-admin-account', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ email: verifiedEmail })
+            });
+          }
         } catch (actErr) {
           console.warn('Admin activation check error:', actErr);
         }

@@ -1,9 +1,17 @@
 // tests/components/QuickBuyModal.test.jsx
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import QuickBuyModal from '../../src/components/modals/QuickBuyModal';
 import { StoreContext } from '../../src/context/StoreContext';
+
+vi.mock('../../src/lib/firebase', () => ({
+  db: null,
+  auth: null,
+  getLazyAuth: vi.fn().mockResolvedValue(null),
+}));
+
+vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Network disabled in unit tests'));
 
 vi.mock('../../src/context/AuthContext', () => ({
   useAuth: () => ({
@@ -63,7 +71,7 @@ describe('QuickBuyModal component', () => {
     expect(screen.getByText(/შეიყვანეთ სწორი ქართული მობილურის ნომერი/i)).toBeInTheDocument();
   });
 
-  it('completes order successfully when valid details are provided', () => {
+  it('completes order successfully when valid details are provided', async () => {
     const handleSuccess = vi.fn();
     renderWithContext(
       <QuickBuyModal isOpen={true} onClose={vi.fn()} items={sampleItems} onSuccess={handleSuccess} />
@@ -78,7 +86,9 @@ describe('QuickBuyModal component', () => {
     const form = screen.getByRole('dialog').querySelector('form');
     fireEvent.submit(form);
 
-    expect(screen.getByText(/შეკვეთა მიღებულია!/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/შეკვეთა მიღებულია!/i)).toBeInTheDocument();
+    });
     expect(screen.getByText(/WhatsApp-ით დაკავშირება/i)).toBeInTheDocument();
     expect(handleSuccess).toHaveBeenCalled();
   });

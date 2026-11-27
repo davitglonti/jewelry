@@ -77,11 +77,19 @@ export async function checkUserIsAdmin(user, db) {
                 joinedAt: Date.now()
               });
             } catch {
-              fetch('/api/activate-admin-account', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
-              }).catch(() => {});
+              try {
+                const token = typeof user.getIdToken === 'function' ? await user.getIdToken() : '';
+                if (token) {
+                  fetch('/api/activate-admin-account', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ email })
+                  }).catch(() => {});
+                }
+              } catch {}
             }
           }
 

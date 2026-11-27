@@ -1,79 +1,48 @@
 // api/send-reset-link.js
-import admin from 'firebase-admin';
-
-function getAdminAuth() {
-  if (!admin.apps.length) {
-    const projectId = process.env.FIREBASE_PROJECT_ID || 'jewelry-4fdb3';
-    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-    let rawKey = process.env.FIREBASE_PRIVATE_KEY || '';
-
-    if (!clientEmail || !rawKey) {
-      throw new Error('Firebase Admin-ის პარამეტრები (CLIENT_EMAIL / PRIVATE_KEY) არ არის მითითებული');
-    }
-
-    rawKey = rawKey.trim();
-    if (rawKey.startsWith('"') && rawKey.endsWith('"')) {
-      rawKey = rawKey.slice(1, -1);
-    }
-    if (rawKey.startsWith("'") && rawKey.endsWith("'")) {
-      rawKey = rawKey.slice(1, -1);
-    }
-    const privateKey = rawKey.replace(/\\n/g, '\n');
-
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId,
-        clientEmail,
-        privateKey,
-      }),
-    });
-  }
-
-  return admin.auth();
-}
+import { getAdminAuth } from './_lib/firebaseAdmin.js';
+import { setCorsHeaders, parseBody, resolveSafeOrigin, escapeHtml, getClientIp, checkRateLimit } from './_lib/security.js';
+import { sendResendEmail } from './_lib/orders.js';
 
 export default async function handler(req, res) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  setCorsHeaders(req, res, 'POST, OPTIONS', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
   try {
-    const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+    const body = parseBody(req);
     const email = (body.email || '').toString().trim().toLowerCase();
-    const clientOrigin = (body.origin || '').toString().trim();
 
-    if (!email) {
-      return res.status(400).json({ error: 'გთხოვთ მიუთითოთ ელფოსტის მისამართი' });
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'გთხოვთ მიუთითოთ სწორი ელფოსტის მისამართი' });
+    }
+
+    // Strict rate limit per IP and per email to stop reset floods
+    const ip = getClientIp(req);
+    const ipLimit = checkRateLimit(`reset-ip:${ip}`, 8, 10 * 60_000);
+    const emailLimit = checkRateLimit(`reset-email:${email}`, 3, 10 * 60_000);
+    if (!ipLimit.allowed || !emailLimit.allowed) {
+      return res.status(429).json({
+        error: 'ძალიან ბევრი მცდელობაა. გთხოვთ სცადოთ რამდენიმე წუთში.',
+      });
     }
 
     const auth = getAdminAuth();
 
-    // 1. შევამოწმოთ არსებობს თუ არა მომხმარებელი
+    // Prevent user email enumeration: return identical success message if user doesn't exist
     try {
       await auth.getUserByEmail(email);
     } catch (userErr) {
       if (userErr.code === 'auth/user-not-found') {
-        return res.status(404).json({
-          code: 'auth/user-not-found',
-          error: 'ამ ელფოსტით დარეგისტრირებული მომხმარებელი ვერ მოიძებნა.',
+        return res.status(200).json({
+          success: true,
+          message: 'თუ მითითებული ელფოსტა რეგისტრირებულია, პაროლის აღდგენის ბმული გამოიგზავნა.',
         });
       }
       throw userErr;
     }
 
-    // 2. დავაგენერიროთ Firebase-ის ოფიციალური reset link
     const firebaseLink = await auth.generatePasswordResetLink(email);
-
-    // 3. ამოვიღოთ oobCode
     const parsed = new URL(firebaseLink);
     const oobCode = parsed.searchParams.get('oobCode');
 
@@ -81,21 +50,13 @@ export default async function handler(req, res) {
       throw new Error('აღდგენის კოდის გენერირება ვერ მოხერხდა');
     }
 
-    // 4. შევქმნათ ჩვენი საკუთარი ბრენდირებული ლინკი (matare.store ან localhost)
-    let baseUrl = 'https://www.matare.store';
-    if (clientOrigin && (clientOrigin.includes('localhost') || clientOrigin.includes('127.0.0.1'))) {
-      baseUrl = clientOrigin.replace(/\/+$/, '');
-    }
+    const baseUrl = resolveSafeOrigin(body.origin);
     const brandedResetLink = `${baseUrl}/reset-password?mode=resetPassword&oobCode=${encodeURIComponent(oobCode)}`;
 
-    // 5. გავაგზავნოთ Resend-ის მეშვეობით
-    const resendApiKey = process.env.RESEND_API_KEY;
-    if (!resendApiKey) {
-      throw new Error('RESEND_API_KEY არ არის მითითებული');
-    }
+    const safeEmail = escapeHtml(email);
+    const safeLink = escapeHtml(brandedResetLink);
 
-    const emailHtml = `
-<!DOCTYPE html>
+    const emailHtml = `<!DOCTYPE html>
 <html lang="ka">
 <head>
   <meta charset="utf-8">
@@ -117,7 +78,7 @@ export default async function handler(req, res) {
             <td style="padding: 24px 0; border-top: 1px solid #292524; border-bottom: 1px solid #292524;">
               <h2 style="margin: 0 0 14px; font-size: 20px; color: #ffffff; font-weight: 500;">პაროლის აღდგენა</h2>
               <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6; color: #d6d3d1;">
-                მოგესალმებით, თქვენს ანგარიშზე (<strong>${email}</strong>) დაფიქსირდა პაროლის აღდგენის მოთხოვნა.
+                მოგესალმებით, თქვენს ანგარიშზე (<strong>${safeEmail}</strong>) დაფიქსირდა პაროლის აღდგენის მოთხოვნა.
               </p>
               <p style="margin: 0 0 28px; font-size: 14px; line-height: 1.6; color: #d6d3d1;">
                 ახალი პაროლის დასაყენებლად გთხოვთ დააჭიროთ ქვემოთ მოცემულ ოქროსფერ ღილაკს:
@@ -125,7 +86,7 @@ export default async function handler(req, res) {
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
-                    <a href="${brandedResetLink}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #f59e0b, #d97706); color: #000000; font-weight: 700; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; text-decoration: none; padding: 15px 36px; border-radius: 14px; box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);">
+                    <a href="${safeLink}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #f59e0b, #d97706); color: #000000; font-weight: 700; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; text-decoration: none; padding: 15px 36px; border-radius: 14px; box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);">
                       ახალი პაროლის დაყენება →
                     </a>
                   </td>
@@ -135,7 +96,7 @@ export default async function handler(req, res) {
                 თუ ღილაკი არ მუშაობს, შეგიძლიათ გადახვიდეთ პირდაპირ ამ ბმულზე:
               </p>
               <p style="margin: 0; font-size: 11px; color: #f59e0b; word-break: break-all; text-align: center; line-height: 1.5;">
-                <a href="${brandedResetLink}" style="color: #f59e0b; text-decoration: underline;">${brandedResetLink}</a>
+                <a href="${safeLink}" style="color: #f59e0b; text-decoration: underline;">${safeLink}</a>
               </p>
             </td>
           </tr>
@@ -154,50 +115,39 @@ export default async function handler(req, res) {
     </tr>
   </table>
 </body>
-</html>
-    `;
+</html>`;
 
-    // დომენი matare.store დადასტურებულია Resend-ში, ამიტომ ვაგზავნით ოფიციალური noreply@matare.store-ით
-    const fromAddress = process.env.RESEND_FROM_EMAIL || 'მატარე <noreply@matare.store>';
-
-    const resendRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: fromAddress,
-        to: [email],
-        subject: 'პაროლის აღდგენა — მატარე',
-        html: emailHtml,
-      }),
-    });
-
-    const resendData = await resendRes.json();
-
-    if (!resendRes.ok) {
-      console.error('Resend error:', resendData);
-      if (resendData?.message?.includes('testing emails to your own email address')) {
-        return res.status(403).json({
-          code: 'resend/domain-not-verified',
-          error: `Resend ტესტურ რეჟიმში მეილს აგზავნის მხოლოდ თქვენს ანგარიშზე (datiglonti@gmail.com). სხვა მომხმარებლებზე გასაგზავნად გთხოვთ დაასრულოთ matare.store-ის დადასტურება resend.com/domains-ში.`,
-          resetLink: brandedResetLink,
-        });
-      }
-      throw new Error(resendData.message || 'Resend-ით მეილის გაგზავნა ვერ მოხერხდა');
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY არ არის მითითებული');
     }
 
+    const resendRes = await sendResendEmail({
+      to: email,
+      subject: 'პაროლის აღდგენა — მატარე',
+      html: emailHtml,
+    });
+
+    if (!resendRes.ok) {
+      console.error('Resend error:', resendRes.data);
+      if (resendRes.data?.message?.includes('testing emails to your own email address')) {
+        // CRITICAL: Never leak resetLink in error response!
+        return res.status(403).json({
+          code: 'resend/domain-not-verified',
+          error: 'Resend დომენი არ არის დადასტურებული სხვა მისამართებზე გასაგზავნად.',
+        });
+      }
+      throw new Error(resendRes.data?.message || 'Resend-ით მეილის გაგზავნა ვერ მოხერხდა');
+    }
+
+    // CRITICAL: Never expose resetLink / oobCode in the JSON response!
     return res.status(200).json({
       success: true,
-      message: 'პაროლის აღდგენის ბმული წარმატებით გაიგზავნა!',
-      id: resendData.id,
-      resetLink: brandedResetLink,
+      message: 'თუ მითითებული ელფოსტა რეგისტრირებულია, პაროლის აღდგენის ბმული გამოიგზავნა.',
     });
   } catch (err) {
     console.error('send-reset-link error:', err);
     return res.status(500).json({
-      error: err.message || 'დაფიქსირდა შეცდომა. გთხოვთ სცადოთ ხელახლა.',
+      error: 'დაფიქსირდა შეცდომა. გთხოვთ სცადოთ ხელახლა.',
     });
   }
 }

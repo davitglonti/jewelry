@@ -82,7 +82,9 @@ export async function trackProductView(productId) {
         views: increment(1),
         uniqueViews: increment(isUnique ? 1 : 0),
         lastViewedAt: serverTimestamp(),
-        [`dailyViews.${todayKey}`]: increment(1),
+        dailyViews: {
+          [todayKey]: increment(1),
+        },
       },
       { merge: true }
     );

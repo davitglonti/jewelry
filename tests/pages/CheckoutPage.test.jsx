@@ -5,6 +5,12 @@ import CheckoutPage from '../../src/pages/CheckoutPage';
 import { StoreContext } from '../../src/context/StoreContext';
 import { AuthContext } from '../../src/context/AuthContext';
 
+vi.mock('../../src/lib/firebase', () => ({
+  db: null,
+  auth: null,
+  getLazyAuth: vi.fn().mockResolvedValue(null),
+}));
+
 describe('CheckoutPage', () => {
   const dummyProducts = [
     {
@@ -56,6 +62,7 @@ describe('CheckoutPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Network disabled in unit tests'));
     delete window.location;
     window.location = new URL('http://localhost:5173/checkout?productId=aur-101&size=16.5');
     localStorage.clear();
@@ -92,7 +99,7 @@ describe('CheckoutPage', () => {
     expect(sizeSelect.value).toBe('17.5');
   });
 
-  it('validates and applies VIP promo code VIP-AURELIA10 giving 10% discount', () => {
+  it('validates and applies VIP promo code VIP-AURELIA10 giving 10% discount', async () => {
     renderWithProviders();
 
     const promoInput = screen.getByPlaceholderText(/VIP პრომო კოდი/i);
@@ -101,13 +108,17 @@ describe('CheckoutPage', () => {
     // Invalid code first
     fireEvent.change(promoInput, { target: { value: 'WRONG' } });
     fireEvent.click(applyBtn);
-    expect(screen.getByText(/არასწორი პრომო კოდი/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/არასწორი პრომო კოდი/i)).toBeInTheDocument();
+    });
 
     // Valid promo
     fireEvent.change(promoInput, { target: { value: 'VIP-AURELIA10' } });
     fireEvent.click(applyBtn);
 
-    expect(screen.getByText(/-10% VIP ფასდაკლება/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/-10% VIP ფასდაკლება/i)).toBeInTheDocument();
+    });
   });
 
   it('validates phone and address for courier delivery and submits order successfully', async () => {

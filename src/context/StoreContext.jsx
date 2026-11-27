@@ -9,9 +9,14 @@ const KEYS = {
   settings: "aurelia_settings_v2",
   products: "aurelia_products_v2",
   favs: "aurelia_favs_v2",
-  inquiries: "aurelia_inquiries_v2",
   articles: "aurelia_articles_v1",
   compare: "aurelia_compare_v1",
+};
+
+const stripPrivateSettings = (settings) => {
+  if (!settings || typeof settings !== 'object') return {};
+  const { promoCodes, ...publicSettings } = settings;
+  return publicSettings;
 };
 
 const FIRESTORE_PROJECT_ID = "jewelry-4fdb3";
@@ -90,8 +95,8 @@ export function StoreProvider({ children }) {
   });
 
   const [siteSettings, setSiteSettings] = useState(() => {
-    const cached = readCache(KEYS.settings);
-    return cached ? { ...DEFAULT_SETTINGS, ...cached } : DEFAULT_SETTINGS;
+    const cached = stripPrivateSettings(readCache(KEYS.settings));
+    return Object.keys(cached).length > 0 ? { ...DEFAULT_SETTINGS, ...cached } : DEFAULT_SETTINGS;
   });
   const [products, setProducts] = useState(() => sortNewestFirst(readCache(KEYS.products) || DEFAULT_PRODUCTS));
   const [articles, setArticles] = useState(() => readCache(KEYS.articles) || DEFAULT_ARTICLES);
@@ -99,7 +104,9 @@ export function StoreProvider({ children }) {
   const [showFavoritesModal, setShowFavoritesModal] = useState(false);
   const [compareList, setCompareList] = useState(() => readCache(KEYS.compare) || []);
   const [showCompareModal, setShowCompareModal] = useState(false);
-  const [inquiries, setInquiries] = useState(() => readCache(KEYS.inquiries) || []);
+  // SECURITY: Never preload all customer inquiries from public localStorage/REST cache
+  const [inquiries, setInquiries] = useState([]);
+  const [adminRoleContext, setAdminRoleContext] = useState('');
   const [saveMessage, setSaveMessage] = useState("");
 
   const [settingsLoaded, setSettingsLoaded] = useState(true);
@@ -157,31 +164,94 @@ export function StoreProvider({ children }) {
   useEffect(() => {
     const isAdmin = window.location.pathname.startsWith("/admin");
 
+    // Purge any legacy client-cached customer PII if outside admin
+    if (!isAdmin) {
+      try {
+        localStorage.removeItem("aurelia_inquiries_v2");
+      } catch {}
+    }
+
     // 1. თუ მომხმარებელი არის ადმინ პანელში, ჩავტვირთოთ რეალურ დროში (onSnapshot)
     if (isAdmin) {
       let unsubSettings = () => {};
+      let unsubPrivate = () => {};
+      let unsubInquiries = () => {};
       let unsubProducts = () => {};
       let unsubArticles = () => {};
+      let legacyInquiriesCache = [];
+      let collectionInquiriesCache = [];
+      let publicSettingsCache = null;
+      let privateConfigCache = null;
+
+      const mergeAndSetSettings = () => {
+        if (!publicSettingsCache && !privateConfigCache) return;
+        const base = publicSettingsCache ? { ...DEFAULT_SETTINGS, ...publicSettingsCache } : { ...DEFAULT_SETTINGS };
+        if (privateConfigCache && Array.isArray(privateConfigCache.promoCodes)) {
+          base.promoCodes = privateConfigCache.promoCodes;
+        }
+        setSiteSettings(base);
+        writeCache(KEYS.settings, stripPrivateSettings(base));
+      };
+
+      const mergeAndSetInquiries = () => {
+        const map = new Map();
+        // Legacy inquiries first, then authoritative /inquiries collection overwrites
+        legacyInquiriesCache.forEach((inq) => {
+          if (inq && inq.id) map.set(inq.id, inq);
+        });
+        collectionInquiriesCache.forEach((inq) => {
+          if (inq && inq.id) map.set(inq.id, inq);
+        });
+        const merged = Array.from(map.values()).sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
+        setInquiries(merged);
+      };
 
       import('../lib/firebase').then(async ({ db }) => {
         if (!db) return;
         const { doc, onSnapshot, collection } = await import('firebase/firestore');
 
-        // პარამეტრების რეალურ დროში მოსმენა
+        // საჯარო პარამეტრების რეალურ დროში მოსმენა
         unsubSettings = onSnapshot(
           doc(db, "aurelia", "storeData"),
           (docSnap) => {
             if (docSnap.exists()) {
               const data = docSnap.data();
               if (data.settings) {
-                setSiteSettings({ ...DEFAULT_SETTINGS, ...data.settings });
-                writeCache(KEYS.settings, data.settings);
+                publicSettingsCache = data.settings;
+                mergeAndSetSettings();
               }
-              if (data.inquiries) setInquiries(data.inquiries);
+              if (Array.isArray(data.inquiries)) {
+                legacyInquiriesCache = data.inquiries;
+                mergeAndSetInquiries();
+              }
             }
           },
           (error) => console.error("Firebase storeData შეცდომა:", error)
         );
+
+        // პრივატული კონფიგურაციის (promoCodes) რეალურ დროში მოსმენა (მხოლოდ სრული ადმინისთვის)
+        if (adminRoleContext === 'superadmin' || adminRoleContext === 'admin') {
+          unsubPrivate = onSnapshot(
+            doc(db, "aurelia", "privateConfig"),
+            (docSnap) => {
+              if (docSnap.exists()) {
+                privateConfigCache = docSnap.data();
+                mergeAndSetSettings();
+              }
+            },
+            () => {}
+          );
+
+          // შეკვეთების რეალურ დროში მოსმენა /inquiries კოლექციიდან
+          unsubInquiries = onSnapshot(
+            collection(db, "inquiries"),
+            (colSnap) => {
+              collectionInquiriesCache = colSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+              mergeAndSetInquiries();
+            },
+            () => {}
+          );
+        }
 
         // პროდუქტების რეალურ დროში მოსმენა
         unsubProducts = onSnapshot(
@@ -213,13 +283,15 @@ export function StoreProvider({ children }) {
 
       return () => {
         unsubSettings();
+        unsubPrivate();
+        unsubInquiries();
         unsubProducts();
         unsubArticles();
       };
     }
 
     // 2. ჩვეულებრივი მომხმარებლისთვის ვიყენებთ მსუბუქ ასინქრონულ REST ფეჩს
-    // არ ვტვირთავთ მძიმე Firebase SDK-ს (476 KB) და არ ვხსნით Listen/channel (2.9 MB) სტრიმინგს მთავარ გვერდზე!
+    // არ ვტვირთავთ პერსონალურ მონაცემებს (inquiries) და პრივატულ პრომო კოდებს!
     let isMounted = true;
     let cancelTimer = null;
 
@@ -237,10 +309,10 @@ export function StoreProvider({ children }) {
         if (storeRes && storeRes.fields) {
           const data = parseFirestoreFields(storeRes.fields);
           if (data.settings) {
-            setSiteSettings({ ...DEFAULT_SETTINGS, ...data.settings });
-            writeCache(KEYS.settings, data.settings);
+            const safeSettings = stripPrivateSettings(data.settings);
+            setSiteSettings({ ...DEFAULT_SETTINGS, ...safeSettings });
+            writeCache(KEYS.settings, safeSettings);
           }
-          if (data.inquiries) setInquiries(data.inquiries);
         }
 
         if (prodRes && prodRes.documents && prodRes.documents.length > 0) {
@@ -292,15 +364,15 @@ export function StoreProvider({ children }) {
         }
       }
     };
-  }, []);
+  }, [adminRoleContext]);
 
   // მონაცემების შენახვა (Firebase + LocalStorage)
   const syncData = async (newSettings, newProducts, newInquiries = inquiries) => {
     const sortedProducts = sortNewestFirst(newProducts);
     setProducts(sortedProducts);
-    writeCache(KEYS.settings, newSettings);
+    const publicSettings = stripPrivateSettings(newSettings);
+    writeCache(KEYS.settings, publicSettings);
     writeCache(KEYS.products, sortedProducts);
-    writeCache(KEYS.inquiries, newInquiries);
 
     try {
       const [{ db }, { doc, setDoc, deleteDoc, getDocs, collection }] = await Promise.all([
@@ -309,14 +381,53 @@ export function StoreProvider({ children }) {
       ]);
 
       if (db) {
-        // 1. პარამეტრების და მოთხოვნების შენახვა
-        await setDoc(doc(db, "aurelia", "storeData"), {
-          settings: newSettings,
-          inquiries: newInquiries,
-          updatedAt: new Date().toISOString(),
-        });
+        const isModeratorOnly = adminRoleContext === 'moderator';
 
-        // 2. თითოეული პროდუქტის შენახვა ცალკე დოკუმენტად products კოლექციაში
+        if (!isModeratorOnly) {
+          // 1. საჯარო პარამეტრების შენახვა (პრივატული შეკვეთებისა და პრომო კოდების გარეშე)
+          await setDoc(doc(db, "aurelia", "storeData"), {
+            settings: publicSettings,
+            updatedAt: new Date().toISOString(),
+          });
+
+          // 1ბ. პრომო კოდების პრივატულ დოკუმენტში შენახვა
+          if (newSettings && Array.isArray(newSettings.promoCodes)) {
+            await setDoc(
+              doc(db, "aurelia", "privateConfig"),
+              {
+                promoCodes: newSettings.promoCodes,
+                updatedAt: new Date().toISOString(),
+              },
+              { merge: true }
+            );
+          }
+
+          // 1გ. შეკვეთების შენახვა ცალკე დაცულ /inquiries კოლექციაში (თუ შეკვეთები შეიცვალა)
+          if (Array.isArray(newInquiries)) {
+            const inquiryIds = new Set();
+            const inquirySaves = newInquiries.map((inq) => {
+              const docId = String(inq.id || `inq-${Date.now()}`);
+              inquiryIds.add(docId);
+              return setDoc(doc(db, "inquiries", docId), { ...inq, id: docId });
+            });
+            await Promise.all(inquirySaves);
+
+            try {
+              const existingInq = await getDocs(collection(db, "inquiries"));
+              const delInq = [];
+              existingInq.forEach((d) => {
+                if (!inquiryIds.has(d.id)) {
+                  delInq.push(deleteDoc(doc(db, "inquiries", d.id)));
+                }
+              });
+              if (delInq.length > 0) await Promise.all(delInq);
+            } catch (delInqErr) {
+              console.warn("შეკვეთების გასუფთავების შეცდომა:", delInqErr);
+            }
+          }
+        }
+
+        // 2. თითოეული პროდუქტის შენახვა ცალკე დოკუმენტად products კოლექციაში (დაშვებულია როგორც ადმინისთვის, ისე მოდერატორისთვის)
         const savePromises = sortedProducts.map((p) => {
           const cleanProduct = {
             ...p,
@@ -459,6 +570,7 @@ export function StoreProvider({ children }) {
         compareList, toggleCompare, clearCompare,
         showCompareModal, setShowCompareModal,
         inquiries, setInquiries,
+        adminRoleContext, setAdminRoleContext,
         saveMessage,
         syncData,
       }}

@@ -73,6 +73,35 @@ export default function ProfilePage() {
   const [savingPassword, setSavingPassword] = useState(false);
   const [passwordSuccessMsg, setPasswordSuccessMsg] = useState('');
   const [passwordErrorMsg, setPasswordErrorMsg] = useState('');
+  const [remoteUserOrders, setRemoteUserOrders] = useState([]);
+
+  useEffect(() => {
+    if (!user?.email) {
+      setRemoteUserOrders([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const [{ db }, { collection, query, where, getDocs }] = await Promise.all([
+          import('../lib/firebase'),
+          import('firebase/firestore'),
+        ]);
+        if (!db || cancelled) return;
+        const cleanEmail = user.email.trim().toLowerCase();
+        const q = query(collection(db, 'inquiries'), where('clientEmail', '==', cleanEmail));
+        const snap = await getDocs(q);
+        if (!cancelled) {
+          setRemoteUserOrders(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+        }
+      } catch {
+        // Silent in offline / test mode
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.email]);
 
   const isGoogleUser = Boolean(user?.providerData?.some((p) => p.providerId === 'google.com'));
 
@@ -181,13 +210,12 @@ export default function ProfilePage() {
   };
 
   const userInquiries = useMemo(() => {
-    return (inquiries || []).filter((inq) => {
-      if (!user) return false;
-      if (inq.clientEmail && inq.clientEmail.toLowerCase() === user.email?.toLowerCase()) return true;
-      if (user.displayName && inq.clientName && inq.clientName.toLowerCase() === user.displayName.toLowerCase()) return true;
-      return false;
+    const merged = [...remoteUserOrders, ...(inquiries || [])];
+    return merged.filter((inq) => {
+      if (!user?.email) return false;
+      return Boolean(inq.clientEmail && inq.clientEmail.toLowerCase() === user.email.toLowerCase());
     });
-  }, [inquiries, user]);
+  }, [remoteUserOrders, inquiries, user]);
 
   const userOrders = useMemo(() => {
     let local = [];

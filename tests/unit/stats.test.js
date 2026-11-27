@@ -33,6 +33,8 @@ describe('stats.js tracking functions', () => {
       expect(statRef.id).toBe('p-101');
       expect(data.views.value).toBe(1);
       expect(data.uniqueViews.value).toBe(1);
+      const todayKey = new Date().toISOString().slice(0, 10);
+      expect(data.dailyViews?.[todayKey]?.value).toBe(1);
       expect(options).toEqual({ merge: true });
 
       // Session and Local flags must be set

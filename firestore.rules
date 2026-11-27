@@ -1,4 +1,37 @@
 rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model (Hardened Prototype Rules)
+// ===============================================================
+//
+// Collection: /admins/{adminEmail}
+//   - Managed by Super Admin; self-onboarding limited to specific status/password fields.
+//
+// Collection: /products/{productId} & /articles/{articleId}
+//   - Publicly readable storefront catalog and blog; writable by full admins & moderators.
+//
+// Collection: /aurelia/{docId}
+//   - /aurelia/storeData: Publicly readable storefront settings (no promoCodes/PII); writable by full admins.
+//   - /aurelia/privateConfig: Private promoCodes & config; readable/writable ONLY by full admins.
+//   - /aurelia/{docId} (fallback): Readable/writable ONLY by full admins; subcollections denied by default.
+//
+// Collection: /inquiries/{inquiryId}
+//   - Public/guest create with strict required fields, size caps, and forced pending statuses.
+//   - Read by full admins or authenticated customer whose token email matches clientEmail.
+//   - Update/delete ONLY by full admins.
+//
+// Collection: /users/{userId}
+//   - Read/create/update by owner (auth.uid == userId) or full admin; delete ONLY by full admin.
+//   - Owner writes capped at <= 20 keys and strictly forbidden from setting/modifying
+//     ['role', 'isAdmin', 'isSuperAdmin', 'totpSecret', 'twoFactorEnabled'].
+//
+// Collection: /productStats/{productId}
+//   - Read/delete ONLY by full admins.
+//   - Public create/update strictly restricted to 8 stat fields with bounded counter deltas
+//     (views, uniqueViews, comparesCount in 0..1; favoritesCount in -1..1), dailyViews map diff <= 1,
+//     and server-validated timestamps (== request.time).
+// ===============================================================
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -82,34 +115,226 @@ service cloud.firestore {
     }
 
     // ==========================================
-    // მაღაზიის პარამეტრები (/aurelia/**)
+    // საერთო დამხმარე და ვალიდაციის ფუნქციები
     // ==========================================
-    // - წაკითხვა: ყველასთვის ღიაა
-    // - შეცვლა: მხოლოდ სრულ ადმინისტრატორს! (მოდერატორს ეკრძალება)
-    match /aurelia/{document=**} {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidOptionalString(data, field, minLen, maxLen) {
+      return !(field in data) || (
+        data[field] is string &&
+        data[field].size() >= minLen &&
+        data[field].size() <= maxLen
+      );
+    }
+
+    // /inquiries შექმნის ვალიდატორი (სტუმრებისა და მომხმარებლებისთვის)
+    function isValidPublicInquiryCreate(data) {
+      return data.keys().hasAll(['clientName', 'clientPhone'])
+             && data.keys().size() <= 30
+             && data.clientName is string
+             && data.clientName.size() >= 1
+             && data.clientName.size() <= 120
+             && data.clientPhone is string
+             && data.clientPhone.size() >= 4
+             && data.clientPhone.size() <= 40
+             && (!('status' in data) || data.status == 'ახალი შეკვეთა')
+             && (!('paymentStatus' in data) || data.paymentStatus == 'გადასახდელია')
+             && (!('clientEmail' in data) || (data.clientEmail is string && data.clientEmail.size() <= 120))
+             && (!('userId' in data) || data.userId == null || (isAuthenticated() && data.userId == request.auth.uid))
+             && isValidOptionalString(data, 'id', 0, 80)
+             && isValidOptionalString(data, 'date', 0, 80)
+             && isValidOptionalString(data, 'deliveryMethod', 0, 120)
+             && isValidOptionalString(data, 'city', 0, 100)
+             && isValidOptionalString(data, 'address', 0, 1000)
+             && isValidOptionalString(data, 'paymentMethod', 0, 120)
+             && isValidOptionalString(data, 'notes', 0, 2000)
+             && isValidOptionalString(data, 'productName', 0, 2000)
+             && isValidOptionalString(data, 'sku', 0, 500)
+             && isValidOptionalString(data, 'size', 0, 50)
+             && (!('promoApplied' in data) || data.promoApplied == null || (data.promoApplied is string && data.promoApplied.size() <= 64))
+             && (!('items' in data) || (data.items is list && data.items.size() <= 50))
+             && (!('isGift' in data) || data.isGift is bool)
+             && (!('giftFee' in data) || (data.giftFee is number && data.giftFee >= 0 && data.giftFee <= 10000))
+             && (!('shippingFee' in data) || (data.shippingFee is number && data.shippingFee >= 0 && data.shippingFee <= 10000))
+             && (!('totalPrice' in data) || (data.totalPrice is number && data.totalPrice >= 0 && data.totalPrice <= 10000000))
+             && (!('rawSubtotal' in data) || (data.rawSubtotal is number && data.rawSubtotal >= 0 && data.rawSubtotal <= 10000000))
+             && (!('discountAmount' in data) || (data.discountAmount is number && data.discountAmount >= 0 && data.discountAmount <= 10000000))
+             && (!('itemsCount' in data) || (data.itemsCount is int && data.itemsCount >= 0 && data.itemsCount <= 100))
+             && (!('createdAtMs' in data) || (data.createdAtMs is int && data.createdAtMs >= 0))
+             && !('estimatedDelivery' in data)
+             && !('courierNote' in data);
+    }
+
+    // /users სენსიტიური ველები და პროფილის ვალიდატორი
+    function sensitiveUserKeys() {
+      return ['role', 'isAdmin', 'isSuperAdmin', 'totpSecret', 'twoFactorEnabled'];
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.keys().size() <= 20
+             && (!('uid' in data) || (data.uid is string && data.uid == userId))
+             && isValidOptionalString(data, 'email', 0, 160)
+             && isValidOptionalString(data, 'displayName', 0, 120)
+             && isValidOptionalString(data, 'photoURL', 0, 1000)
+             && isValidOptionalString(data, 'provider', 0, 40)
+             && (!('ordersCount' in data) || (data.ordersCount is int && data.ordersCount >= 0 && data.ordersCount <= 100000))
+             && (!('createdAt' in data) || data.createdAt is timestamp || data.createdAt is int || (data.createdAt is string && data.createdAt.size() <= 64))
+             && (!('lastLoginAt' in data) || data.lastLoginAt is timestamp || data.lastLoginAt is int || (data.lastLoginAt is string && data.lastLoginAt.size() <= 64));
+    }
+
+    // /productStats დამხმარეები და ვალიდატორები
+    function allowedProductStatsFields() {
+      return [
+        'views',
+        'uniqueViews',
+        'lastViewedAt',
+        'dailyViews',
+        'favoritesCount',
+        'lastFavoritedAt',
+        'comparesCount',
+        'lastComparedAt'
+      ];
+    }
+
+    function isValidStatCounterCreate(data, field, minVal, maxVal) {
+      return !(field in data) || (data[field] is int && data[field] >= minVal && data[field] <= maxVal);
+    }
+
+    function isValidStatTimestampCreate(data, field) {
+      return !(field in data) || (data[field] is timestamp && data[field] == request.time);
+    }
+
+    function isValidDailyViewsCreate(data) {
+      return !('dailyViews' in data) || (
+        data.dailyViews is map
+        && data.dailyViews.size() == 1
+        && data.dailyViews.keys()[0] is string
+        && data.dailyViews.keys()[0].size() >= 1
+        && data.dailyViews.keys()[0].size() <= 32
+        && data.dailyViews.values()[0] is int
+        && data.dailyViews.values()[0] >= 0
+        && data.dailyViews.values()[0] <= 1
+      );
+    }
+
+    function isValidProductStatsCreate(data) {
+      return data.keys().hasOnly(allowedProductStatsFields())
+             && data.keys().size() >= 1
+             && isValidStatCounterCreate(data, 'views', 0, 1)
+             && isValidStatCounterCreate(data, 'uniqueViews', 0, 1)
+             && isValidStatCounterCreate(data, 'comparesCount', 0, 1)
+             && isValidStatCounterCreate(data, 'favoritesCount', -1, 1)
+             && isValidDailyViewsCreate(data)
+             && isValidStatTimestampCreate(data, 'lastViewedAt')
+             && isValidStatTimestampCreate(data, 'lastFavoritedAt')
+             && isValidStatTimestampCreate(data, 'lastComparedAt');
+    }
+
+    function isValidStatCounterUpdate(field, minDelta, maxDelta) {
+      return !(field in request.resource.data.diff(resource.data).affectedKeys())
+             || (
+               field in request.resource.data
+               && request.resource.data[field] is int
+               && (
+                 (field in resource.data
+                  && resource.data[field] is int
+                  && (request.resource.data[field] - resource.data[field]) >= minDelta
+                  && (request.resource.data[field] - resource.data[field]) <= maxDelta)
+                 ||
+                 ((!(field in resource.data) || !(resource.data[field] is int))
+                  && request.resource.data[field] >= minDelta
+                  && request.resource.data[field] <= maxDelta)
+               )
+             );
+    }
+
+    function isValidStatTimestampUpdate(field) {
+      return !(field in request.resource.data.diff(resource.data).affectedKeys())
+             || (
+               field in request.resource.data
+               && request.resource.data[field] is timestamp
+               && request.resource.data[field] == request.time
+             );
+    }
+
+    function isValidDailyViewsUpdate() {
+      return !('dailyViews' in request.resource.data.diff(resource.data).affectedKeys())
+             || (
+               'dailyViews' in request.resource.data
+               && request.resource.data.dailyViews is map
+               && request.resource.data.dailyViews.size() <= 1000
+               && (
+                 ('dailyViews' in resource.data
+                  && resource.data.dailyViews is map
+                  && request.resource.data.dailyViews.diff(resource.data.dailyViews).affectedKeys().size() <= 1
+                  && request.resource.data.dailyViews.diff(resource.data.dailyViews).removedKeys().size() == 0)
+                 ||
+                 ((!('dailyViews' in resource.data) || !(resource.data.dailyViews is map))
+                  && request.resource.data.dailyViews.size() == 1
+                  && request.resource.data.dailyViews.keys()[0] is string
+                  && request.resource.data.dailyViews.keys()[0].size() >= 1
+                  && request.resource.data.dailyViews.keys()[0].size() <= 32
+                  && request.resource.data.dailyViews.values()[0] is int
+                  && request.resource.data.dailyViews.values()[0] >= 0
+                  && request.resource.data.dailyViews.values()[0] <= 1)
+               )
+             );
+    }
+
+    function isValidProductStatsUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowedProductStatsFields())
+             && isValidStatCounterUpdate('views', 0, 1)
+             && isValidStatCounterUpdate('uniqueViews', 0, 1)
+             && isValidStatCounterUpdate('comparesCount', 0, 1)
+             && isValidStatCounterUpdate('favoritesCount', -1, 1)
+             && isValidDailyViewsUpdate()
+             && isValidStatTimestampUpdate('lastViewedAt')
+             && isValidStatTimestampUpdate('lastFavoritedAt')
+             && isValidStatTimestampUpdate('lastComparedAt');
+    }
+
+    // ==========================================
+    // მაღაზიის პარამეტრები (/aurelia/*)
+    // ==========================================
+    // - storeData: საჯარო კითხვა (პრომო კოდებისა და შეკვეთების გარეშე), შეცვლა მხოლოდ სრულ ადმინს
+    // - privateConfig: პრომო კოდები და პრივატული კონფიგურაცია — წაკითხვა და ჩაწერა მხოლოდ სრულ ადმინს!
+    // - ნებისმიერი სხვა დოკუმენტი /aurelia/{docId}-ში: წაკითხვა და ჩაწერა მხოლოდ სრულ ადმინს
+    match /aurelia/storeData {
       allow read: if true;
       allow write: if isFullAdmin();
+    }
+
+    match /aurelia/privateConfig {
+      allow read, write: if isFullAdmin();
+    }
+
+    match /aurelia/{docId} {
+      allow read, write: if isFullAdmin();
     }
 
     // ==========================================
     // შემოსული მოთხოვნები (/inquiries)
     // ==========================================
-    // - შექმნა: ნებისმიერ სტუმარს/მომხმარებელს (სავალდებულო ველებისა და ზომის მკაცრი შემოწმებით)
+    // - შექმნა: სრულ ადმინისტრატორს ან ნებისმიერ სტუმარს/მომხმარებელს მკაცრი ვალიდაციით
+    //   (status და paymentStatus ვერ გაყალბდება: ნებადართულია მხოლოდ საწყისი მოლოდინის მნიშვნელობები)
     // - წაკითხვა: სრულ ადმინისტრატორს ან ავტორიზებულ შემკვეთს საკუთარ შეკვეთაზე
     // - შეცვლა, წაშლა: მხოლოდ სრულ ადმინისტრატორს!
     match /inquiries/{inquiryId} {
-      allow create: if request.resource.data.keys().hasAll(['clientName', 'clientPhone'])
-                    && request.resource.data.clientName is string
-                    && request.resource.data.clientName.size() > 0
-                    && request.resource.data.clientName.size() <= 120
-                    && request.resource.data.clientPhone is string
-                    && request.resource.data.clientPhone.size() >= 4
-                    && request.resource.data.clientPhone.size() <= 40
-                    && request.resource.data.size() <= 30;
+      allow create: if isFullAdmin() || isValidPublicInquiryCreate(request.resource.data);
 
       allow read: if isFullAdmin() || (
         request.auth != null &&
+        'clientEmail' in resource.data &&
+        resource.data.clientEmail is string &&
         resource.data.clientEmail != null &&
+        'email' in request.auth.token &&
+        request.auth.token.email is string &&
         request.auth.token.email != null &&
         resource.data.clientEmail.lower() == request.auth.token.email.lower()
       );
@@ -121,11 +346,22 @@ service cloud.firestore {
     // რეგისტრირებული მომხმარებლები (/users)
     // ==========================================
     // - წაკითხვა: სრულ ადმინისტრატორს ან ავტორიზებულ პირს საკუთარ პროფილზე
-    // - შექმნა / შეცვლა: საკუთარ თავს (uid) ან სრულ ადმინისტრატორს
+    // - შექმნა / შეცვლა: სრულ ადმინისტრატორს ან საკუთარ თავს (uid) 20-ველის ლიმიტითა და
+    //   პრივილეგიის ამაღლების / სენსიტიური ველების აკრძალვით
     // - წაშლა: მხოლოდ სრულ ადმინისტრატორს!
     match /users/{userId} {
-      allow read: if isFullAdmin() || (request.auth != null && request.auth.uid == userId);
-      allow create, update: if isFullAdmin() || (request.auth != null && request.auth.uid == userId);
+      allow read: if isFullAdmin() || isOwner(userId);
+      allow create: if isFullAdmin() || (
+        isOwner(userId)
+        && !request.resource.data.keys().hasAny(sensitiveUserKeys())
+        && isValidUserProfile(request.resource.data, userId)
+      );
+      allow update: if isFullAdmin() || (
+        isOwner(userId)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(sensitiveUserKeys())
+        && (!('uid' in resource.data) || ('uid' in request.resource.data && request.resource.data.uid == resource.data.uid))
+        && isValidUserProfile(request.resource.data, userId)
+      );
       allow delete: if isFullAdmin();
     }
 
@@ -133,10 +369,11 @@ service cloud.firestore {
     // ნივთების ნახვების, რჩეულებისა და აქტივობის სტატისტიკა (/productStats)
     // ==========================================
     // - წაკითხვა და წაშლა: მხოლოდ სრულ ადმინისტრატორს
-    // - ჩაწერა (ნახვა, რჩეული, შედარება): საჯარო (მხოლოდ დაშვებული ზომით)
+    // - შექმნა და განახლება: მხოლოდ დაშვებული 8 ველით, შეზღუდული ინკრემენტებითა და request.time-ით
     match /productStats/{productId} {
       allow read, delete: if isFullAdmin();
-      allow create, update: if true;
+      allow create: if isValidProductStatsCreate(request.resource.data);
+      allow update: if isValidProductStatsUpdate();
     }
   }
 }
