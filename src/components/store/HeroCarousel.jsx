@@ -27,7 +27,7 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
   if (!activeSlide) return null;
 
   const activeIdx = currentSlide % slides.length;
-  const displayImg = !imgFailed && rawSlideImage ? getOptimizedImageUrl(rawSlideImage, 1200, 78) : HERO_FALLBACK_IMAGE;
+  const displayImg = !imgFailed && rawSlideImage ? getOptimizedImageUrl(rawSlideImage, 720, 60) : HERO_FALLBACK_IMAGE;
 
   return (
     <section className="w-full pt-[78px] sm:pt-[86px] pb-6 bg-[#FAF8F4]">
@@ -36,8 +36,8 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
           {/* Left Editorial Copy Panel */}
           <div className="lg:col-span-6 flex flex-col justify-between px-6 sm:px-10 lg:px-14 py-9 sm:py-11 lg:py-12 order-2 lg:order-1 min-h-[300px] lg:min-h-0 lg:h-full overflow-hidden">
             <div className="space-y-4 sm:space-y-5 my-auto">
-              <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#F5EFE4] text-[#8A6836] text-xs font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#9A7742]" />
+              <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#F5EFE4] text-[#6B4E23] text-xs font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#7A5B2C]" />
                 <span>{pick(activeSlide, "badge", lang)}</span>
               </div>
 
@@ -69,7 +69,7 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
 
             {/* Clean Slide Progress Indicators */}
             {slides.length > 1 && (
-              <div className="pt-8 flex items-center gap-3">
+              <div className="pt-6 flex items-center gap-1.5">
                 {slides.map((s, idx) => {
                   const isActive = activeIdx === idx;
                   return (
@@ -78,19 +78,23 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
                       type="button"
                       onClick={() => setCurrentSlide(idx)}
                       aria-label={`Slide ${idx + 1}`}
-                      className="relative h-1.5 rounded-full bg-[#EAE4DB] overflow-hidden transition-all cursor-pointer"
-                      style={{ width: isActive ? "40px" : "12px" }}
+                      className="min-h-[28px] px-1 flex items-center cursor-pointer"
                     >
-                      {isActive && (
-                        <span
-                          className="absolute inset-0 bg-[#9A7742] origin-left rounded-full"
-                          style={{ animation: `fillProgress ${SLIDE_INTERVAL_MS}ms linear forwards` }}
-                        />
-                      )}
+                      <span
+                        className="relative block h-1.5 rounded-full bg-[#EAE4DB] overflow-hidden transition-all"
+                        style={{ width: isActive ? "40px" : "12px" }}
+                      >
+                        {isActive && (
+                          <span
+                            className="absolute inset-0 bg-[#7A5B2C] origin-left rounded-full"
+                            style={{ animation: `fillProgress ${SLIDE_INTERVAL_MS}ms linear forwards` }}
+                          />
+                        )}
+                      </span>
                     </button>
                   );
                 })}
-                <span className="ml-2 text-xs font-mono text-[#787168]">
+                <span className="ml-2 text-xs font-mono text-[#5E584F]">
                   {String(activeIdx + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
                 </span>
               </div>
@@ -103,13 +107,15 @@ export default function HeroCarousel({ slides, currentSlide, setCurrentSlide, la
             <img
               src={displayImg}
               srcSet={!imgFailed && rawSlideImage ? getUnsplashSrcSet(rawSlideImage) : undefined}
-              sizes="(max-width: 1024px) 100vw, 50vw"
+              sizes="(max-width: 1024px) 92vw, 50vw"
+              width="720"
+              height="500"
               alt={pick(activeSlide, "title", lang) || "მატარე — საიუველირო კოლექცია"}
               loading="eager"
               ref={(el) => { if (el) el.setAttribute('fetchpriority', 'high'); }}
-              decoding="async"
+              decoding="sync"
               onError={() => setImgFailed(true)}
-              className="relative z-1 w-full h-full object-contain object-center transition-opacity duration-500 p-2 sm:p-4"
+              className="relative z-1 w-full h-full object-contain object-center p-2 sm:p-4"
             />
 
             {slides.length > 1 && (

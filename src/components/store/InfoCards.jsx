@@ -31,7 +31,7 @@ export default function InfoCards({
     <section className="py-16 sm:py-20 bg-[#FAF8F4] text-[#1F1C18]">
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 space-y-10">
         <div className="text-center max-w-2xl mx-auto space-y-2">
-          <span className="text-xs font-medium text-[#9A7742] block">
+          <span className="text-xs font-medium text-[#7A5B2C] block">
             {badgeText}
           </span>
           <h2 className="font-serif text-3xl sm:text-4xl font-medium text-[#1F1C18]">
@@ -47,7 +47,7 @@ export default function InfoCards({
                 key={i}
                 className="w-[82vw] min-w-[270px] max-w-[340px] sm:w-auto sm:min-w-0 sm:max-w-none shrink-0 sm:shrink snap-center p-6 sm:p-7 rounded-2xl bg-white border border-[#EAE4DB] shadow-[0_2px_14px_rgba(31,28,24,0.03)] space-y-3.5"
               >
-                <div className="w-11 h-11 rounded-full bg-[#F5EFE4] text-[#9A7742] flex items-center justify-center">
+                <div className="w-11 h-11 rounded-full bg-[#F5EFE4] text-[#7A5B2C] flex items-center justify-center">
                   <Icon className="w-5 h-5 stroke-[1.75]" />
                 </div>
                 <h3 className="font-serif text-xl font-medium text-[#1F1C18]">

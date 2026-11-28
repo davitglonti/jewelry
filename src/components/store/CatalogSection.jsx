@@ -25,7 +25,7 @@ export default function CatalogSection({ openProductModal }) {
     <section id="catalog" className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-14 sm:py-20">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-10 gap-4">
         <div>
-          <span className="text-xs font-medium text-[#9A7742] block mb-1.5">
+          <span className="text-xs font-medium text-[#7A5B2C] block mb-1.5">
             {lang === "ka" ? "საიუველირო ვიტრინა" : "Fine Jewelry Showcase"}
           </span>
           <h2 className="font-serif text-3xl sm:text-4xl font-medium text-[#1F1C18]">

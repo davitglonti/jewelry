@@ -17,6 +17,7 @@ export default function ProductCard({
   const { lang, favorites, toggleFavorite, compareList, toggleCompare } = useStore();
   const { user } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
+  const [hasHovered, setHasHovered] = useState(false);
 
   if (!product) return null;
 
@@ -30,14 +31,14 @@ export default function ProductCard({
   return (
     <article
       onClick={() => onClick && onClick(product)}
-      onMouseEnter={() => setIsHovered(true)}
+      onMouseEnter={() => { setIsHovered(true); setHasHovered(true); }}
       onMouseLeave={() => setIsHovered(false)}
       className={`group cursor-pointer rounded-2xl bg-white border border-[#EAE4DB] hover:border-[#D4C9B8] shadow-[0_2px_14px_rgba(31,28,24,0.03)] hover:shadow-[0_12px_30px_rgba(31,28,24,0.08)] hover:-translate-y-0.5 overflow-hidden flex flex-col justify-between transition-all duration-300 ${className}`}
     >
       {/* Balanced Portrait-Square Image Frame */}
       <div className="relative aspect-[4/4.2] overflow-hidden bg-[#F3EFE8]">
         <img
-          src={getOptimizedImageUrl(mainImg, 480, 75)}
+          src={getOptimizedImageUrl(mainImg, 400, 60)}
           srcSet={getProductCardSrcSet(mainImg)}
           sizes={imageSizes}
           alt={productName || "სამკაული"}
@@ -51,9 +52,9 @@ export default function ProductCard({
           }`}
         />
 
-        {secondaryImg && (
+        {hasHovered && secondaryImg && (
           <img
-            src={getOptimizedImageUrl(secondaryImg, 480, 75)}
+            src={getOptimizedImageUrl(secondaryImg, 400, 60)}
             srcSet={getProductCardSrcSet(secondaryImg)}
             sizes={imageSizes}
             alt={`${productName || "სამკაული"} - ხედი 2`}
@@ -81,12 +82,12 @@ export default function ProductCard({
             </span>
           ) : null}
           {product.stockStatus === 'preorder' && !compact && (
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-white/95 text-[#8A6836] border border-[#E5DDCE]">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-white/95 text-[#6B4E23] border border-[#E5DDCE]">
               {lang === 'ka' ? 'შეკვეთით' : 'Pre-order'}
             </span>
           )}
           {product.stockStatus === 'sold_out' && (
-            <span className={`${compact ? "px-1.5 py-0.5 text-[8px]" : "px-2.5 py-0.5 text-[10px]"} rounded-full font-medium bg-white/90 text-[#787168] border border-[#E5DDCE]`}>
+            <span className={`${compact ? "px-1.5 py-0.5 text-[8px]" : "px-2.5 py-0.5 text-[10px]"} rounded-full font-medium bg-white/90 text-[#5E584F] border border-[#E5DDCE]`}>
               {lang === 'ka' ? 'ამოიწურა' : 'Sold out'}
             </span>
           )}
@@ -120,6 +121,11 @@ export default function ProductCard({
               e.stopPropagation();
               toggleCompare(product.id);
             }}
+            aria-label={
+              isCompared
+                ? (lang === "ka" ? `${productName} — შედარებიდან ამოშლა` : `Remove ${productName} from compare`)
+                : (lang === "ka" ? `${productName} — შედარებაში დამატება` : `Add ${productName} to compare`)
+            }
             title={
               isCompared
                 ? (lang === "ka" ? "შედარებიდან ამოშლა" : "Remove from compare")
@@ -139,13 +145,13 @@ export default function ProductCard({
       {/* Crisp Readable Card Body */}
       <div className={`${compact ? "p-2 sm:p-3 space-y-1" : "p-3 sm:p-5 space-y-1.5 sm:space-y-2"} flex-1 flex flex-col justify-between`}>
         <div>
-          <div className="flex items-center justify-between gap-1 text-[10px] sm:text-[11px] text-[#787168]">
+          <div className="flex items-center justify-between gap-1 text-[10px] sm:text-[11px] text-[#5E584F]">
             <span className="truncate font-medium">{product.category || "სამკაული"}</span>
-            {product.sku && <span className="font-mono shrink-0 text-[#9A7742] text-[9px] sm:text-[10px]">#{product.sku}</span>}
+            {product.sku && <span className="font-mono shrink-0 text-[#7A5B2C] text-[9px] sm:text-[10px]">#{product.sku}</span>}
           </div>
 
           <h3
-            className={`font-serif font-medium text-[#1F1C18] group-hover:text-[#9A7742] transition-colors line-clamp-1 mt-0.5 leading-snug ${
+            className={`font-serif font-medium text-[#1F1C18] group-hover:text-[#7A5B2C] transition-colors line-clamp-1 mt-0.5 leading-snug ${
               compact ? "text-xs" : "text-base sm:text-[17px]"
             }`}
             title={productName}
@@ -154,7 +160,7 @@ export default function ProductCard({
           </h3>
 
           {(product.metal || product.karat) && (
-            <p className="text-xs text-[#787168] truncate hidden sm:block mt-0.5">
+            <p className="text-xs text-[#5E584F] truncate hidden sm:block mt-0.5">
               {[product.metal, product.karat].filter(Boolean).join(" • ")}
             </p>
           )}
@@ -167,7 +173,7 @@ export default function ProductCard({
                 {formatPrice(product.price)}
               </span>
               {discountPct ? (
-                <span className={`${compact ? "text-[10px]" : "text-xs"} line-through text-[#857D73] whitespace-nowrap`}>
+                <span className={`${compact ? "text-[10px]" : "text-xs"} line-through text-[#5E584F] whitespace-nowrap`}>
                   {formatPrice(product.oldPrice || product.originalPrice)}
                 </span>
               ) : null}

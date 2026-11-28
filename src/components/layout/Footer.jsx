@@ -14,7 +14,7 @@ export default function Footer({ lang, siteSettings = {}, compact = false }) {
               {siteSettings.brandName || "მატარე"}
             </span>
             <span className="text-[#D9D1C5] hidden sm:inline">•</span>
-            <span className="text-[#8A847C]">{siteSettings.copyright || "© 2026 მატარე. ყველა უფლება დაცულია."}</span>
+            <span className="text-[#5E584F]">{siteSettings.copyright || "© 2026 მატარე. ყველა უფლება დაცულია."}</span>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs font-medium text-[#5C564E]">
@@ -76,7 +76,7 @@ export default function Footer({ lang, siteSettings = {}, compact = false }) {
               <div className="font-serif text-2xl sm:text-3xl font-semibold text-[#1F1C18] tracking-[0.06em]">
                 {siteSettings.brandName || "მატარე"}
               </div>
-              <div className="text-xs text-[#9A7742] font-medium mt-1">
+              <div className="text-xs text-[#7A5B2C] font-medium mt-1">
                 {lang === "ka" ? siteSettings.brandSubtitle : (siteSettings.brandSubtitleEn || siteSettings.brandSubtitle)}
               </div>
             </div>
@@ -113,9 +113,9 @@ export default function Footer({ lang, siteSettings = {}, compact = false }) {
 
           {/* Navigation Column */}
           <div className="lg:col-span-2 space-y-3.5">
-            <h4 className="text-xs font-semibold text-[#9A7742]">
+            <h3 className="text-xs font-semibold text-[#7A5B2C]">
               {lang === "ka" ? "ნავიგაცია" : "Navigation"}
-            </h4>
+            </h3>
             <ul className="space-y-2.5 text-sm text-[#4A453E]">
               <li><a href={prefix || "/"} className="hover:text-[#1F1C18] transition-colors">{lang === "ka" ? "მთავარი" : "Home"}</a></li>
               <li><a href={`${prefix}/catalog`} className="hover:text-[#1F1C18] transition-colors">{lang === "ka" ? "კოლექცია" : "Collection"}</a></li>
@@ -124,7 +124,7 @@ export default function Footer({ lang, siteSettings = {}, compact = false }) {
               <li><a href={`${prefix}/size-guide`} className="hover:text-[#1F1C18] transition-colors">{lang === "ka" ? "ზომის გზამკვლევი" : "Size Guide"}</a></li>
               <li><a href={`${prefix}/faq`} className="hover:text-[#1F1C18] transition-colors">{lang === "ka" ? "კითხვა-პასუხი" : "FAQ"}</a></li>
               <li className="pt-1">
-                <a href={`${prefix}/track`} className="inline-flex items-center gap-1 text-[#1F1C18] font-medium hover:text-[#9A7742] transition-colors">
+                <a href={`${prefix}/track`} className="inline-flex items-center gap-1 text-[#1F1C18] font-medium hover:text-[#7A5B2C] transition-colors">
                   <span>{lang === "ka" ? "შეკვეთის თრექინგი" : "Track Order"}</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </a>
@@ -134,22 +134,22 @@ export default function Footer({ lang, siteSettings = {}, compact = false }) {
 
           {/* Contact Column */}
           <div className="lg:col-span-3 space-y-3.5">
-            <h4 className="text-xs font-semibold text-[#9A7742]">
+            <h3 className="text-xs font-semibold text-[#7A5B2C]">
               {lang === "ka" ? "საკონტაქტო ინფორმაცია" : "Boutique & Contact"}
-            </h4>
+            </h3>
             <div className="space-y-3 text-sm text-[#4A453E]">
               <p className="flex items-start gap-2.5">
-                <MapPin className="w-4 h-4 text-[#9A7742] shrink-0 mt-0.5 stroke-[1.75]" />
+                <MapPin className="w-4 h-4 text-[#7A5B2C] shrink-0 mt-0.5 stroke-[1.75]" />
                 <span>{pick(siteSettings, "address", lang)}</span>
               </p>
               <p className="flex items-center gap-2.5">
-                <Phone className="w-4 h-4 text-[#9A7742] shrink-0 stroke-[1.75]" />
+                <Phone className="w-4 h-4 text-[#7A5B2C] shrink-0 stroke-[1.75]" />
                 <a href={`tel:${siteSettings.phone || "+995555000000"}`} className="hover:text-[#1F1C18] transition-colors">
                   {siteSettings.phone}
                 </a>
               </p>
               <p className="flex items-center gap-2.5">
-                <Clock className="w-4 h-4 text-[#9A7742] shrink-0 stroke-[1.75]" />
+                <Clock className="w-4 h-4 text-[#7A5B2C] shrink-0 stroke-[1.75]" />
                 <span>{lang === "ka" ? siteSettings.hours : (siteSettings.hoursEn || siteSettings.hours)}</span>
               </p>
             </div>
@@ -157,9 +157,9 @@ export default function Footer({ lang, siteSettings = {}, compact = false }) {
 
           {/* Concierge Column */}
           <div className="lg:col-span-3 space-y-3.5">
-            <h4 className="text-xs font-semibold text-[#9A7742]">
+            <h3 className="text-xs font-semibold text-[#7A5B2C]">
               {lang === "ka" ? "სწრაფი კონსულტაცია" : "Private Concierge"}
-            </h4>
+            </h3>
             <p className="text-sm text-[#4A453E] leading-relaxed">
               {lang === "ka"
                 ? "მოგვწერეთ პირდაპირ WhatsApp-ში ან Messenger-ში ზომისა და მოდელის შერჩევაზე:"

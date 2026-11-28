@@ -30,6 +30,30 @@ function readRawBody(req) {
   });
 }
 
+function inlineCssPlugin() {
+  return {
+    name: 'inline-production-css',
+    apply: 'build',
+    enforce: 'post',
+    generateBundle(_options, bundle) {
+      const htmlEntry = bundle['index.html'];
+      if (!htmlEntry || htmlEntry.type !== 'asset') return;
+      let html = String(htmlEntry.source);
+      for (const [fileName, asset] of Object.entries(bundle)) {
+        if (fileName.endsWith('.css') && asset.type === 'asset') {
+          const escapedName = fileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const linkRegex = new RegExp(`<link\\b[^>]*href=["']/?${escapedName}["'][^>]*>`, 'i');
+          if (linkRegex.test(html)) {
+            html = html.replace(linkRegex, () => `<style>${String(asset.source)}</style>`);
+            delete bundle[fileName];
+          }
+        }
+      }
+      htmlEntry.source = html;
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   Object.assign(process.env, env);
@@ -43,6 +67,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       tailwindcss(),
+      inlineCssPlugin(),
       {
         name: 'dev-api-middleware',
         configureServer(server) {

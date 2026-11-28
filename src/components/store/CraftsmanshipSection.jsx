@@ -20,8 +20,8 @@ export default function CraftsmanshipSection({
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
         {/* Story Column */}
         <div className={`lg:col-span-6 space-y-5 ${reverseLayout ? "lg:order-2" : "lg:order-1"}`}>
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F5EFE4] text-[#8A6836] text-xs font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#9A7742]" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F5EFE4] text-[#6B4E23] text-xs font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#7A5B2C]" />
             <span>{lang === "ka" ? siteSettings.craftBadge : (siteSettings.craftBadgeEn || siteSettings.craftBadge)}</span>
           </div>
 
@@ -42,27 +42,27 @@ export default function CraftsmanshipSection({
           {showStats && (
             <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-3">
               <div className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#FAF8F4] border border-[#EAE4DB] space-y-1 sm:space-y-1.5 min-w-0 overflow-hidden">
-                <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#9A7742] stroke-[1.75]" />
+                <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#7A5B2C] stroke-[1.75]" />
                 <div className="font-serif text-sm sm:text-2xl font-semibold text-[#1F1C18] truncate">100%</div>
-                <div className="text-[10px] sm:text-xs text-[#6B645B] leading-tight break-words sm:leading-snug">
+                <div className="text-[10px] sm:text-xs text-[#5E584F] leading-tight break-words sm:leading-snug">
                   {lang === "ka" ? "სერტიფიცირებული" : "Certified Gems"}
                 </div>
               </div>
 
               <div className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#FAF8F4] border border-[#EAE4DB] space-y-1 sm:space-y-1.5 min-w-0 overflow-hidden">
-                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#9A7742] stroke-[1.75]" />
+                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#7A5B2C] stroke-[1.75]" />
                 <div className="font-serif text-xs sm:text-2xl font-semibold text-[#1F1C18] truncate sm:whitespace-normal">18K / 750°</div>
-                <div className="text-[10px] sm:text-xs text-[#6B645B] leading-tight break-words sm:leading-snug">
+                <div className="text-[10px] sm:text-xs text-[#5E584F] leading-tight break-words sm:leading-snug">
                   {lang === "ka" ? "უმაღლესი სინჯი" : "Finest Gold"}
                 </div>
               </div>
 
               <div className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#FAF8F4] border border-[#EAE4DB] space-y-1 sm:space-y-1.5 min-w-0 overflow-hidden">
-                <Gem className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#9A7742] stroke-[1.75]" />
+                <Gem className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#7A5B2C] stroke-[1.75]" />
                 <div className="font-serif text-xs sm:text-2xl font-semibold text-[#1F1C18] truncate">
                   {lang === "ka" ? "ხელნაკეთი" : "Handmade"}
                 </div>
-                <div className="text-[10px] sm:text-xs text-[#6B645B] leading-tight break-words sm:leading-snug">
+                <div className="text-[10px] sm:text-xs text-[#5E584F] leading-tight break-words sm:leading-snug">
                   {lang === "ka" ? "საფირმო დიზაინი" : "Atelier Design"}
                 </div>
               </div>
@@ -86,9 +86,11 @@ export default function CraftsmanshipSection({
         <div className={`lg:col-span-6 grid grid-cols-2 gap-4 sm:gap-5 items-center ${reverseLayout ? "lg:order-1" : "lg:order-2"}`}>
           <div className="h-[260px] sm:h-[360px] rounded-2xl overflow-hidden bg-[#F3EFE8] border border-[#EAE4DB] shadow-xs">
             <img
-              src={getOptimizedImageUrl(siteSettings.craftImg1, 600, 75)}
+              src={getOptimizedImageUrl(siteSettings.craftImg1, 480, 60)}
               srcSet={getUnsplashSrcSet(siteSettings.craftImg1)}
               sizes="(max-width: 640px) 46vw, 380px"
+              width="480"
+              height="360"
               alt={lang === "ka" ? "საიუველირო ოსტატობა — ხელნაკეთი პროცესი" : "Jewelry craftsmanship process"}
               loading="lazy"
               decoding="async"
@@ -97,9 +99,11 @@ export default function CraftsmanshipSection({
           </div>
           <div className="h-[260px] sm:h-[360px] rounded-2xl overflow-hidden bg-[#F3EFE8] border border-[#EAE4DB] shadow-xs sm:mt-8">
             <img
-              src={getOptimizedImageUrl(siteSettings.craftImg2, 600, 75)}
+              src={getOptimizedImageUrl(siteSettings.craftImg2, 480, 60)}
               srcSet={getUnsplashSrcSet(siteSettings.craftImg2)}
               sizes="(max-width: 640px) 46vw, 380px"
+              width="480"
+              height="360"
               alt={lang === "ka" ? "საიუველირო ხელოვნება და დეტალები" : "Jewelry craftsmanship and fine details"}
               loading="lazy"
               decoding="async"

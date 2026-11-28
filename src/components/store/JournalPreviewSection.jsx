@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { ArrowRight, Clock, Calendar } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { navigateTo } from '../../utils/navigation';
-import { getOptimizedImageUrl } from '../../utils/imageUtils';
+import { getOptimizedImageUrl, getCategoryCardSrcSet } from '../../utils/imageUtils';
 
 export default function JournalPreviewSection() {
   const { lang, articles = [] } = useStore();
@@ -38,7 +38,7 @@ export default function JournalPreviewSection() {
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 sm:mb-10">
           <div>
-            <span className="text-xs font-medium text-[#9A7742] block mb-1.5">
+            <span className="text-xs font-medium text-[#7A5B2C] block mb-1.5">
               {lang === "ka" ? "საიუველირო ჟურნალი" : "Fine Jewelry Journal"}
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl font-medium text-[#1F1C18]">
@@ -74,7 +74,11 @@ export default function JournalPreviewSection() {
                 <div>
                   <div className="relative aspect-[16/10] overflow-hidden bg-[#EFEAE0]">
                     <img
-                      src={getOptimizedImageUrl(art.image, 500, 70)}
+                      src={getOptimizedImageUrl(art.image, 400, 55)}
+                      srcSet={getCategoryCardSrcSet(art.image)}
+                      sizes="(max-width: 768px) 84vw, 420px"
+                      width="420"
+                      height="262"
                       alt={title}
                       loading="lazy"
                       decoding="async"
@@ -89,10 +93,10 @@ export default function JournalPreviewSection() {
                   </div>
 
                   <div className="p-5 sm:p-6 space-y-2.5">
-                    <div className="flex items-center gap-3 text-xs text-[#787168]">
+                    <div className="flex items-center gap-3 text-xs text-[#5E584F]">
                       {art.date && (
                         <span className="flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5 text-[#9A7742]" />
+                          <Calendar className="w-3.5 h-3.5 text-[#7A5B2C]" />
                           {art.date}
                         </span>
                       )}
@@ -100,14 +104,14 @@ export default function JournalPreviewSection() {
                         <>
                           <span>•</span>
                           <span className="flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5 text-[#9A7742]" />
+                            <Clock className="w-3.5 h-3.5 text-[#7A5B2C]" />
                             {readTime}
                           </span>
                         </>
                       )}
                     </div>
 
-                    <h3 className="font-serif text-lg sm:text-xl font-medium text-[#1F1C18] group-hover:text-[#9A7742] transition-colors leading-snug line-clamp-2">
+                    <h3 className="font-serif text-lg sm:text-xl font-medium text-[#1F1C18] group-hover:text-[#7A5B2C] transition-colors leading-snug line-clamp-2">
                       {title}
                     </h3>
 
@@ -118,7 +122,7 @@ export default function JournalPreviewSection() {
                 </div>
 
                 <div className="px-5 sm:px-6 pb-5 pt-2">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#1F1C18] group-hover:text-[#9A7742] transition-colors">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#1F1C18] group-hover:text-[#7A5B2C] transition-colors">
                     <span>{lang === "ka" ? "სრულად წაკითხვა" : "Read Story"}</span>
                     <ArrowRight className="w-3.5 h-3.5 stroke-[1.75] group-hover:translate-x-0.5 transition-transform" />
                   </span>
@@ -130,17 +134,21 @@ export default function JournalPreviewSection() {
 
         {/* Mobile Swipe Indicators (dots) */}
         {previewArticles.length > 1 && (
-          <div className="flex md:hidden items-center justify-center gap-1.5 pt-3">
+          <div className="flex md:hidden items-center justify-center gap-1 pt-3">
             {previewArticles.map((_, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => scrollToSlide(idx)}
                 aria-label={`Go to article slide ${idx + 1}`}
-                className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                  activeIdx === idx ? "w-5 bg-[#9A7742]" : "w-1.5 bg-[#D9D1C5]"
-                }`}
-              />
+                className="min-w-[24px] min-h-[24px] flex items-center justify-center cursor-pointer"
+              >
+                <span
+                  className={`block h-1.5 rounded-full transition-all ${
+                    activeIdx === idx ? "w-5 bg-[#7A5B2C]" : "w-1.5 bg-[#D9D1C5]"
+                  }`}
+                />
+              </button>
             ))}
           </div>
         )}

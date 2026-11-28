@@ -542,7 +542,8 @@ export default function Navbar({
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="p-2 text-[#787168] hover:text-[#9E2A2B]"
+                  aria-label={lang === "ka" ? "გასვლა" : "Sign out"}
+                  className="p-2 text-[#5E584F] hover:text-[#9E2A2B]"
                   title={lang === "ka" ? "გასვლა" : "Sign out"}
                 >
                   <LogOut className="w-4 h-4" />

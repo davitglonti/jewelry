@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from '../../context/StoreContext';
-import { getOptimizedImageUrl } from '../../utils/imageUtils';
+import { getOptimizedImageUrl, getCategoryCardSrcSet } from '../../utils/imageUtils';
 
 const FALLBACK_CATEGORY_IMAGES = [
   "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=800&q=80",
@@ -22,7 +22,7 @@ export default function EditorialCategories() {
     <section className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-14">
       <div className="flex items-end justify-between mb-6 sm:mb-8">
         <div>
-          <span className="text-xs font-medium text-[#9A7742] block mb-1">
+          <span className="text-xs font-medium text-[#7A5B2C] block mb-1">
             {lang === "ka" ? "კატეგორიები" : "Shop By Category"}
           </span>
           <h2 className="font-serif text-2xl sm:text-3xl font-medium text-[#1F1C18]">
@@ -47,14 +47,18 @@ export default function EditorialCategories() {
             >
               <div className="relative aspect-[4/3] overflow-hidden bg-[#F2EDE4]">
                 <img
-                  src={getOptimizedImageUrl(imgUrl, 420, 70)}
+                  src={getOptimizedImageUrl(imgUrl, 360, 55)}
+                  srcSet={getCategoryCardSrcSet(imgUrl)}
+                  sizes="(max-width: 640px) 45vw, (max-width: 1024px) 46vw, 330px"
+                  width="400"
+                  height="300"
                   alt={cat}
                   loading="lazy"
                   decoding="async"
                   onError={(e) => { e.currentTarget.src = FALLBACK_CATEGORY_IMAGES[idx % FALLBACK_CATEGORY_IMAGES.length]; }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
 
                 {/* Full-Width Uncramped Category Labeling */}
                 <div className="absolute bottom-2.5 sm:bottom-3.5 left-3 sm:left-4 right-3 sm:right-4 text-white z-10">

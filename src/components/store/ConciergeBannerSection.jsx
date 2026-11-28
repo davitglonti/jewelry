@@ -12,7 +12,7 @@ export default function ConciergeBannerSection() {
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
         <div className="p-8 sm:p-12 rounded-3xl bg-white border border-[#EAE4DB] shadow-[0_4px_24px_rgba(31,28,24,0.04)] grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           <div className="lg:col-span-7 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F5EFE4] text-[#8A6836] text-xs font-medium">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F5EFE4] text-[#6B4E23] text-xs font-medium">
               <Gift className="w-3.5 h-3.5 stroke-[1.75]" />
               <span>{lang === "ka" ? "პერსონალური სერვისი & სასაჩუქრე შეფუთვა" : "Private Concierge & Signature Packaging"}</span>
             </div>

@@ -291,29 +291,33 @@ export function StoreProvider({ children }) {
     }
 
     // 2. ჩვეულებრივი მომხმარებლისთვის ვიყენებთ მსუბუქ ასინქრონულ REST ფეჩს
-    // არ ვტვირთავთ პერსონალურ მონაცემებს (inquiries) და პრივატულ პრომო კოდებს!
+    // სწრაფი settings/hero სინქრონიზაცია ეშვება მაშინვე (prefetch-ით index.html-დან), რათა LCP სურათი არ შეიცვალოს 4 წამის შემდეგ!
     let isMounted = true;
     let cancelTimer = null;
 
-    const runPublicSync = async () => {
+    const applyStoreResponse = (storeRes) => {
+      if (!isMounted || !storeRes || !storeRes.fields) return;
+      const data = parseFirestoreFields(storeRes.fields);
+      if (data.settings) {
+        const safeSettings = stripPrivateSettings(data.settings);
+        setSiteSettings({ ...DEFAULT_SETTINGS, ...safeSettings });
+        writeCache(KEYS.settings, safeSettings);
+      }
+    };
+
+    (window.__MATARE_STORE_PROMISE ||
+      fetch(`${REST_BASE}/aurelia/storeData`).then(r => (r.ok ? r.json() : null)).catch(() => null)
+    ).then(applyStoreResponse).catch(() => {});
+
+    const runCatalogSync = async () => {
       if (!isMounted) return;
       try {
-        const [storeRes, prodRes, artRes] = await Promise.all([
-          fetch(`${REST_BASE}/aurelia/storeData`).then(r => r.ok ? r.json() : null).catch(() => null),
+        const [prodRes, artRes] = await Promise.all([
           fetch(`${REST_BASE}/products`).then(r => r.ok ? r.json() : null).catch(() => null),
           fetch(`${REST_BASE}/articles`).then(r => r.ok ? r.json() : null).catch(() => null),
         ]);
 
         if (!isMounted) return;
-
-        if (storeRes && storeRes.fields) {
-          const data = parseFirestoreFields(storeRes.fields);
-          if (data.settings) {
-            const safeSettings = stripPrivateSettings(data.settings);
-            setSiteSettings({ ...DEFAULT_SETTINGS, ...safeSettings });
-            writeCache(KEYS.settings, safeSettings);
-          }
-        }
 
         if (prodRes && prodRes.documents && prodRes.documents.length > 0) {
           const list = prodRes.documents.map((d) => ({
@@ -338,13 +342,11 @@ export function StoreProvider({ children }) {
       }
     };
 
-    // 🚀 სინქრონიზაცია ეშვება მხოლოდ მას შემდეგ, რაც გვერდი სრულად ჩაიტვირთება და ბრაუზერი თავისუფალია (Idle)
-    // ეს უზრუნველყოფს, რომ LCP და FCP-ს დროს ქსელი არ დაიტვირთოს და მობილურზე მაქსიმალური სისწრაფე (95+) შენარჩუნდეს.
     const scheduleSync = () => {
       if ('requestIdleCallback' in window) {
-        cancelTimer = window.requestIdleCallback(() => runPublicSync(), { timeout: 5000 });
+        cancelTimer = window.requestIdleCallback(() => runCatalogSync(), { timeout: 2500 });
       } else {
-        cancelTimer = setTimeout(runPublicSync, 4000);
+        cancelTimer = setTimeout(runCatalogSync, 1200);
       }
     };
 
