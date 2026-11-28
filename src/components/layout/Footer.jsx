@@ -190,7 +190,7 @@ export default function Footer({ lang, siteSettings = {}, compact = false }) {
           </div>
         </div>
 
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#787168]">
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#5E584F]">
           <span>{siteSettings.copyright}</span>
           <span>Tbilisi • Fine Jewelry House</span>
         </div>
